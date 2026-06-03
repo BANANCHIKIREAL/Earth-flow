@@ -75,7 +75,8 @@ function FocusSpace() {
     requestNotificationPermission,
     notifyTimerComplete,
   } = useBrowserNotifications();
-  const { tasks, doneCount, addTask, toggleTask, removeTask, clearDone } = useDailyTasks();
+  const { tasks, doneCount, completedRecords, addTask, toggleTask, removeTask, clearDone } =
+    useDailyTasks();
   const activeCount = tracks.filter((t) => t.enabled).length;
   const completeTimer = useCallback(() => {
     playFinishSound();
@@ -123,12 +124,13 @@ function FocusSpace() {
             <TodayTasks
               tasks={tasks}
               doneCount={doneCount}
+              completedRecords={completedRecords}
               onAdd={addTask}
               onToggle={toggleTask}
-            onRemove={removeTask}
-            onClearDone={clearDone}
-            copy={copy}
-          />
+              onRemove={removeTask}
+              onClearDone={clearDone}
+              copy={copy}
+            />
           </div>
         </div>
 

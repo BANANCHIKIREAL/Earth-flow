@@ -163,8 +163,8 @@ function TaskStatsDialog({ open, onOpenChange, records }: TaskStatsDialogProps) 
   const [period, setPeriod] = useState<StatsPeriod>("day");
   const chart = getChartData(records, period);
   const total = chart.reduce((sum, item) => sum + item.value, 0);
-  const maxValue = Math.max(...chart.map((item) => item.value), 1);
-  const yTicks = getYAxisTicks(maxValue);
+  const chartScale = getChartScale(period);
+  const yTicks = chartScale.ticks;
   const periods: Array<{ id: StatsPeriod; label: string }> = [
     { id: "day", label: "Day" },
     { id: "week", label: "Week" },
@@ -231,7 +231,7 @@ function TaskStatsDialog({ open, onOpenChange, records }: TaskStatsDialogProps) 
                         height:
                           item.value === 0
                             ? "0%"
-                            : `${Math.max(7, (item.value / maxValue) * 100)}%`,
+                            : `${Math.max(7, Math.min(100, (item.value / chartScale.max) * 100))}%`,
                       }}
                       title={`${item.label}: ${item.value}`}
                     />
@@ -327,10 +327,11 @@ function getChartData(records: CompletedTaskRecord[], period: StatsPeriod) {
   return buckets;
 }
 
-function getYAxisTicks(maxValue: number) {
-  const top = Math.max(4, Math.ceil(maxValue));
-  const step = Math.max(1, Math.ceil(top / 4));
-  return [step * 4, step * 3, step * 2, step, 0];
+function getChartScale(period: StatsPeriod) {
+  if (period === "day") return { max: 20, ticks: [20, 15, 10, 5, 0] };
+  if (period === "week") return { max: 80, ticks: [80, 60, 40, 20, 0] };
+  if (period === "month") return { max: 200, ticks: [200, 160, 120, 80, 0] };
+  return { max: 800, ticks: [800, 600, 400, 200, 0] };
 }
 
 function getPeriodTitle(period: StatsPeriod) {

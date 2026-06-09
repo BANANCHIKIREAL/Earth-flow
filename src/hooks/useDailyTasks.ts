@@ -23,6 +23,8 @@ export interface TaskStats {
 
 const KEY_DAILY_TASKS = "focus-space:daily-tasks";
 const KEY_COMPLETED_TASKS = "focus-space:completed-tasks";
+const KEY_CHART_ARCHIVE = "focus-space:chart-archive";
+const KEY_CHART_HIDDEN  = "focus-space:chart-hidden";
 
 function readTasks() {
   if (typeof window === "undefined") return [];
@@ -56,23 +58,37 @@ function createTask(title: string): DailyTask {
 export function useDailyTasks() {
   const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [completedRecords, setCompletedRecords] = useState<CompletedTaskRecord[]>([]);
+  const [chartArchive, setChartArchive] = useState<DailyTask[]>([]);
+  const [chartHidden, setChartHidden] = useState<string[]>([]);
 
   useEffect(() => {
     setTasks(readTasks());
     setCompletedRecords(readCompletedRecords());
+    try {
+      const raw = localStorage.getItem(KEY_CHART_ARCHIVE);
+      setChartArchive(raw ? (JSON.parse(raw) as DailyTask[]) : []);
+    } catch { /* empty */ }
+    try {
+      const raw = localStorage.getItem(KEY_CHART_HIDDEN);
+      setChartHidden(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch { /* empty */ }
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(KEY_DAILY_TASKS, JSON.stringify(tasks));
-    } catch {}
+    try { localStorage.setItem(KEY_DAILY_TASKS, JSON.stringify(tasks)); } catch {}
   }, [tasks]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(KEY_COMPLETED_TASKS, JSON.stringify(completedRecords));
-    } catch {}
+    try { localStorage.setItem(KEY_COMPLETED_TASKS, JSON.stringify(completedRecords)); } catch {}
   }, [completedRecords]);
+
+  useEffect(() => {
+    try { localStorage.setItem(KEY_CHART_ARCHIVE, JSON.stringify(chartArchive)); } catch {}
+  }, [chartArchive]);
+
+  useEffect(() => {
+    try { localStorage.setItem(KEY_CHART_HIDDEN, JSON.stringify(chartHidden)); } catch {}
+  }, [chartHidden]);
 
   const addTask = useCallback((title: string) => {
     const trimmed = title.trim();
@@ -106,11 +122,39 @@ export function useDailyTasks() {
   }, []);
 
   const removeTask = useCallback((id: string) => {
-    setTasks((current) => current.filter((task) => task.id !== id));
+    setTasks((current) => {
+      const task = current.find((t) => t.id === id);
+      if (task) {
+        setChartArchive((arch) => [
+          ...arch.filter((a) => a.id !== id),
+          { ...task, completedAt: task.completedAt ?? Date.now() },
+        ]);
+      }
+      return current.filter((t) => t.id !== id);
+    });
   }, []);
 
   const clearDone = useCallback(() => {
-    setTasks((current) => current.filter((task) => !task.done));
+    setTasks((current) => {
+      const done = current.filter((t) => t.done);
+      if (done.length > 0) {
+        setChartArchive((arch) => {
+          const next = [...arch];
+          done.forEach((task) => {
+            if (!next.find((a) => a.id === task.id)) {
+              next.push({ ...task, completedAt: task.completedAt ?? Date.now() });
+            }
+          });
+          return next;
+        });
+      }
+      return current.filter((t) => !t.done);
+    });
+  }, []);
+
+  const removeFromChart = useCallback((id: string) => {
+    setChartArchive((arch) => arch.filter((a) => a.id !== id));
+    setChartHidden((h) => (h.includes(id) ? h : [...h, id]));
   }, []);
 
   const doneCount = useMemo(() => tasks.filter((task) => task.done).length, [tasks]);
@@ -121,10 +165,13 @@ export function useDailyTasks() {
     doneCount,
     completedStats,
     completedRecords,
+    chartArchive,
+    chartHidden,
     addTask,
     toggleTask,
     removeTask,
     clearDone,
+    removeFromChart,
   };
 }
 

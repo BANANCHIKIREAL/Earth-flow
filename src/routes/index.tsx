@@ -75,7 +75,7 @@ function FocusSpace() {
     requestNotificationPermission,
     notifyTimerComplete,
   } = useBrowserNotifications();
-  const { tasks, doneCount, completedRecords, addTask, toggleTask, removeTask, clearDone } =
+  const { tasks, doneCount, completedRecords, chartArchive, chartHidden, addTask, toggleTask, removeTask, clearDone, removeFromChart } =
     useDailyTasks();
   const activeCount = tracks.filter((t) => t.enabled).length;
   const completeTimer = useCallback(() => {
@@ -125,10 +125,13 @@ function FocusSpace() {
               tasks={tasks}
               doneCount={doneCount}
               completedRecords={completedRecords}
+              chartArchive={chartArchive}
+              chartHidden={chartHidden}
               onAdd={addTask}
               onToggle={toggleTask}
               onRemove={removeTask}
               onClearDone={clearDone}
+              onRemoveFromChart={removeFromChart}
               copy={copy}
             />
           </div>

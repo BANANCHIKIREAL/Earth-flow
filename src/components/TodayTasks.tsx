@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
-import { BarChart3, Check, ListTodo, Plus, Trash2 } from "lucide-react";
+import { BarChart3, Check, ListTodo, PieChart, Plus, Trash2 } from "lucide-react";
+import { DonutChart } from "@/components/DonutChart";
 import {
   Dialog,
   DialogContent,
@@ -14,10 +15,13 @@ interface Props {
   tasks: DailyTask[];
   doneCount: number;
   completedRecords: CompletedTaskRecord[];
+  chartArchive: DailyTask[];
+  chartHidden: string[];
   onAdd: (title: string) => void;
   onToggle: (id: string) => void;
   onRemove: (id: string) => void;
   onClearDone: () => void;
+  onRemoveFromChart: (id: string) => void;
   copy: typeof translations.en;
 }
 
@@ -25,15 +29,19 @@ export function TodayTasks({
   tasks,
   doneCount,
   completedRecords,
+  chartArchive,
+  chartHidden,
   onAdd,
   onToggle,
   onRemove,
   onClearDone,
+  onRemoveFromChart,
   copy,
 }: Props) {
   const [draft, setDraft] = useState("");
   const [now, setNow] = useState(Date.now());
   const [statsOpen, setStatsOpen] = useState(false);
+  const [chartOpen, setChartOpen] = useState(false);
 
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
@@ -59,6 +67,13 @@ export function TodayTasks({
           <div className="rounded-full border border-border bg-foreground/5 px-3 py-1 text-xs tabular-nums text-muted-foreground">
             {doneCount}/{tasks.length}
           </div>
+          <button
+            onClick={() => setChartOpen(true)}
+            className="h-9 w-9 rounded-full border border-border bg-foreground/5 inline-flex items-center justify-center text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            aria-label="Open time distribution chart"
+          >
+            <PieChart size={16} />
+          </button>
           <button
             onClick={() => setStatsOpen(true)}
             className="h-9 w-9 rounded-full border border-border bg-foreground/5 inline-flex items-center justify-center text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
@@ -147,6 +162,24 @@ export function TodayTasks({
       )}
 
       <TaskStatsDialog open={statsOpen} onOpenChange={setStatsOpen} records={completedRecords} />
+
+      <Dialog open={chartOpen} onOpenChange={setChartOpen}>
+        <DialogContent className="glass max-w-2xl border-border bg-background/95 text-foreground">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl">Распределение времени</DialogTitle>
+            <DialogDescription>Время, потраченное на каждую задачу сегодня.</DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-4 overflow-visible">
+            <DonutChart
+              tasks={tasks}
+              archivedTasks={chartArchive}
+              hiddenIds={chartHidden}
+              onRemoveFromChart={onRemoveFromChart}
+              size={420}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

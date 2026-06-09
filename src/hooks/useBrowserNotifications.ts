@@ -27,7 +27,7 @@ export function useBrowserNotifications() {
     if (typeof window === "undefined" || !("Notification" in window)) return;
     if (Notification.permission !== "granted") return;
 
-    const notification = new Notification("Focus Space", {
+    const notification = new Notification("Earth Flow", {
       body: "Timer finished. Time to take a breath.",
       silent: true,
     });

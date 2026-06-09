@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
   component: FocusSpace,
   head: () => ({
     meta: [
-      { title: "Focus Space — Ambient sounds & focus timer" },
+      { title: "Earth Flow — Ambient sounds & focus timer" },
       {
         name: "description",
         content:
@@ -92,8 +92,8 @@ function FocusSpace() {
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
           <span className="text-sm tracking-wide">
-            <span className="font-display text-base">Focus</span>
-            <span className="text-muted-foreground"> Space</span>
+            <span className="font-display text-base">Earth</span>
+            <span className="text-muted-foreground"> Flow</span>
           </span>
         </div>
         <button
@@ -106,7 +106,7 @@ function FocusSpace() {
       </header>
 
       <main className="flex-1 px-6 pt-8 pb-10 lg:px-10 lg:pt-4">
-        <h1 className="sr-only">Focus Space — ambient sounds and focus timer</h1>
+        <h1 className="sr-only">Earth Flow — ambient sounds and focus timer</h1>
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(280px,1fr)_minmax(320px,420px)]">
           <div className="flex justify-center lg:justify-end">
             <Timer

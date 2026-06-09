@@ -38,7 +38,7 @@ export function Timer({
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.title = `${format(remaining)} • Focus Space`;
+    document.title = `${format(remaining)} • Earth Flow`;
   }, [remaining]);
 
   // viewBox-based responsive sizing; padding inside viewBox keeps neon glow visible

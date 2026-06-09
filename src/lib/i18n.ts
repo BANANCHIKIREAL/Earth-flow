@@ -3,7 +3,7 @@ export type Language = "en" | "ru";
 export const translations = {
   en: {
     settings: "Settings",
-    yourFocusSpace: "Your Focus Space",
+    yourFocusSpace: "Your Earth Flow",
     closeSettings: "Close settings",
     timer: "Timer",
     focusTime: "Focus time",

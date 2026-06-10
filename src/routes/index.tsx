@@ -150,7 +150,7 @@ function FocusSpace() {
       </main>
 
       <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">
-        v2.0.0
+        v2.0.2
       </footer>
 
       <SettingsPanel

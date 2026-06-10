@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import appCss from "../styles.css?url";
 import favicon from "../assets/favicon.svg?url";
@@ -107,6 +108,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       <HeadContent />
       <div id="root">{children}</div>
       <Analytics />
+      <SpeedInsights />
       <Scripts />
     </>
   );

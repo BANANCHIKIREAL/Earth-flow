@@ -97,7 +97,7 @@ async function main() {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Focus Flow</title>
+    <title>Earth Flow</title>
     ${styleFileName ? `<link rel="stylesheet" href="/assets/${styleFileName}" />` : ''}
   </head>
   <body>

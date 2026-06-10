@@ -101,22 +101,21 @@ export function useDailyTasks() {
       current.map((task) => {
         if (task.id !== id) return task;
         const done = !task.done;
-        const completedAt = Date.now();
 
-        setCompletedRecords((records) => {
-          if (done) {
+        if (done) {
+          const completedAt = Date.now();
+          setCompletedRecords((records) => {
             const nextRecord = { id: task.id, title: task.title, completedAt };
-            return [...records.filter((record) => record.id !== id), nextRecord];
-          }
-
-          return records.filter((record) => record.id !== id);
-        });
-
-        return {
-          ...task,
-          done,
-          completedAt: done ? completedAt : undefined,
-        };
+            return [...records.filter((r) => r.id !== id), nextRecord];
+          });
+          return { ...task, done: true, completedAt };
+        } else {
+          // Shift createdAt so timer resumes from elapsed time, not from zero
+          const elapsed = (task.completedAt ?? Date.now()) - task.createdAt;
+          const newCreatedAt = Date.now() - elapsed;
+          setCompletedRecords((records) => records.filter((r) => r.id !== id));
+          return { ...task, done: false, completedAt: undefined, createdAt: newCreatedAt };
+        }
       }),
     );
   }, []);
@@ -155,6 +154,7 @@ export function useDailyTasks() {
   const removeFromChart = useCallback((id: string) => {
     setChartArchive((arch) => arch.filter((a) => a.id !== id));
     setChartHidden((h) => (h.includes(id) ? h : [...h, id]));
+    setTasks((current) => current.filter((t) => t.id !== id));
   }, []);
 
   const doneCount = useMemo(() => tasks.filter((task) => task.done).length, [tasks]);

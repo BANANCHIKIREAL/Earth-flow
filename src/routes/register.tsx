@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { Background } from "@/components/Background";
 
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
@@ -44,7 +45,7 @@ function RegisterPage() {
   if (success) {
     return (
       <div className="dark min-h-screen flex items-center justify-center px-4 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+        <Background variant="galaxy" />
         <div className="relative w-full max-w-sm text-center space-y-4">
           <div className="text-4xl">📬</div>
           <h2 className="font-display text-2xl text-foreground">Проверьте почту</h2>
@@ -62,8 +63,7 @@ function RegisterPage() {
 
   return (
     <div className="dark min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.08),transparent_60%)]" />
+      <Background variant="galaxy" />
 
       <div className="relative w-full max-w-sm">
         <div className="text-center mb-8">

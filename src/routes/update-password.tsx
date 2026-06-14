@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { Background } from "@/components/Background";
 
 export const Route = createFileRoute("/update-password")({
   component: UpdatePasswordPage,
@@ -37,8 +38,7 @@ function UpdatePasswordPage() {
 
   return (
     <div className="dark min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.08),transparent_60%)]" />
+      <Background variant="galaxy" />
 
       <div className="relative w-full max-w-sm">
         <div className="text-center mb-8">

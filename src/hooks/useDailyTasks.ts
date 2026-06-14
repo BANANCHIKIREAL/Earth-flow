@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { supabase } from "@/lib/supabase";
+
+export type StatsPeriod = "day" | "week" | "month" | "year";
 
 export interface DailyTask {
   id: string;
@@ -21,28 +24,23 @@ export interface TaskStats {
   year: number;
 }
 
-const KEY_DAILY_TASKS = "focus-space:daily-tasks";
-const KEY_COMPLETED_TASKS = "focus-space:completed-tasks";
-const KEY_CHART_ARCHIVE = "focus-space:chart-archive";
-const KEY_CHART_HIDDEN  = "focus-space:chart-hidden";
-
-function readTasks() {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(KEY_DAILY_TASKS);
-    return raw ? (JSON.parse(raw) as DailyTask[]) : [];
-  } catch {
-    return [];
-  }
+function makeKeys(userId: string) {
+  const p = `u:${userId}:`;
+  return {
+    DAILY: `${p}focus-space:daily-tasks`,
+    COMPLETED: `${p}focus-space:completed-tasks`,
+    ARCHIVE: `${p}focus-space:chart-archive`,
+    HIDDEN: `${p}focus-space:chart-hidden-level`,
+  };
 }
 
-function readCompletedRecords() {
-  if (typeof window === "undefined") return [];
+function readJSON<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
   try {
-    const raw = localStorage.getItem(KEY_COMPLETED_TASKS);
-    return raw ? (JSON.parse(raw) as CompletedTaskRecord[]) : [];
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
@@ -55,40 +53,76 @@ function createTask(title: string): DailyTask {
   };
 }
 
-export function useDailyTasks() {
-  const [tasks, setTasks] = useState<DailyTask[]>([]);
-  const [completedRecords, setCompletedRecords] = useState<CompletedTaskRecord[]>([]);
-  const [chartArchive, setChartArchive] = useState<DailyTask[]>([]);
-  const [chartHidden, setChartHidden] = useState<string[]>([]);
+export function useDailyTasks(userId: string) {
+  const keys = makeKeys(userId);
 
-  useEffect(() => {
-    setTasks(readTasks());
-    setCompletedRecords(readCompletedRecords());
-    try {
-      const raw = localStorage.getItem(KEY_CHART_ARCHIVE);
-      setChartArchive(raw ? (JSON.parse(raw) as DailyTask[]) : []);
-    } catch { /* empty */ }
-    try {
-      const raw = localStorage.getItem(KEY_CHART_HIDDEN);
-      setChartHidden(raw ? (JSON.parse(raw) as string[]) : []);
-    } catch { /* empty */ }
-  }, []);
+  // cloudLoaded prevents writing empty local data to Supabase before cloud data arrives
+  const [cloudLoaded, setCloudLoaded] = useState(false);
 
-  useEffect(() => {
-    try { localStorage.setItem(KEY_DAILY_TASKS, JSON.stringify(tasks)); } catch {}
-  }, [tasks]);
+  const [tasks, setTasks] = useState<DailyTask[]>(() => readJSON<DailyTask[]>(keys.DAILY, []));
+  const [completedRecords, setCompletedRecords] = useState<CompletedTaskRecord[]>(() =>
+    readJSON<CompletedTaskRecord[]>(keys.COMPLETED, [])
+  );
+  const [chartArchive, setChartArchive] = useState<DailyTask[]>(() =>
+    readJSON<DailyTask[]>(keys.ARCHIVE, [])
+  );
+  const [chartHiddenLevel, setChartHiddenLevel] = useState<Record<string, number>>(() =>
+    readJSON<Record<string, number>>(keys.HIDDEN, {})
+  );
 
+  // Load from Supabase on mount — overrides localStorage with cloud data
   useEffect(() => {
-    try { localStorage.setItem(KEY_COMPLETED_TASKS, JSON.stringify(completedRecords)); } catch {}
-  }, [completedRecords]);
+    let active = true;
+    supabase
+      .from("user_data")
+      .select("tasks, completed_records, chart_archive, chart_hidden_level")
+      .eq("user_id", userId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) console.error("[useDailyTasks] load error:", error.message);
+        if (data) {
+          setTasks(data.tasks ?? []);
+          setCompletedRecords(data.completed_records ?? []);
+          setChartArchive(data.chart_archive ?? []);
+          setChartHiddenLevel(data.chart_hidden_level ?? {});
+        }
+        setCloudLoaded(true); // always mark loaded — even if no data yet
+      });
+    return () => { active = false; };
+  }, [userId]);
 
+  // Write to localStorage
   useEffect(() => {
-    try { localStorage.setItem(KEY_CHART_ARCHIVE, JSON.stringify(chartArchive)); } catch {}
-  }, [chartArchive]);
+    try { localStorage.setItem(keys.DAILY, JSON.stringify(tasks)); } catch {}
+  }, [tasks, keys.DAILY]);
+  useEffect(() => {
+    try { localStorage.setItem(keys.COMPLETED, JSON.stringify(completedRecords)); } catch {}
+  }, [completedRecords, keys.COMPLETED]);
+  useEffect(() => {
+    try { localStorage.setItem(keys.ARCHIVE, JSON.stringify(chartArchive)); } catch {}
+  }, [chartArchive, keys.ARCHIVE]);
+  useEffect(() => {
+    try { localStorage.setItem(keys.HIDDEN, JSON.stringify(chartHiddenLevel)); } catch {}
+  }, [chartHiddenLevel, keys.HIDDEN]);
 
+  // Debounced save — only runs after cloud data has been loaded to prevent overwrite
   useEffect(() => {
-    try { localStorage.setItem(KEY_CHART_HIDDEN, JSON.stringify(chartHidden)); } catch {}
-  }, [chartHidden]);
+    if (!cloudLoaded) return;
+    const timer = setTimeout(() => {
+      supabase.from("user_data").upsert({
+        user_id: userId,
+        tasks,
+        completed_records: completedRecords,
+        chart_archive: chartArchive,
+        chart_hidden_level: chartHiddenLevel,
+        updated_at: new Date().toISOString(),
+      }).then(({ error }) => {
+        if (error) console.error("[useDailyTasks] save error:", error.message);
+      });
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [cloudLoaded, userId, tasks, completedRecords, chartArchive, chartHiddenLevel]);
 
   const addTask = useCallback((title: string) => {
     const trimmed = title.trim();
@@ -151,10 +185,20 @@ export function useDailyTasks() {
     });
   }, []);
 
-  const removeFromChart = useCallback((id: string) => {
-    setChartArchive((arch) => arch.filter((a) => a.id !== id));
-    setChartHidden((h) => (h.includes(id) ? h : [...h, id]));
-    setTasks((current) => current.filter((t) => t.id !== id));
+  const removeFromChart = useCallback((id: string, period: StatsPeriod) => {
+    const level = period === "day" ? 1 : period === "week" ? 2 : period === "month" ? 3 : 4;
+    if (level >= 4) {
+      // Year → permanent delete
+      setChartArchive((arch) => arch.filter((a) => a.id !== id));
+      setChartHiddenLevel((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      setTasks((current) => current.filter((t) => t.id !== id));
+    } else {
+      // Hide from this period and narrower, but keep visible in broader periods
+      setChartHiddenLevel((prev) => {
+        const cur = prev[id] ?? 0;
+        return level <= cur ? prev : { ...prev, [id]: level };
+      });
+    }
   }, []);
 
   const doneCount = useMemo(() => tasks.filter((task) => task.done).length, [tasks]);
@@ -166,7 +210,7 @@ export function useDailyTasks() {
     completedStats,
     completedRecords,
     chartArchive,
-    chartHidden,
+    chartHiddenLevel,
     addTask,
     toggleTask,
     removeTask,

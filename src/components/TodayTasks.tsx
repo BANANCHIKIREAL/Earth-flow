@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { CompletedTaskRecord, DailyTask } from "@/hooks/useDailyTasks";
+import type { CompletedTaskRecord, DailyTask, StatsPeriod } from "@/hooks/useDailyTasks";
 import type { translations } from "@/lib/i18n";
 
 interface Props {
@@ -16,12 +16,12 @@ interface Props {
   doneCount: number;
   completedRecords: CompletedTaskRecord[];
   chartArchive: DailyTask[];
-  chartHidden: string[];
+  chartHiddenLevel: Record<string, number>;
   onAdd: (title: string) => void;
   onToggle: (id: string) => void;
   onRemove: (id: string) => void;
   onClearDone: () => void;
-  onRemoveFromChart: (id: string) => void;
+  onRemoveFromChart: (id: string, period: StatsPeriod) => void;
   copy: typeof translations.en;
 }
 
@@ -30,7 +30,7 @@ export function TodayTasks({
   doneCount,
   completedRecords,
   chartArchive,
-  chartHidden,
+  chartHiddenLevel,
   onAdd,
   onToggle,
   onRemove,
@@ -42,6 +42,13 @@ export function TodayTasks({
   const [now, setNow] = useState(Date.now());
   const [statsOpen, setStatsOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
+  const [chartPeriod, setChartPeriod] = useState<StatsPeriod>("day");
+
+  const periodLevel = chartPeriod === "day" ? 1 : chartPeriod === "week" ? 2 : chartPeriod === "month" ? 3 : 4;
+  const hiddenIdsForPeriod = Object.entries(chartHiddenLevel)
+    .filter(([, level]) => periodLevel <= level)
+    .map(([id]) => id);
+  const handleRemoveFromChart = (id: string) => onRemoveFromChart(id, chartPeriod);
 
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
@@ -167,14 +174,29 @@ export function TodayTasks({
         <DialogContent className="glass max-w-2xl border-border bg-background/95 text-foreground">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl">Распределение времени</DialogTitle>
-            <DialogDescription>Время, потраченное на каждую задачу сегодня.</DialogDescription>
+            <DialogDescription>Время, потраченное на задачи за выбранный период.</DialogDescription>
           </DialogHeader>
+          <div className="flex flex-wrap gap-2">
+            {(["day", "week", "month", "year"] as StatsPeriod[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setChartPeriod(p)}
+                className={`rounded-full border px-4 py-2 text-xs transition-colors ${
+                  p === chartPeriod
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-foreground/5 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {p === "day" ? "День" : p === "week" ? "Неделя" : p === "month" ? "Месяц" : "Год"}
+              </button>
+            ))}
+          </div>
           <div className="flex justify-center py-4 overflow-visible">
             <DonutChart
-              tasks={tasks}
-              archivedTasks={chartArchive}
-              hiddenIds={chartHidden}
-              onRemoveFromChart={onRemoveFromChart}
+              tasks={filterTasksByPeriod(tasks, chartPeriod)}
+              archivedTasks={filterArchiveByPeriod(chartArchive, chartPeriod)}
+              hiddenIds={hiddenIdsForPeriod}
+              onRemoveFromChart={handleRemoveFromChart}
               size={420}
             />
           </div>
@@ -189,8 +211,6 @@ interface TaskStatsDialogProps {
   onOpenChange: (open: boolean) => void;
   records: CompletedTaskRecord[];
 }
-
-type StatsPeriod = "day" | "week" | "month" | "year";
 
 function TaskStatsDialog({ open, onOpenChange, records }: TaskStatsDialogProps) {
   const [period, setPeriod] = useState<StatsPeriod>("day");
@@ -384,6 +404,24 @@ function startOfWeek(date: Date) {
   const mondayOffset = day === 0 ? -6 : 1 - day;
   start.setDate(start.getDate() + mondayOffset);
   return start;
+}
+
+function getPeriodStart(period: StatsPeriod): number {
+  const now = new Date();
+  if (period === "day") return startOfDay(now).getTime();
+  if (period === "week") return startOfWeek(now).getTime();
+  if (period === "month") return new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  return new Date(now.getFullYear(), 0, 1).getTime();
+}
+
+function filterTasksByPeriod(tasks: DailyTask[], period: StatsPeriod): DailyTask[] {
+  const from = getPeriodStart(period);
+  return tasks.filter((t) => t.createdAt >= from);
+}
+
+function filterArchiveByPeriod(archive: DailyTask[], period: StatsPeriod): DailyTask[] {
+  const from = getPeriodStart(period);
+  return archive.filter((t) => (t.completedAt ?? t.createdAt) >= from);
 }
 
 function getTaskSeconds(task: DailyTask, now: number) {

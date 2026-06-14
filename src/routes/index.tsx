@@ -1,16 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
 import { Settings } from "lucide-react";
 import { Background } from "@/components/Background";
 import { SoundDock } from "@/components/SoundDock";
 import { Timer } from "@/components/Timer";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { TodayTasks } from "@/components/TodayTasks";
+import { ProfileModal } from "@/components/ProfileModal";
 import { useAudioMixer } from "@/hooks/useAudioMixer";
 import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
 import { useDailyTasks } from "@/hooks/useDailyTasks";
 import { useFinishSound } from "@/hooks/useFinishSound";
 import { useSettings } from "@/hooks/useSettings";
+import { useAuth } from "@/context/AuthContext";
 import { translations } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
@@ -34,7 +36,31 @@ export const Route = createFileRoute("/")({
 });
 
 function FocusSpace() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) void navigate({ to: "/login" });
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="dark min-h-screen flex items-center justify-center bg-background">
+        <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return <FocusSpaceContent userId={user.id} userEmail={user.email ?? ""} />;
+}
+
+function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: string }) {
+  const { signOut, updateDisplayName, uploadAvatar, user } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [headerImgError, setHeaderImgError] = useState(false);
   const {
     durations,
     setDurations,
@@ -58,7 +84,7 @@ function FocusSpace() {
     setTimerFontSize,
     stopSoundsOnTimerEnd,
     setStopSoundsOnTimerEnd,
-  } = useSettings();
+  } = useSettings(userId);
   const copy = translations.en;
   const { tracks, toggle, setVolume, stopAll } = useAudioMixer();
   const {
@@ -75,14 +101,22 @@ function FocusSpace() {
     requestNotificationPermission,
     notifyTimerComplete,
   } = useBrowserNotifications();
-  const { tasks, doneCount, completedRecords, chartArchive, chartHidden, addTask, toggleTask, removeTask, clearDone, removeFromChart } =
-    useDailyTasks();
+  const { tasks, doneCount, completedRecords, chartArchive, chartHiddenLevel, addTask, toggleTask, removeTask, clearDone, removeFromChart } =
+    useDailyTasks(userId);
   const activeCount = tracks.filter((t) => t.enabled).length;
   const completeTimer = useCallback(() => {
     playFinishSound();
     notifyTimerComplete();
     if (stopSoundsOnTimerEnd) stopAll();
   }, [notifyTimerComplete, playFinishSound, stopAll, stopSoundsOnTimerEnd]);
+
+  const displayName =
+    (user?.user_metadata?.display_name as string | undefined) ||
+    (user?.user_metadata?.full_name as string | undefined) ||
+    "";
+  const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? null;
+  useEffect(() => { setHeaderImgError(false); }, [avatarUrl]);
+  const avatarLetter = (displayName || userEmail).charAt(0).toUpperCase();
 
   return (
     <div className="dark relative min-h-screen w-full flex flex-col text-foreground">
@@ -96,13 +130,32 @@ function FocusSpace() {
             <span className="text-muted-foreground"> Flow</span>
           </span>
         </div>
-        <button
-          onClick={() => setSettingsOpen(true)}
-          className="h-9 px-4 rounded-full glass text-xs inline-flex items-center gap-2 hover:text-primary transition-colors"
-        >
-          <Settings size={14} />
-          {copy.settings}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="h-9 px-4 rounded-full glass text-xs inline-flex items-center gap-2 hover:text-primary transition-colors"
+          >
+            <Settings size={14} />
+            {copy.settings}
+          </button>
+          <button
+            onClick={() => setProfileOpen(true)}
+            title={userEmail}
+            className="h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden"
+          >
+            {avatarUrl && !headerImgError ? (
+              <img
+                src={avatarUrl}
+                alt=""
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+                onError={() => setHeaderImgError(true)}
+              />
+            ) : (
+              avatarLetter
+            )}
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 px-6 pt-8 pb-10 lg:px-10 lg:pt-4">
@@ -126,7 +179,7 @@ function FocusSpace() {
               doneCount={doneCount}
               completedRecords={completedRecords}
               chartArchive={chartArchive}
-              chartHidden={chartHidden}
+              chartHiddenLevel={chartHiddenLevel}
               onAdd={addTask}
               onToggle={toggleTask}
               onRemove={removeTask}
@@ -152,6 +205,17 @@ function FocusSpace() {
       <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">
         v2.0.2
       </footer>
+
+      <ProfileModal
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        email={userEmail}
+        displayName={displayName}
+        avatarUrl={avatarUrl}
+        onUpdateDisplayName={async (name) => { await updateDisplayName(name); }}
+        onUploadAvatar={async (file) => { await uploadAvatar(file); }}
+        onSignOut={async () => { await signOut(); }}
+      />
 
       <SettingsPanel
         open={settingsOpen}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_DURATIONS, type TimerDurations, MIN_SECONDS, MAX_SECONDS } from "./useTimer";
 import type { BackgroundVariant } from "@/components/Background";
+import { supabase } from "@/lib/supabase";
 
 const KEY_DURATIONS = "focus-space:durations";
 const KEY_LUNCH_ENABLED = "focus-space:lunch-enabled";
@@ -113,7 +114,7 @@ function readJSON<T>(key: string, fallback: T): T {
   }
 }
 
-export function useSettings() {
+export function useSettings(userId?: string) {
   const [durations, setDurationsState] = useState<TimerDurations>(DEFAULT_DURATIONS);
   const [lunchEnabled, setLunchEnabledState] = useState(false);
   const [bgVariant, setBgVariantState] = useState<BackgroundVariant>("aurora");
@@ -126,6 +127,7 @@ export function useSettings() {
   const [timerFontSize, setTimerFontSizeState] = useState<number>(DEFAULT_TIMER_FONT_SIZE);
   const [stopSoundsOnTimerEnd, setStopSoundsOnTimerEndState] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [cloudLoaded, setCloudLoaded] = useState(false);
 
   useEffect(() => {
     const d = readJSON<TimerDurations>(KEY_DURATIONS, DEFAULT_DURATIONS);
@@ -156,6 +158,42 @@ export function useSettings() {
     setStopSoundsOnTimerEndState(stopSoundsRaw === "true");
     setHydrated(true);
   }, []);
+
+  // Load settings from Supabase on mount (overrides localStorage)
+  useEffect(() => {
+    if (!userId) return;
+    let active = true;
+    supabase
+      .from("user_settings")
+      .select("settings")
+      .eq("user_id", userId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) console.error("[useSettings] load error:", error.message);
+        if (data?.settings) {
+          const s = data.settings as Record<string, unknown>;
+          if (s.durations) {
+            const d = s.durations as TimerDurations;
+            setDurationsState({ focus: clamp(d.focus), lunch: clamp(d.lunch ?? DEFAULT_DURATIONS.lunch) });
+          }
+          if (typeof s.lunchEnabled === "boolean") setLunchEnabledState(s.lunchEnabled);
+          if (typeof s.bgVariant === "string") setBgVariantState(s.bgVariant as BackgroundVariant);
+          if (typeof s.bgBlur === "number") setBgBlurState(clampBlur(s.bgBlur));
+          if (typeof s.customTimerRingColor === "string") setCustomTimerRingColorState(s.customTimerRingColor);
+          if (typeof s.timerRingStyleId === "string") {
+            const color = typeof s.customTimerRingColor === "string" ? s.customTimerRingColor : TIMER_RING_STYLES[0].color;
+            setTimerRingStyleState(getTimerRingStyle(s.timerRingStyleId, color));
+          }
+          if (typeof s.timerRingWidth === "number") setTimerRingWidthState(clampTimerRingWidth(s.timerRingWidth));
+          if (typeof s.timerFontStyleId === "string") setTimerFontStyleState(getTimerFontStyle(s.timerFontStyleId));
+          if (typeof s.timerFontSize === "number") setTimerFontSizeState(clampTimerFontSize(s.timerFontSize));
+          if (typeof s.stopSoundsOnTimerEnd === "boolean") setStopSoundsOnTimerEndState(s.stopSoundsOnTimerEnd);
+        }
+        setCloudLoaded(true); // always mark loaded — even if no settings yet
+      });
+    return () => { active = false; };
+  }, [userId]);
 
   const setDurations = useCallback((next: Partial<TimerDurations>) => {
     setDurationsState((prev) => {
@@ -230,6 +268,32 @@ export function useSettings() {
     setStopSoundsOnTimerEndState(enabled);
     try { localStorage.setItem(KEY_STOP_SOUNDS_ON_TIMER_END, String(enabled)); } catch {}
   }, []);
+
+  // Debounced save — only runs after cloud data is loaded to prevent overwrite
+  useEffect(() => {
+    if (!userId || !hydrated || !cloudLoaded) return;
+    const timer = setTimeout(() => {
+      supabase.from("user_settings").upsert({
+        user_id: userId,
+        settings: {
+          durations,
+          lunchEnabled,
+          bgVariant,
+          bgBlur,
+          timerRingStyleId: timerRingStyle.id,
+          customTimerRingColor,
+          timerRingWidth,
+          timerFontStyleId: timerFontStyle.id,
+          timerFontSize,
+          stopSoundsOnTimerEnd,
+        },
+        updated_at: new Date().toISOString(),
+      }).then(({ error }) => {
+        if (error) console.error("[useSettings] save error:", error.message);
+      });
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [userId, hydrated, cloudLoaded, durations, lunchEnabled, bgVariant, bgBlur, timerRingStyle.id, customTimerRingColor, timerRingWidth, timerFontStyle.id, timerFontSize, stopSoundsOnTimerEnd]);
 
   return {
     hydrated,

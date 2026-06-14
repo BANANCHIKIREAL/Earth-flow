@@ -101,7 +101,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
     requestNotificationPermission,
     notifyTimerComplete,
   } = useBrowserNotifications();
-  const { tasks, doneCount, completedRecords, chartArchive, chartHiddenLevel, addTask, toggleTask, removeTask, clearDone, removeFromChart } =
+  const { tasks, doneCount, completedRecords, chartArchive, chartHiddenLevel, categories, addTask, toggleTask, removeTask, clearDone, removeFromChart, addCategory, renameCategory, removeCategory, setTaskCategory } =
     useDailyTasks(userId);
   const activeCount = tracks.filter((t) => t.enabled).length;
   const completeTimer = useCallback(() => {
@@ -180,11 +180,16 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
               completedRecords={completedRecords}
               chartArchive={chartArchive}
               chartHiddenLevel={chartHiddenLevel}
+              categories={categories}
               onAdd={addTask}
               onToggle={toggleTask}
               onRemove={removeTask}
               onClearDone={clearDone}
               onRemoveFromChart={removeFromChart}
+              onAddCategory={addCategory}
+              onRenameCategory={renameCategory}
+              onRemoveCategory={removeCategory}
+              onSetTaskCategory={setTaskCategory}
               copy={copy}
             />
           </div>

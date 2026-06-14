@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Trash2 } from "lucide-react";
-import type { DailyTask } from "@/hooks/useDailyTasks";
+import type { Category, DailyTask } from "@/hooks/useDailyTasks";
 
 const PALETTE = [
   "#6B8FA8", "#E8625A", "#F5A623", "#4DC8D4",
@@ -41,11 +41,12 @@ interface Props {
   tasks: DailyTask[];
   archivedTasks?: DailyTask[];
   hiddenIds?: string[];
+  categories?: Category[];
   onRemoveFromChart?: (id: string) => void;
   size?: number;
 }
 
-export function DonutChart({ tasks, archivedTasks = [], hiddenIds = [], onRemoveFromChart, size = 500 }: Props) {
+export function DonutChart({ tasks, archivedTasks = [], hiddenIds = [], categories = [], onRemoveFromChart, size = 500 }: Props) {
   const [now, setNow] = useState(() => Date.now());
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -64,13 +65,17 @@ export function DonutChart({ tasks, archivedTasks = [], hiddenIds = [], onRemove
     .filter((item) => !hidden.has(item.id))
     .sort((a, b) => a.createdAt - b.createdAt);
 
+  const catMap = new Map(categories.map((c) => [c.id, c]));
+
   const slices = allItems
     .map((item, i) => {
       const isLive = liveIds.has(item.id);
       const end = isLive ? (item.completedAt ?? now) : (item.completedAt ?? item.createdAt);
       const sec = Math.max(0, (end - item.createdAt) / 1000);
       const shortTitle = item.title.length > 14 ? `${item.title.slice(0, 12)}…` : item.title;
-      return { id: item.id, label: shortTitle, sec, color: PALETTE[i % PALETTE.length] };
+      const cat = item.categoryId ? catMap.get(item.categoryId) : undefined;
+      const color = cat ? cat.color : PALETTE[i % PALETTE.length];
+      return { id: item.id, label: shortTitle, sec, color, categoryId: item.categoryId };
     })
     .filter((s) => s.sec > 0);
 

@@ -1,5 +1,5 @@
-import { FormEvent, useEffect, useState } from "react";
-import { BarChart3, Check, ListTodo, PieChart, Plus, Trash2 } from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { BarChart3, Check, ListTodo, Pencil, PieChart, Plus, Tag, Trash2, X } from "lucide-react";
 import { DonutChart } from "@/components/DonutChart";
 import {
   Dialog,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { CompletedTaskRecord, DailyTask, StatsPeriod } from "@/hooks/useDailyTasks";
+import type { Category, CompletedTaskRecord, DailyTask, StatsPeriod } from "@/hooks/useDailyTasks";
 import type { translations } from "@/lib/i18n";
 
 interface Props {
@@ -17,11 +17,16 @@ interface Props {
   completedRecords: CompletedTaskRecord[];
   chartArchive: DailyTask[];
   chartHiddenLevel: Record<string, number>;
-  onAdd: (title: string) => void;
+  categories: Category[];
+  onAdd: (title: string, categoryId?: string) => void;
   onToggle: (id: string) => void;
   onRemove: (id: string) => void;
   onClearDone: () => void;
   onRemoveFromChart: (id: string, period: StatsPeriod) => void;
+  onAddCategory: (name: string) => Category;
+  onRenameCategory: (id: string, name: string) => void;
+  onRemoveCategory: (id: string) => void;
+  onSetTaskCategory: (taskId: string, categoryId: string | null) => void;
   copy: typeof translations.en;
 }
 
@@ -31,14 +36,26 @@ export function TodayTasks({
   completedRecords,
   chartArchive,
   chartHiddenLevel,
+  categories,
   onAdd,
   onToggle,
   onRemove,
   onClearDone,
   onRemoveFromChart,
+  onAddCategory,
+  onRenameCategory,
+  onRemoveCategory,
+  onSetTaskCategory,
   copy,
 }: Props) {
   const [draft, setDraft] = useState("");
+  const [draftCategoryId, setDraftCategoryId] = useState<string | null>(null);
+  const [newCatName, setNewCatName] = useState("");
+  const [addingCat, setAddingCat] = useState(false);
+  const [editingCatId, setEditingCatId] = useState<string | null>(null);
+  const [editingCatName, setEditingCatName] = useState("");
+  const newCatInputRef = useRef<HTMLInputElement>(null);
+  const editCatInputRef = useRef<HTMLInputElement>(null);
   const [now, setNow] = useState(Date.now());
   const [statsOpen, setStatsOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
@@ -55,10 +72,39 @@ export function TodayTasks({
     return () => window.clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (addingCat) newCatInputRef.current?.focus();
+  }, [addingCat]);
+
+  useEffect(() => {
+    if (editingCatId) editCatInputRef.current?.focus();
+  }, [editingCatId]);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onAdd(draft);
+    onAdd(draft, draftCategoryId ?? undefined);
     setDraft("");
+  };
+
+  const handleAddCategory = () => {
+    const name = newCatName.trim();
+    if (!name) { setAddingCat(false); return; }
+    const cat = onAddCategory(name);
+    setDraftCategoryId(cat.id);
+    setNewCatName("");
+    setAddingCat(false);
+  };
+
+  const handleStartEditCat = (cat: Category) => {
+    setEditingCatId(cat.id);
+    setEditingCatName(cat.name);
+  };
+
+  const handleSaveEditCat = () => {
+    if (editingCatId && editingCatName.trim()) {
+      onRenameCategory(editingCatId, editingCatName.trim());
+    }
+    setEditingCatId(null);
   };
 
   return (
@@ -91,21 +137,85 @@ export function TodayTasks({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="mb-4 flex gap-2">
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          className="min-w-0 flex-1 rounded-full border border-border bg-foreground/5 px-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
-          placeholder={copy.addTask}
-          aria-label={copy.addTask}
-        />
-        <button
-          type="submit"
-          className="h-10 w-10 shrink-0 rounded-full bg-foreground text-background inline-flex items-center justify-center hover:scale-105 transition-transform"
-          aria-label={copy.addTask}
-        >
-          <Plus size={16} />
-        </button>
+      <form onSubmit={handleSubmit} className="mb-4 space-y-2">
+        <div className="flex gap-2">
+          <input
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            className="min-w-0 flex-1 rounded-full border border-border bg-foreground/5 px-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+            placeholder={copy.addTask}
+            aria-label={copy.addTask}
+          />
+          <button
+            type="submit"
+            className="h-10 w-10 shrink-0 rounded-full bg-foreground text-background inline-flex items-center justify-center hover:scale-105 transition-transform"
+            aria-label={copy.addTask}
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+
+        {/* Category picker */}
+        <div className="flex flex-wrap items-center gap-1.5 px-1">
+          {categories.map((cat) =>
+            editingCatId === cat.id ? (
+              <input
+                key={cat.id}
+                ref={editCatInputRef}
+                value={editingCatName}
+                onChange={(e) => setEditingCatName(e.target.value)}
+                onBlur={handleSaveEditCat}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSaveEditCat(); } if (e.key === "Escape") setEditingCatId(null); }}
+                className="w-24 rounded-full border border-primary bg-foreground/5 px-3 py-0.5 text-xs outline-none"
+              />
+            ) : (
+              <div key={cat.id} className="group/cat relative flex items-center">
+                <button
+                  type="button"
+                  onClick={() => setDraftCategoryId(draftCategoryId === cat.id ? null : cat.id)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-0.5 text-xs transition-colors ${
+                    draftCategoryId === cat.id
+                      ? "border-transparent text-foreground"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                  style={draftCategoryId === cat.id ? { backgroundColor: cat.color + "33", borderColor: cat.color + "88" } : {}}
+                >
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cat.color }} />
+                  {cat.name}
+                </button>
+                <div className="absolute -right-0.5 -top-0.5 hidden group-hover/cat:flex items-center gap-0.5 bg-background rounded-full border border-border px-0.5">
+                  <button type="button" onClick={() => handleStartEditCat(cat)} className="h-4 w-4 flex items-center justify-center text-muted-foreground hover:text-foreground">
+                    <Pencil size={9} />
+                  </button>
+                  <button type="button" onClick={() => { onRemoveCategory(cat.id); if (draftCategoryId === cat.id) setDraftCategoryId(null); }} className="h-4 w-4 flex items-center justify-center text-muted-foreground hover:text-red-400">
+                    <X size={9} />
+                  </button>
+                </div>
+              </div>
+            )
+          )}
+
+          {addingCat ? (
+            <input
+              ref={newCatInputRef}
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              onBlur={handleAddCategory}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCategory(); } if (e.key === "Escape") { setAddingCat(false); setNewCatName(""); } }}
+              placeholder="Название..."
+              className="w-28 rounded-full border border-primary bg-foreground/5 px-3 py-0.5 text-xs outline-none placeholder:text-muted-foreground"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddingCat(true)}
+              className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+            >
+              <Tag size={10} />
+              Категория
+            </button>
+          )}
+        </div>
       </form>
 
       <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
@@ -117,45 +227,53 @@ export function TodayTasks({
             <div className="text-sm text-muted-foreground">{copy.noTasks}</div>
           </div>
         ) : (
-          tasks.map((task) => (
-            <div
-              key={task.id}
-              className="group flex items-center gap-3 rounded-2xl bg-foreground/5 px-3 py-2.5"
-            >
-              <button
-                onClick={() => onToggle(task.id)}
-                className={`h-6 w-6 shrink-0 rounded-full border inline-flex items-center justify-center transition-colors ${
-                  task.done
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border hover:border-primary"
-                }`}
-                aria-label={task.done ? copy.markTaskNotDone : copy.markTaskDone}
-              >
-                {task.done && <Check size={13} />}
-              </button>
+          tasks.map((task) => {
+            const cat = categories.find((c) => c.id === task.categoryId);
+            return (
               <div
-                className="min-w-0 flex-1"
+                key={task.id}
+                className="group flex items-center gap-3 rounded-2xl bg-foreground/5 px-3 py-2.5"
+                style={cat ? { borderLeft: `3px solid ${cat.color}66` } : { borderLeft: "3px solid transparent" }}
               >
-                <div
-                  className={`text-sm leading-snug ${
-                    task.done ? "text-muted-foreground line-through" : "text-foreground"
+                <button
+                  onClick={() => onToggle(task.id)}
+                  className={`h-6 w-6 shrink-0 rounded-full border inline-flex items-center justify-center transition-colors ${
+                    task.done
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border hover:border-primary"
                   }`}
+                  aria-label={task.done ? copy.markTaskNotDone : copy.markTaskDone}
                 >
-                  {task.title}
+                  {task.done && <Check size={13} />}
+                </button>
+                <div className="min-w-0 flex-1">
+                  {cat && (
+                    <div className="mb-0.5 inline-flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: cat.color }} />
+                      <span className="text-[10px] text-muted-foreground">{cat.name}</span>
+                    </div>
+                  )}
+                  <div
+                    className={`text-sm leading-snug ${
+                      task.done ? "text-muted-foreground line-through" : "text-foreground"
+                    }`}
+                  >
+                    {task.title}
+                  </div>
+                  <div className="mt-1 text-[11px] tabular-nums text-muted-foreground">
+                    {formatTaskTime(task, now)}
+                  </div>
                 </div>
-                <div className="mt-1 text-[11px] tabular-nums text-muted-foreground">
-                  {formatTaskTime(task, now)}
-                </div>
+                <button
+                  onClick={() => onRemove(task.id)}
+                  className="h-7 w-7 shrink-0 rounded-full inline-flex items-center justify-center text-muted-foreground opacity-70 transition-colors hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
+                  aria-label={copy.deleteTask}
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
-              <button
-                onClick={() => onRemove(task.id)}
-                className="h-7 w-7 shrink-0 rounded-full inline-flex items-center justify-center text-muted-foreground opacity-70 transition-colors hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
-                aria-label={copy.deleteTask}
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -171,7 +289,7 @@ export function TodayTasks({
       <TaskStatsDialog open={statsOpen} onOpenChange={setStatsOpen} records={completedRecords} />
 
       <Dialog open={chartOpen} onOpenChange={setChartOpen}>
-        <DialogContent className="glass max-w-2xl border-border bg-background/95 text-foreground">
+        <DialogContent className="dark glass max-w-2xl border-border bg-background/95 text-foreground max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl">Распределение времени</DialogTitle>
             <DialogDescription>Время, потраченное на задачи за выбранный период.</DialogDescription>
@@ -196,14 +314,167 @@ export function TodayTasks({
               tasks={filterTasksByPeriod(tasks, chartPeriod)}
               archivedTasks={filterArchiveByPeriod(chartArchive, chartPeriod)}
               hiddenIds={hiddenIdsForPeriod}
+              categories={categories}
               onRemoveFromChart={handleRemoveFromChart}
               size={420}
             />
           </div>
+
+          {/* Category summary */}
+          {categories.length > 0 && (
+            <CategorySummary
+              tasks={filterTasksByPeriod(tasks, chartPeriod)}
+              archivedTasks={filterArchiveByPeriod(chartArchive, chartPeriod)}
+              hiddenIds={hiddenIdsForPeriod}
+              categories={categories}
+            />
+          )}
+
+          {/* All tasks breakdown */}
+          <TaskBreakdown
+            tasks={filterTasksByPeriod(tasks, chartPeriod)}
+            archivedTasks={filterArchiveByPeriod(chartArchive, chartPeriod)}
+            hiddenIds={hiddenIdsForPeriod}
+            categories={categories}
+          />
         </DialogContent>
       </Dialog>
     </section>
   );
+}
+
+interface CategorySummaryProps {
+  tasks: DailyTask[];
+  archivedTasks: DailyTask[];
+  hiddenIds: string[];
+  categories: Category[];
+}
+
+function CategorySummary({ tasks, archivedTasks, hiddenIds, categories }: CategorySummaryProps) {
+  const [now] = useState(() => Date.now());
+  const hidden = new Set(hiddenIds);
+  const liveIds = new Set(tasks.map((t) => t.id));
+  const allItems = [
+    ...archivedTasks,
+    ...tasks.filter((t) => !archivedTasks.find((a) => a.id === t.id)),
+  ].filter((item) => !hidden.has(item.id));
+
+  const stats = categories
+    .map((cat) => {
+      const catTasks = allItems.filter((t) => t.categoryId === cat.id);
+      const totalSec = catTasks.reduce((sum, t) => {
+        const isLive = liveIds.has(t.id);
+        const end = isLive ? (t.completedAt ?? now) : (t.completedAt ?? t.createdAt);
+        return sum + Math.max(0, (end - t.createdAt) / 1000);
+      }, 0);
+      return { cat, count: catTasks.length, totalSec };
+    })
+    .filter((s) => s.count > 0)
+    .sort((a, b) => b.totalSec - a.totalSec);
+
+  if (stats.length === 0) return null;
+
+  const maxSec = stats[0].totalSec;
+
+  return (
+    <div className="space-y-2 rounded-2xl border border-border bg-foreground/5 p-4">
+      <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground mb-3">По категориям</div>
+      {stats.map(({ cat, count, totalSec }) => (
+        <div key={cat.id} className="space-y-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cat.color }} />
+              <span className="text-sm truncate">{cat.name}</span>
+              <span className="text-xs text-muted-foreground shrink-0">{count} {count === 1 ? "задача" : count < 5 ? "задачи" : "задач"}</span>
+            </div>
+            <span className="text-sm font-semibold tabular-nums shrink-0" style={{ color: cat.color }}>
+              {fmtSeconds(totalSec)}
+            </span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${(totalSec / maxSec) * 100}%`, background: cat.color }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+interface TaskBreakdownProps {
+  tasks: DailyTask[];
+  archivedTasks: DailyTask[];
+  hiddenIds: string[];
+  categories: Category[];
+}
+
+function TaskBreakdown({ tasks, archivedTasks, hiddenIds, categories }: TaskBreakdownProps) {
+  const [now] = useState(() => Date.now());
+  const hidden = new Set(hiddenIds);
+  const liveIds = new Set(tasks.map((t) => t.id));
+  const catMap = new Map(categories.map((c) => [c.id, c]));
+
+  const items = [
+    ...archivedTasks,
+    ...tasks.filter((t) => !archivedTasks.find((a) => a.id === t.id)),
+  ]
+    .filter((t) => !hidden.has(t.id))
+    .map((t) => {
+      const isLive = liveIds.has(t.id);
+      const end = isLive ? (t.completedAt ?? now) : (t.completedAt ?? t.createdAt);
+      const sec = Math.max(0, (end - t.createdAt) / 1000);
+      const cat = t.categoryId ? catMap.get(t.categoryId) : undefined;
+      return { ...t, sec, cat, isLive };
+    })
+    .filter((t) => t.sec > 0)
+    .sort((a, b) => b.sec - a.sec);
+
+  if (items.length === 0) return null;
+
+  const maxSec = items[0].sec;
+
+  return (
+    <div className="space-y-2 rounded-2xl border border-border bg-foreground/5 p-4">
+      <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground mb-3">Все задачи</div>
+      {items.map((item) => (
+        <div key={item.id} className="space-y-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              {item.cat ? (
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: item.cat.color }} />
+              ) : (
+                <span className="h-2 w-2 shrink-0 rounded-full bg-foreground/20" />
+              )}
+              <span className="text-sm truncate">{item.title}</span>
+              {item.cat && (
+                <span className="text-[10px] text-muted-foreground shrink-0 hidden sm:inline">{item.cat.name}</span>
+              )}
+            </div>
+            <span className="text-sm font-semibold tabular-nums shrink-0" style={{ color: item.cat?.color ?? undefined }}>
+              {fmtSeconds(item.sec)}
+            </span>
+          </div>
+          <div className="h-1 w-full rounded-full bg-foreground/10 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${(item.sec / maxSec) * 100}%`,
+                background: item.cat?.color ?? "oklch(0.82 0.12 200)",
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function fmtSeconds(sec: number): string {
+  if (sec >= 3600) return `${(sec / 3600).toFixed(1)}ч`;
+  if (sec >= 60) return `${Math.round(sec / 60)}м`;
+  return `${Math.round(sec)}с`;
 }
 
 interface TaskStatsDialogProps {
@@ -227,7 +498,7 @@ function TaskStatsDialog({ open, onOpenChange, records }: TaskStatsDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass max-w-xl border-border bg-background/95 text-foreground">
+      <DialogContent className="dark glass max-w-xl border-border bg-background/95 text-foreground">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">Task statistics</DialogTitle>
           <DialogDescription>Completed tasks for the selected period.</DialogDescription>

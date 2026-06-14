@@ -3,12 +3,24 @@ import { supabase } from "@/lib/supabase";
 
 export type StatsPeriod = "day" | "week" | "month" | "year";
 
+export const CATEGORY_COLORS = [
+  "#60a5fa", "#34d399", "#f472b6", "#fb923c",
+  "#a78bfa", "#fbbf24", "#f87171", "#22d3ee",
+];
+
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface DailyTask {
   id: string;
   title: string;
   done: boolean;
   createdAt: number;
   completedAt?: number;
+  categoryId?: string;
 }
 
 export interface CompletedTaskRecord {
@@ -31,6 +43,7 @@ function makeKeys(userId: string) {
     COMPLETED: `${p}focus-space:completed-tasks`,
     ARCHIVE: `${p}focus-space:chart-archive`,
     HIDDEN: `${p}focus-space:chart-hidden-level`,
+    CATEGORIES: `${p}focus-space:categories`,
   };
 }
 
@@ -44,12 +57,13 @@ function readJSON<T>(key: string, fallback: T): T {
   }
 }
 
-function createTask(title: string): DailyTask {
+function createTask(title: string, categoryId?: string): DailyTask {
   return {
     id: crypto.randomUUID(),
     title,
     done: false,
     createdAt: Date.now(),
+    categoryId,
   };
 }
 
@@ -69,13 +83,16 @@ export function useDailyTasks(userId: string) {
   const [chartHiddenLevel, setChartHiddenLevel] = useState<Record<string, number>>(() =>
     readJSON<Record<string, number>>(keys.HIDDEN, {})
   );
+  const [categories, setCategories] = useState<Category[]>(() =>
+    readJSON<Category[]>(keys.CATEGORIES, [])
+  );
 
   // Load from Supabase on mount — overrides localStorage with cloud data
   useEffect(() => {
     let active = true;
     supabase
       .from("user_data")
-      .select("tasks, completed_records, chart_archive, chart_hidden_level")
+      .select("tasks, completed_records, chart_archive, chart_hidden_level, categories")
       .eq("user_id", userId)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -86,6 +103,7 @@ export function useDailyTasks(userId: string) {
           setCompletedRecords(data.completed_records ?? []);
           setChartArchive(data.chart_archive ?? []);
           setChartHiddenLevel(data.chart_hidden_level ?? {});
+          setCategories(data.categories ?? []);
         }
         setCloudLoaded(true); // always mark loaded — even if no data yet
       });
@@ -105,6 +123,9 @@ export function useDailyTasks(userId: string) {
   useEffect(() => {
     try { localStorage.setItem(keys.HIDDEN, JSON.stringify(chartHiddenLevel)); } catch {}
   }, [chartHiddenLevel, keys.HIDDEN]);
+  useEffect(() => {
+    try { localStorage.setItem(keys.CATEGORIES, JSON.stringify(categories)); } catch {}
+  }, [categories, keys.CATEGORIES]);
 
   // Debounced save — only runs after cloud data has been loaded to prevent overwrite
   useEffect(() => {
@@ -116,18 +137,43 @@ export function useDailyTasks(userId: string) {
         completed_records: completedRecords,
         chart_archive: chartArchive,
         chart_hidden_level: chartHiddenLevel,
+        categories,
         updated_at: new Date().toISOString(),
       }).then(({ error }) => {
         if (error) console.error("[useDailyTasks] save error:", error.message);
       });
     }, 1500);
     return () => clearTimeout(timer);
-  }, [cloudLoaded, userId, tasks, completedRecords, chartArchive, chartHiddenLevel]);
+  }, [cloudLoaded, userId, tasks, completedRecords, chartArchive, chartHiddenLevel, categories]);
 
-  const addTask = useCallback((title: string) => {
+  const addTask = useCallback((title: string, categoryId?: string) => {
     const trimmed = title.trim();
     if (!trimmed) return;
-    setTasks((current) => [createTask(trimmed), ...current]);
+    setTasks((current) => [createTask(trimmed, categoryId), ...current]);
+  }, []);
+
+  const addCategory = useCallback((name: string): Category => {
+    const trimmed = name.trim();
+    const cat: Category = {
+      id: crypto.randomUUID(),
+      name: trimmed,
+      color: CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)],
+    };
+    setCategories((prev) => [...prev, cat]);
+    return cat;
+  }, []);
+
+  const renameCategory = useCallback((id: string, name: string) => {
+    setCategories((prev) => prev.map((c) => c.id === id ? { ...c, name: name.trim() } : c));
+  }, []);
+
+  const removeCategory = useCallback((id: string) => {
+    setCategories((prev) => prev.filter((c) => c.id !== id));
+    setTasks((prev) => prev.map((t) => t.categoryId === id ? { ...t, categoryId: undefined } : t));
+  }, []);
+
+  const setTaskCategory = useCallback((taskId: string, categoryId: string | null) => {
+    setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, categoryId: categoryId ?? undefined } : t));
   }, []);
 
   const toggleTask = useCallback((id: string) => {
@@ -211,11 +257,16 @@ export function useDailyTasks(userId: string) {
     completedRecords,
     chartArchive,
     chartHiddenLevel,
+    categories,
     addTask,
     toggleTask,
     removeTask,
     clearDone,
     removeFromChart,
+    addCategory,
+    renameCategory,
+    removeCategory,
+    setTaskCategory,
   };
 }
 

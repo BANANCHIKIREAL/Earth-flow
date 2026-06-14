@@ -117,7 +117,7 @@ function readJSON<T>(key: string, fallback: T): T {
 export function useSettings(userId?: string) {
   const [durations, setDurationsState] = useState<TimerDurations>(DEFAULT_DURATIONS);
   const [lunchEnabled, setLunchEnabledState] = useState(false);
-  const [bgVariant, setBgVariantState] = useState<BackgroundVariant>("aurora");
+  const [bgVariant, setBgVariantState] = useState<BackgroundVariant>("galaxy");
   const [bgImage, setBgImageState] = useState<string | null>(null);
   const [bgBlur, setBgBlurState] = useState<number>(DEFAULT_BLUR);
   const [timerRingStyle, setTimerRingStyleState] = useState<TimerRingStyle>(TIMER_RING_STYLES[0]);
@@ -189,8 +189,11 @@ export function useSettings(userId?: string) {
           if (typeof s.timerFontStyleId === "string") setTimerFontStyleState(getTimerFontStyle(s.timerFontStyleId));
           if (typeof s.timerFontSize === "number") setTimerFontSizeState(clampTimerFontSize(s.timerFontSize));
           if (typeof s.stopSoundsOnTimerEnd === "boolean") setStopSoundsOnTimerEndState(s.stopSoundsOnTimerEnd);
+        } else {
+          // New account with no saved settings — reset to defaults so localStorage from another account doesn't bleed in
+          setBgVariantState("galaxy");
         }
-        setCloudLoaded(true); // always mark loaded — even if no settings yet
+        setCloudLoaded(true);
       });
     return () => { active = false; };
   }, [userId]);

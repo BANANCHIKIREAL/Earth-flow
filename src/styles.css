@@ -64,6 +64,31 @@
     linear-gradient(180deg, oklch(0.15 0.03 260), oklch(0.12 0.04 270));
   --gradient-dusk: linear-gradient(180deg, oklch(0.2 0.06 280), oklch(0.3 0.1 20), oklch(0.18 0.05 250));
   --gradient-forest: linear-gradient(180deg, oklch(0.18 0.04 180), oklch(0.25 0.08 160), oklch(0.15 0.03 200));
+
+  --gradient-ember:
+    radial-gradient(ellipse 80% 55% at 50% 90%, oklch(0.55 0.2 40 / 0.8), transparent 60%),
+    radial-gradient(ellipse 55% 40% at 15% 55%, oklch(0.45 0.18 28 / 0.55), transparent 55%),
+    radial-gradient(ellipse 45% 35% at 80% 25%, oklch(0.38 0.14 18 / 0.45), transparent 55%),
+    linear-gradient(180deg, oklch(0.09 0.03 18), oklch(0.14 0.07 30), oklch(0.07 0.02 10));
+
+  --gradient-sakura:
+    radial-gradient(ellipse 80% 65% at 25% 20%, oklch(0.45 0.16 350 / 0.65), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 75% 70%, oklch(0.42 0.14 325 / 0.55), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 60% 35%, oklch(0.5 0.1 5 / 0.3), transparent 60%),
+    linear-gradient(160deg, oklch(0.12 0.05 340), oklch(0.09 0.04 320));
+
+  --gradient-galaxy:
+    radial-gradient(ellipse 70% 55% at 25% 40%, oklch(0.42 0.22 270 / 0.65), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 78% 22%, oklch(0.48 0.16 55 / 0.45), transparent 50%),
+    radial-gradient(ellipse 65% 50% at 60% 78%, oklch(0.38 0.2 300 / 0.55), transparent 55%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, oklch(0.35 0.12 200 / 0.3), transparent 60%),
+    linear-gradient(135deg, oklch(0.07 0.03 260), oklch(0.11 0.04 278), oklch(0.07 0.02 250));
+
+  --gradient-arctic:
+    radial-gradient(ellipse 85% 60% at 50% 5%, oklch(0.48 0.13 200 / 0.6), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 15% 70%, oklch(0.42 0.11 190 / 0.5), transparent 55%),
+    radial-gradient(ellipse 65% 45% at 82% 60%, oklch(0.38 0.1 215 / 0.4), transparent 60%),
+    linear-gradient(180deg, oklch(0.09 0.04 208), oklch(0.12 0.05 198), oklch(0.08 0.03 220));
 }
 
 .dark {
@@ -118,6 +143,10 @@
   .bg-aurora { background: var(--gradient-aurora); }
   .bg-dusk { background: var(--gradient-dusk); }
   .bg-forest { background: var(--gradient-forest); }
+  .bg-ember { background: var(--gradient-ember); }
+  .bg-sakura { background: var(--gradient-sakura); }
+  .bg-galaxy { background: var(--gradient-galaxy); }
+  .bg-arctic { background: var(--gradient-arctic); }
   .font-display { font-family: var(--font-display); }
   .font-geometric { font-family: "Trebuchet MS", "Segoe UI", "Helvetica Neue", sans-serif; }
   .font-rounded { font-family: "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif; }

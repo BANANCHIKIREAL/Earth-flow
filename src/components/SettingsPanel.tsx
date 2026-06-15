@@ -107,8 +107,6 @@ export function SettingsPanel({
   const fileRef = useRef<HTMLInputElement>(null);
   const audioFileRef = useRef<HTMLInputElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
-  const [panelScale, setPanelScale] = useState(100);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -138,7 +136,6 @@ export function SettingsPanel({
         className={`settings-panel fixed top-0 right-0 z-50 h-full glass border-l border-border transition-transform duration-300 ease-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
-        style={{ "--settings-scale": panelScale / 100 } as React.CSSProperties}
         aria-hidden={!open}
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
@@ -507,27 +504,6 @@ export function SettingsPanel({
             </div>
           </section>
 
-          {/* Panel size */}
-          <section className="space-y-3">
-            <div className="flex items-baseline justify-between">
-              <SectionTitle>{copy.settingsSize}</SectionTitle>
-              <span className="text-xs tabular-nums text-muted-foreground">{panelScale}%</span>
-            </div>
-            <input
-              type="range"
-              min={100}
-              max={135}
-              step={5}
-              value={panelScale}
-              onChange={(e) => setPanelScale(parseInt(e.target.value, 10))}
-              className="w-full accent-primary cursor-pointer"
-              aria-label="Settings panel size"
-            />
-            <div className="flex justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
-              <span>{copy.compact}</span>
-              <span>{copy.roomy}</span>
-            </div>
-          </section>
         </div>
       </aside>
     </>

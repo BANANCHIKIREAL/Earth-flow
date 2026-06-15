@@ -8,6 +8,7 @@ import { SettingsPanel } from "@/components/SettingsPanel";
 import { TodayTasks } from "@/components/TodayTasks";
 import { ProfileModal } from "@/components/ProfileModal";
 import { useAudioMixer } from "@/hooks/useAudioMixer";
+import { useCustomTracks } from "@/hooks/useCustomTracks";
 import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
 import { useDailyTasks } from "@/hooks/useDailyTasks";
 import { useFinishSound } from "@/hooks/useFinishSound";
@@ -88,6 +89,15 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
   const copy = translations.en;
   const { tracks, toggle, setVolume, stopAll } = useAudioMixer();
   const {
+    tracks: customTracks,
+    toggle: customToggle,
+    setVolume: customSetVolume,
+    removeTrack: customRemove,
+    addFromFile: customAddFromFile,
+    addFromUrl: customAddFromUrl,
+    stopAll: customStopAll,
+  } = useCustomTracks();
+  const {
     finishSounds,
     selectedSoundId,
     customSound,
@@ -107,7 +117,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
   const completeTimer = useCallback(() => {
     playFinishSound();
     notifyTimerComplete();
-    if (stopSoundsOnTimerEnd) stopAll();
+    if (stopSoundsOnTimerEnd) { stopAll(); customStopAll(); }
   }, [notifyTimerComplete, playFinishSound, stopAll, stopSoundsOnTimerEnd]);
 
   const displayName =
@@ -202,13 +212,18 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
             onToggleTrack={toggle}
             onVolumeTrack={setVolume}
             onStopAll={stopAll}
+            customTracks={customTracks}
+            onCustomToggle={customToggle}
+            onCustomVolume={customSetVolume}
+            onCustomRemove={customRemove}
+            onAddFromFile={customAddFromFile}
             copy={copy}
           />
         </div>
       </main>
 
       <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">
-        v2.0.2
+        v3.1.0
       </footer>
 
       <ProfileModal

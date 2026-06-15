@@ -111,7 +111,7 @@ function SoundCard({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className={`${compact ? "text-xs" : "text-sm"} font-semibold truncate`}>
+          <div className={`${compact ? "text-xs" : "text-sm"} font-semibold truncate`} title={track.name}>
             {track.name}
           </div>
           <div className="mt-1 flex items-center justify-between gap-3">

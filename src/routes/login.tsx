@@ -45,6 +45,14 @@ function LoginPage() {
     <div className="dark min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
       <Background variant="galaxy" />
 
+      {/* floating orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[8%]  left-[10%]  w-72 h-72 rounded-full bg-violet-500/25  blur-3xl animate-orb-1" />
+        <div className="absolute top-[55%] right-[8%]  w-56 h-56 rounded-full bg-blue-500/20    blur-3xl animate-orb-2" />
+        <div className="absolute bottom-[12%] left-[28%] w-64 h-64 rounded-full bg-fuchsia-500/20 blur-3xl animate-orb-3" />
+        <div className="absolute top-[35%] right-[22%] w-44 h-44 rounded-full bg-cyan-400/15    blur-3xl animate-orb-4" />
+      </div>
+
       <div className="relative w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-3">

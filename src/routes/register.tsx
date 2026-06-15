@@ -7,6 +7,41 @@ export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
 
+const BANNED = new Set([
+  "123456","1234567","12345678","123456789","1234567890",
+  "0987654321","987654321","87654321","7654321","654321","54321","4321","321",
+  "111111","1111111","11111111","111111111","1111111111",
+  "222222","333333","444444","555555","666666","777777","888888","999999","000000",
+  "112233","123123","121212","131313","232323","242424","303030","010101",
+  "123321","654321","abcdef","abc123","password","password1","password123",
+  "qwerty","qwerty123","qwertyuiop","asdfgh","asdfghjkl","zxcvbn","zxcvbnm",
+  "qazwsx","qazwsxedc","1q2w3e","1q2w3e4r","iloveyou","letmein","welcome",
+  "monkey","dragon","master","sunshine","princess","shadow","superman","batman",
+  "football","baseball","soccer","hockey","michael","jessica","ashley","andrew",
+]);
+
+function isBanned(p: string): boolean {
+  const lower = p.toLowerCase();
+  if (BANNED.has(lower)) return true;
+  if (/^(.)\1+$/.test(p)) return true;
+  if (/^(0123|1234|2345|3456|4567|5678|6789|7890|9876|8765|7654|6543|5432|4321|3210)/.test(p) && p.length <= 12) return true;
+  return false;
+}
+
+function getStrength(p: string): { score: number; label: string; color: string } {
+  if (!p) return { score: 0, label: "", color: "" };
+  let score = 0;
+  if (p.length >= 8)  score++;
+  if (p.length >= 12) score++;
+  if (/[A-Z]/.test(p)) score++;
+  if (/[0-9]/.test(p)) score++;
+  if (/[^A-Za-z0-9]/.test(p)) score++;
+  if (score <= 1) return { score: 1, label: "Слабый",   color: "bg-red-500" };
+  if (score === 2) return { score: 2, label: "Средний",  color: "bg-orange-400" };
+  if (score === 3) return { score: 3, label: "Хороший",  color: "bg-yellow-400" };
+  return              { score: 4, label: "Сильный",   color: "bg-green-400" };
+}
+
 function RegisterPage() {
   const { signUp, signInWithGoogle, user, loading } = useAuth();
   const navigate = useNavigate();
@@ -17,18 +52,32 @@ function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const strength = getStrength(password);
+
   useEffect(() => {
     if (!loading && user) void navigate({ to: "/" });
   }, [user, loading, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (password !== confirm) {
-      setError("Пароли не совпадают");
-      return;
-    }
     if (password.length < 6) {
       setError("Пароль должен содержать минимум 6 символов");
+      return;
+    }
+    if (/[а-яёА-ЯЁ]/.test(password)) {
+      setError("Пароль не может содержать русские буквы");
+      return;
+    }
+    if (isBanned(password)) {
+      setError("Этот пароль слишком распространённый — придумайте что-нибудь уникальное");
+      return;
+    }
+    if (strength.score < 2) {
+      setError("Пароль слишком слабый — добавьте цифры или заглавные буквы");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Пароли не совпадают");
       return;
     }
     setSubmitting(true);
@@ -44,14 +93,23 @@ function RegisterPage() {
 
   if (success) {
     return (
-      <div className="dark min-h-screen flex items-center justify-center px-4 relative">
+      <div className="dark min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
         <Background variant="galaxy" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[8%]  left-[10%]  w-72 h-72 rounded-full bg-violet-500/25  blur-3xl animate-orb-1" />
+          <div className="absolute top-[55%] right-[8%]  w-56 h-56 rounded-full bg-blue-500/20    blur-3xl animate-orb-2" />
+          <div className="absolute bottom-[12%] left-[28%] w-64 h-64 rounded-full bg-fuchsia-500/20 blur-3xl animate-orb-3" />
+          <div className="absolute top-[35%] right-[22%] w-44 h-44 rounded-full bg-cyan-400/15    blur-3xl animate-orb-4" />
+        </div>
         <div className="relative w-full max-w-sm text-center space-y-4">
           <div className="text-4xl">📬</div>
           <h2 className="font-display text-2xl text-foreground">Проверьте почту</h2>
           <p className="text-sm text-muted-foreground">
             Мы отправили письмо на <span className="text-foreground">{email}</span>.<br />
             Перейдите по ссылке для подтверждения аккаунта.
+          </p>
+          <p className="text-xs text-muted-foreground/50">
+            Не видите письмо? Проверьте папку «Спам».
           </p>
           <Link to="/login" className="inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">
             ← Вернуться к входу
@@ -64,6 +122,14 @@ function RegisterPage() {
   return (
     <div className="dark min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
       <Background variant="galaxy" />
+
+      {/* floating orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[8%]  left-[10%]  w-72 h-72 rounded-full bg-violet-500/25  blur-3xl animate-orb-1" />
+        <div className="absolute top-[55%] right-[8%]  w-56 h-56 rounded-full bg-blue-500/20    blur-3xl animate-orb-2" />
+        <div className="absolute bottom-[12%] left-[28%] w-64 h-64 rounded-full bg-fuchsia-500/20 blur-3xl animate-orb-3" />
+        <div className="absolute top-[35%] right-[22%] w-44 h-44 rounded-full bg-cyan-400/15    blur-3xl animate-orb-4" />
+      </div>
 
       <div className="relative w-full max-w-sm">
         <div className="text-center mb-8">
@@ -103,6 +169,28 @@ function RegisterPage() {
               autoComplete="new-password"
               className="w-full rounded-full border border-border bg-foreground/5 px-4 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
             />
+            {password && (
+              <div className="px-1 space-y-1.5">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                        i <= strength.score ? strength.color : "bg-foreground/10"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-muted-foreground">Надёжность пароля</span>
+                  <span className={`text-[11px] font-medium transition-colors ${
+                    strength.score <= 1 ? "text-red-400" :
+                    strength.score === 2 ? "text-orange-400" :
+                    strength.score === 3 ? "text-yellow-400" : "text-green-400"
+                  }`}>{strength.label}</span>
+                </div>
+              </div>
+            )}
             <input
               type="password"
               value={confirm}

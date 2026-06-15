@@ -185,6 +185,30 @@
 }
 .animate-wave { animation: wave-drift 18s ease-in-out infinite; }
 
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(40px, -30px) scale(1.12); }
+  66%       { transform: translate(-25px, 20px) scale(0.93); }
+}
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(-30px, 25px) scale(1.08); }
+  75%       { transform: translate(20px, -20px) scale(0.9); }
+}
+@keyframes orb-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  30%       { transform: translate(25px, 15px) scale(1.1); }
+  65%       { transform: translate(-20px, -25px) scale(0.95); }
+}
+@keyframes orb-float-4 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-35px, -20px) scale(1.15); }
+}
+.animate-orb-1 { animation: orb-float-1 9s  ease-in-out infinite; }
+.animate-orb-2 { animation: orb-float-2 11s ease-in-out infinite 1s; }
+.animate-orb-3 { animation: orb-float-3 13s ease-in-out infinite 2s; }
+.animate-orb-4 { animation: orb-float-4 8s  ease-in-out infinite 0.5s; }
+
 @keyframes pulse-soft {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }

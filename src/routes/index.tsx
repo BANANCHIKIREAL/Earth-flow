@@ -223,7 +223,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
       </main>
 
       <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">
-        v3.1.0
+        v3.2.0
       </footer>
 
       <ProfileModal

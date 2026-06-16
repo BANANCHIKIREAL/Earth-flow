@@ -4,6 +4,9 @@ import { useAuth } from "@/context/AuthContext";
 import { Background } from "@/components/Background";
 
 export const Route = createFileRoute("/register")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    email: typeof search.email === "string" ? search.email : undefined,
+  }),
   component: RegisterPage,
 });
 
@@ -45,7 +48,8 @@ function getStrength(p: string): { score: number; label: string; color: string }
 function RegisterPage() {
   const { signUp, signInWithGoogle, user, loading } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const { email: emailParam } = Route.useSearch();
+  const [email, setEmail] = useState(emailParam ?? "");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +88,15 @@ function RegisterPage() {
     setError(null);
     const { error } = await signUp(email, password);
     if (error) {
-      setError(error.message);
+      if (
+        error.message.toLowerCase().includes("already registered") ||
+        error.message.toLowerCase().includes("already been registered") ||
+        error.message.toLowerCase().includes("user already exists")
+      ) {
+        setError("Аккаунт с этой почтой уже существует. Попробуйте войти.");
+      } else {
+        setError(error.message);
+      }
       setSubmitting(false);
     } else {
       setSuccess(true);
@@ -109,11 +121,13 @@ function RegisterPage() {
             Перейдите по ссылке для подтверждения аккаунта.
           </p>
           <p className="text-xs text-muted-foreground/50">
-            Не видите письмо? Проверьте папку «Спам».
+            Не видите письмо? Проверьте папку «Спам».<br />
+            Если письмо не пришло — возможно эта почта уже зарегистрирована.{" "}
+            <Link to="/login" className="underline hover:text-muted-foreground transition-colors">Попробуйте войти.</Link>
           </p>
-          <Link to="/login" className="inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Вернуться к входу
-          </Link>
+          <button onClick={() => { setSuccess(false); setSubmitting(false); }} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            ← Вернуться к регистрации
+          </button>
         </div>
       </div>
     );

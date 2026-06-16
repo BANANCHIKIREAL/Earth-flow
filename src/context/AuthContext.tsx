@@ -94,6 +94,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error: updateError } = await supabase.auth.updateUser({
       data: { avatar_url: urlWithBust },
     });
+    if (!updateError) {
+      const { data: { user: fresh } } = await supabase.auth.getUser();
+      if (fresh) setUser(fresh);
+    }
     return { error: updateError as Error | null };
   };
 

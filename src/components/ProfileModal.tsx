@@ -8,7 +8,7 @@ interface Props {
   displayName: string;
   avatarUrl: string | null;
   onUpdateDisplayName: (name: string) => Promise<void>;
-  onUploadAvatar: (file: File) => Promise<void>;
+  onUploadAvatar: (file: File) => Promise<{ error: Error | null }>;
   onSignOut: () => Promise<void>;
 }
 
@@ -26,6 +26,7 @@ export function ProfileModal({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -52,9 +53,11 @@ export function ProfileModal({
 
   const handleAvatarFile = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
+    setUploadError(null);
     setUploading(true);
-    await onUploadAvatar(file);
+    const { error } = await onUploadAvatar(file);
     setUploading(false);
+    if (error) setUploadError("Не удалось загрузить фото. Попробуйте ещё раз.");
   };
 
   if (!open) return null;
@@ -126,6 +129,9 @@ export function ProfileModal({
                 <div className="text-sm font-medium text-foreground">{displayName}</div>
               )}
               <div className="text-xs text-muted-foreground">{email}</div>
+              {uploadError && (
+                <div className="text-[11px] text-red-400 mt-1">{uploadError}</div>
+              )}
             </div>
           </div>
 

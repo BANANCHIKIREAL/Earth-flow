@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AuthLayout, inputCls, btnCls, errorCls } from "@/components/AuthLayout";
 
 export const Route = createFileRoute("/update-password")({
+  head: () => ({ meta: [{ title: "Новый пароль — Earth Flow" }] }),
   component: UpdatePasswordPage,
 });
 

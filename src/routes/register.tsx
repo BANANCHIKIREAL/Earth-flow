@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AuthLayout, GoogleIcon, Divider, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
 
 export const Route = createFileRoute("/register")({
+  head: () => ({ meta: [{ title: "Регистрация — Earth Flow" }] }),
   validateSearch: (search: Record<string, unknown>) => ({
     email: typeof search.email === "string" ? search.email : undefined,
   }),

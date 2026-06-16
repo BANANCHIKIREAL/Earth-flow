@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AuthLayout, GoogleIcon, Divider, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
 
 export const Route = createFileRoute("/login")({
+  head: () => ({ meta: [{ title: "Вход — Earth Flow" }] }),
   component: LoginPage,
 });
 

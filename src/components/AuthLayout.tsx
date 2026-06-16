@@ -101,14 +101,11 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-8 py-12 min-h-screen" style={{ background: "#111115" }}>
-        <div className="md:hidden flex flex-col items-center mb-8 w-full">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
-            <span className="text-sm text-muted-foreground">
-              <span className="font-display text-base text-foreground">Earth</span> Flow
-            </span>
-          </div>
-          <EarthGraphic className="w-36 h-36" />
+        <div className="md:hidden flex items-center gap-2 mb-10 self-start">
+          <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
+          <span className="text-sm text-muted-foreground">
+            <span className="font-display text-base text-foreground">Earth</span> Flow
+          </span>
         </div>
         <div className="w-full max-w-sm">{children}</div>
       </div>

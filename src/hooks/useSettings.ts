@@ -14,6 +14,7 @@ const KEY_TIMER_RING_WIDTH = "focus-space:timer-ring-width";
 const KEY_TIMER_FONT = "focus-space:timer-font";
 const KEY_TIMER_FONT_SIZE = "focus-space:timer-font-size";
 const KEY_STOP_SOUNDS_ON_TIMER_END = "focus-space:stop-sounds-on-timer-end";
+const KEY_LAYOUT = "ef-layout";
 
 export const MIN_BLUR = 0;
 export const MAX_BLUR = 40;
@@ -126,6 +127,7 @@ export function useSettings(userId?: string) {
   const [timerFontStyle, setTimerFontStyleState] = useState<TimerFontStyle>(TIMER_FONT_STYLES[0]);
   const [timerFontSize, setTimerFontSizeState] = useState<number>(DEFAULT_TIMER_FONT_SIZE);
   const [stopSoundsOnTimerEnd, setStopSoundsOnTimerEndState] = useState(false);
+  const [layout, setLayoutState] = useState<"classic" | "sidebar">("classic");
   const [hydrated, setHydrated] = useState(false);
   const [cloudLoaded, setCloudLoaded] = useState(false);
 
@@ -156,6 +158,8 @@ export function useSettings(userId?: string) {
     if (fontSizeRaw != null) setTimerFontSizeState(clampTimerFontSize(parseInt(fontSizeRaw, 10)));
     const stopSoundsRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_STOP_SOUNDS_ON_TIMER_END) : null;
     setStopSoundsOnTimerEndState(stopSoundsRaw === "true");
+    const layoutRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_LAYOUT) : null;
+    if (layoutRaw === "classic" || layoutRaw === "sidebar") setLayoutState(layoutRaw);
     setHydrated(true);
   }, []);
 
@@ -189,6 +193,7 @@ export function useSettings(userId?: string) {
           if (typeof s.timerFontStyleId === "string") setTimerFontStyleState(getTimerFontStyle(s.timerFontStyleId));
           if (typeof s.timerFontSize === "number") setTimerFontSizeState(clampTimerFontSize(s.timerFontSize));
           if (typeof s.stopSoundsOnTimerEnd === "boolean") setStopSoundsOnTimerEndState(s.stopSoundsOnTimerEnd);
+          if (s.layout === "classic" || s.layout === "sidebar") setLayoutState(s.layout);
         } else {
           // New account with no saved settings — reset to defaults so localStorage from another account doesn't bleed in
           setBgVariantState("galaxy");
@@ -272,6 +277,11 @@ export function useSettings(userId?: string) {
     try { localStorage.setItem(KEY_STOP_SOUNDS_ON_TIMER_END, String(enabled)); } catch {}
   }, []);
 
+  const setLayout = useCallback((l: "classic" | "sidebar") => {
+    setLayoutState(l);
+    try { localStorage.setItem(KEY_LAYOUT, l); } catch {}
+  }, []);
+
   // Debounced save — only runs after cloud data is loaded to prevent overwrite
   useEffect(() => {
     if (!userId || !hydrated || !cloudLoaded) return;
@@ -289,6 +299,7 @@ export function useSettings(userId?: string) {
           timerFontStyleId: timerFontStyle.id,
           timerFontSize,
           stopSoundsOnTimerEnd,
+          layout,
         },
         updated_at: new Date().toISOString(),
       }).then(({ error }) => {
@@ -296,7 +307,7 @@ export function useSettings(userId?: string) {
       });
     }, 1500);
     return () => clearTimeout(timer);
-  }, [userId, hydrated, cloudLoaded, durations, lunchEnabled, bgVariant, bgBlur, timerRingStyle.id, customTimerRingColor, timerRingWidth, timerFontStyle.id, timerFontSize, stopSoundsOnTimerEnd]);
+  }, [userId, hydrated, cloudLoaded, durations, lunchEnabled, bgVariant, bgBlur, timerRingStyle.id, customTimerRingColor, timerRingWidth, timerFontStyle.id, timerFontSize, stopSoundsOnTimerEnd, layout]);
 
   return {
     hydrated,
@@ -322,5 +333,7 @@ export function useSettings(userId?: string) {
     setTimerFontSize,
     stopSoundsOnTimerEnd,
     setStopSoundsOnTimerEnd,
+    layout,
+    setLayout,
   };
 }

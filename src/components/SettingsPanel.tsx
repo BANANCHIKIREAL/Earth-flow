@@ -65,6 +65,8 @@ interface Props {
   onPreviewFinishSound: () => void;
   notificationPermission: NotificationPermission | "unsupported";
   onRequestNotifications: () => void;
+  layout: "classic" | "sidebar";
+  setLayout: (l: "classic" | "sidebar") => void;
   copy: typeof translations.en;
 }
 
@@ -102,6 +104,8 @@ export function SettingsPanel({
   onPreviewFinishSound,
   notificationPermission,
   onRequestNotifications,
+  layout,
+  setLayout,
   copy,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -133,8 +137,10 @@ export function SettingsPanel({
         }`}
       />
       <aside
-        className={`settings-panel fixed top-0 right-0 z-50 h-full glass border-l border-border transition-transform duration-300 ease-out ${
-          open ? "translate-x-0" : "translate-x-full"
+        className={`settings-panel fixed top-0 z-50 h-full glass transition-transform duration-300 ease-out ${
+          layout === "classic"
+            ? `right-0 border-l border-border ${open ? "translate-x-0" : "translate-x-full"}`
+            : `left-0 border-r border-border ${open ? "translate-x-0" : "-translate-x-full"}`
         }`}
         aria-hidden={!open}
       >
@@ -501,6 +507,38 @@ export function SettingsPanel({
             <div className="flex justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
               <span>{copy.sharp}</span>
               <span>{copy.dreamy}</span>
+            </div>
+          </section>
+
+          {/* Layout */}
+          <section className="space-y-3">
+            <SectionTitle>Вид экрана</SectionTitle>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setLayout("classic")}
+                className={`rounded-2xl glass p-3 text-left transition-all space-y-2.5 ${layout === "classic" ? "glow-ring text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                <div className="space-y-1 opacity-60">
+                  <div className="h-1 w-full rounded-sm bg-current" />
+                  <div className="flex gap-1">
+                    <div className="flex-1 h-5 rounded-sm bg-current opacity-70" />
+                    <div className="flex-1 h-5 rounded-sm bg-current opacity-70" />
+                  </div>
+                  <div className="h-2 w-full rounded-sm bg-current opacity-50" />
+                </div>
+                <div className="text-xs font-medium">Классический</div>
+              </button>
+              <button
+                onClick={() => setLayout("sidebar")}
+                className={`rounded-2xl glass p-3 text-left transition-all space-y-2.5 ${layout === "sidebar" ? "glow-ring text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                <div className="flex gap-1 h-8 opacity-60">
+                  <div className="w-3 rounded-sm bg-current opacity-80" />
+                  <div className="flex-1 rounded-sm bg-current opacity-50" />
+                  <div className="w-4 rounded-sm bg-current opacity-70" />
+                </div>
+                <div className="text-xs font-medium">С панелями</div>
+              </button>
             </div>
           </section>
 

@@ -94,7 +94,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
 
 function Avatar({ url, name, email }: { url: string | null; name: string | null; email: string }) {
   const [err, setErr] = useState(false);
-  const letter = (name || email).charAt(0).toUpperCase();
+  const letter = (name || email || "?").charAt(0).toUpperCase();
   return (
     <div className="h-8 w-8 rounded-full bg-white/10 border border-white/15 inline-flex items-center justify-center text-xs font-semibold shrink-0 overflow-hidden text-foreground">
       {url && !err

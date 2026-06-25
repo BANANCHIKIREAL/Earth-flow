@@ -36,8 +36,8 @@ export interface TaskStats {
   year: number;
 }
 
-function makeKeys(userId: string) {
-  const p = `u:${userId}:`;
+function makeKeys(userId?: string) {
+  const p = userId ? `u:${userId}:` : `u:guest:`;
   return {
     DAILY: `${p}focus-space:daily-tasks`,
     COMPLETED: `${p}focus-space:completed-tasks`,
@@ -67,7 +67,7 @@ function createTask(title: string, categoryId?: string): DailyTask {
   };
 }
 
-export function useDailyTasks(userId: string) {
+export function useDailyTasks(userId?: string) {
   const keys = makeKeys(userId);
 
   // cloudLoaded prevents writing empty local data to Supabase before cloud data arrives
@@ -89,6 +89,10 @@ export function useDailyTasks(userId: string) {
 
   // Load from Supabase on mount — overrides localStorage with cloud data
   useEffect(() => {
+    if (!userId) {
+      setCloudLoaded(true);
+      return;
+    }
     let active = true;
     supabase
       .from("user_data")
@@ -129,7 +133,7 @@ export function useDailyTasks(userId: string) {
 
   // Debounced save — only runs after cloud data has been loaded to prevent overwrite
   useEffect(() => {
-    if (!cloudLoaded) return;
+    if (!cloudLoaded || !userId) return;
     const timer = setTimeout(() => {
       supabase.from("user_data").upsert({
         user_id: userId,

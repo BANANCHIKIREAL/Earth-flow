@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Settings } from "lucide-react";
 import { Background } from "@/components/Background";
@@ -13,6 +13,7 @@ import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
 import { useDailyTasks } from "@/hooks/useDailyTasks";
 import { useFinishSound } from "@/hooks/useFinishSound";
 import { useSettings } from "@/hooks/useSettings";
+import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { useAuth } from "@/context/AuthContext";
 import { translations } from "@/lib/i18n";
 
@@ -38,11 +39,6 @@ export const Route = createFileRoute("/")({
 
 function FocusSpace() {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) void navigate({ to: "/login" });
-  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -52,13 +48,13 @@ function FocusSpace() {
     );
   }
 
-  if (!user) return null;
-
-  return <FocusSpaceContent userId={user.id} userEmail={user.email ?? ""} />;
+  return <FocusSpaceContent userId={user?.id} userEmail={user?.email ?? ""} />;
 }
 
-function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: string }) {
+function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: string }) {
   const { signOut, updateDisplayName, uploadAvatar, user } = useAuth();
+  const isGuest = !user;
+  useSessionTracker(user ?? null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [headerImgError, setHeaderImgError] = useState(false);
@@ -146,6 +142,17 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
     </button>
   );
 
+  const guestAuthBtns = (
+    <>
+      <Link to="/login" className="h-9 px-4 rounded-full border border-white/15 text-xs inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+        Log in
+      </Link>
+      <Link to="/register" search={{ email: undefined }} className="h-9 px-4 rounded-full bg-foreground text-background text-xs inline-flex items-center font-semibold hover:bg-foreground/90 transition-colors">
+        Sign up
+      </Link>
+    </>
+  );
+
   const timerEl = (
     <Timer
       durations={durations} lunchEnabled={lunchEnabled} onComplete={completeTimer}
@@ -218,12 +225,23 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
             <button onClick={() => setSettingsOpen(true)} className="w-full h-10 px-3 rounded-xl flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
               <Settings size={15} />{copy.settings}
             </button>
-            <button onClick={() => setProfileOpen(true)} title={userEmail} className="w-full h-10 px-3 rounded-xl flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
-              <div className="h-6 w-6 rounded-full bg-white/10 border border-white/15 inline-flex items-center justify-center text-[10px] font-semibold shrink-0 overflow-hidden">
-                {avatarUrl && !headerImgError ? (<img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />) : avatarLetter}
-              </div>
-              <span className="truncate text-xs">{displayName || userEmail}</span>
-            </button>
+            {isGuest ? (
+              <>
+                <Link to="/login" className="w-full h-10 px-3 rounded-xl flex items-center text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
+                  Log in
+                </Link>
+                <Link to="/register" search={{ email: undefined }} className="w-full h-10 px-3 rounded-xl flex items-center text-sm bg-foreground/10 hover:bg-foreground/15 text-foreground font-medium transition-colors">
+                  Sign up
+                </Link>
+              </>
+            ) : (
+              <button onClick={() => setProfileOpen(true)} title={userEmail} className="w-full h-10 px-3 rounded-xl flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
+                <div className="h-6 w-6 rounded-full bg-white/10 border border-white/15 inline-flex items-center justify-center text-[10px] font-semibold shrink-0 overflow-hidden">
+                  {avatarUrl && !headerImgError ? (<img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />) : avatarLetter}
+                </div>
+                <span className="truncate text-xs">{displayName || userEmail}</span>
+              </button>
+            )}
           </div>
           <div className="flex-1" />
           <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v3.3.5</span></div>
@@ -237,7 +255,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
             </div>
             <div className="flex items-center gap-2">
               <button onClick={() => setSettingsOpen(true)} className="h-9 px-3 rounded-full glass text-xs inline-flex items-center gap-2 hover:text-primary transition-colors"><Settings size={14} />{copy.settings}</button>
-              {avatarBtn("h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden")}
+              {isGuest ? guestAuthBtns : avatarBtn("h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden")}
             </div>
           </header>
 
@@ -254,7 +272,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
           <TodayTasks {...taskProps} />
         </aside>
 
-        {profileModalEl}
+        {!isGuest && profileModalEl}
         {settingsPanelEl}
       </div>
     );
@@ -277,7 +295,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
           <button onClick={() => setSettingsOpen(true)} className="h-9 px-4 rounded-full glass text-xs inline-flex items-center gap-2 hover:text-primary transition-colors">
             <Settings size={14} />{copy.settings}
           </button>
-          {avatarBtn("h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden")}
+          {isGuest ? guestAuthBtns : avatarBtn("h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden")}
         </div>
       </header>
 
@@ -292,7 +310,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId: string; userEmail: s
 
       <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v3.3.5</footer>
 
-      {profileModalEl}
+      {!isGuest && profileModalEl}
       {settingsPanelEl}
     </div>
   );

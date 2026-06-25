@@ -78,7 +78,7 @@ function EarthGraphic({ className = "w-64 h-64" }: { className?: string }) {
 
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="dark min-h-screen flex">
+    <div className="dark min-h-screen flex animate-page-enter">
       <div className="hidden lg:flex w-[44%] xl:w-[40%] shrink-0 flex-col items-center justify-center p-16 relative overflow-hidden" style={{ background: "#0c0c0e" }}>
         <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] to-transparent pointer-events-none" />
         <div className="relative z-10 flex flex-col items-center text-center gap-10">

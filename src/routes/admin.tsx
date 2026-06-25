@@ -155,7 +155,9 @@ function Dashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: ADMIN_PASSWORD }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: { url?: string; error?: string };
+      try { data = JSON.parse(text); } catch { throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`); }
       if (!data?.url) throw new Error(data?.error ?? `HTTP ${res.status}`);
       window.open(data.url, "_blank");
     } catch (e) {

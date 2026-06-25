@@ -346,7 +346,7 @@ function StatCard({ label, value, isText }: { label: string; value: number | str
 function AdminPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const isAdmin = user?.user_metadata?.role === "admin";
+  const isAdmin = user?.app_metadata?.role === "admin";
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {

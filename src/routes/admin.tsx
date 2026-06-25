@@ -38,27 +38,26 @@ function formatDate(iso: string | null): string {
 
 // ── Password gate ────────────────────────────────────────────────────────────
 
-function PasswordGate({ onUnlock }: { onUnlock: (serviceKey: string) => void }) {
-  const [password, setPassword] = useState("");
-  const [serviceKey, setServiceKey] = useState("");
+function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
+  const [value, setValue] = useState("");
   const [shake, setShake] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
   const submit = () => {
-    if (password === ADMIN_PASSWORD) {
-      onUnlock(serviceKey.trim());
+    if (value === ADMIN_PASSWORD) {
+      onUnlock();
     } else {
       setShake(true);
-      setPassword("");
+      setValue("");
       setTimeout(() => setShake(false), 500);
     }
   };
 
   return (
     <div className="dark min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-xs space-y-3">
+      <div className="w-full max-w-xs space-y-4">
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 mb-2">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
@@ -73,22 +72,13 @@ function PasswordGate({ onUnlock }: { onUnlock: (serviceKey: string) => void }) 
           <input
             ref={inputRef}
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit()}
-            placeholder="Admin password"
+            placeholder="Password"
             className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/40 focus:border-primary/50 focus:bg-white/[0.06]"
           />
         </div>
-        <input
-          type="password"
-          value={serviceKey}
-          onChange={(e) => setServiceKey(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder="Service role key (для Login as)"
-          className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/40 focus:border-primary/50 focus:bg-white/[0.06]"
-        />
-        <p className="text-[10px] text-muted-foreground/40 text-center">Service key не обязателен — только для входа в чужие аккаунты</p>
         <button
           onClick={submit}
           className="w-full h-11 rounded-lg bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-all"
@@ -148,7 +138,7 @@ $$;`;
 
 // ── Main dashboard ───────────────────────────────────────────────────────────
 
-function Dashboard({ serviceKey }: { serviceKey: string }) {
+function Dashboard() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
@@ -157,21 +147,17 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
   const [impersonating, setImpersonating] = useState<string | null>(null);
 
   const loginAs = async (user_id: string, email: string) => {
-    if (!serviceKey) { alert("Введи service role key при входе в админку"); return; }
     if (!email) { alert("У пользователя нет email"); return; }
     setImpersonating(user_id);
     try {
-      const { createClient } = await import("@supabase/supabase-js");
-      const adminClient = createClient(
-        import.meta.env.VITE_SUPABASE_URL as string,
-        serviceKey,
-      );
-      const { data, error } = await adminClient.auth.admin.generateLink({
-        type: "magiclink",
-        email,
+      const res = await fetch("/api/admin-impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: ADMIN_PASSWORD }),
       });
-      if (error) throw error;
-      window.open(data.properties.action_link, "_blank");
+      const data = await res.json();
+      if (!data?.url) throw new Error(data?.error ?? `HTTP ${res.status}`);
+      window.open(data.url, "_blank");
     } catch (e) {
       alert("Failed: " + (e as Error).message);
     } finally {
@@ -366,7 +352,6 @@ function AdminPage() {
   const navigate = useNavigate();
   const isAdmin = user?.app_metadata?.role === "admin";
   const [unlocked, setUnlocked] = useState(false);
-  const [serviceKey, setServiceKey] = useState("");
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) void navigate({ to: "/" });
@@ -380,7 +365,7 @@ function AdminPage() {
     );
   }
 
-  if (!unlocked) return <PasswordGate onUnlock={(key) => { setServiceKey(key); setUnlocked(true); }} />;
+  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
 
-  return <Dashboard serviceKey={serviceKey} />;
+  return <Dashboard />;
 }

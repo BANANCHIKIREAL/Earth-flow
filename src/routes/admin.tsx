@@ -143,6 +143,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [query, setQuery] = useState("");
+  const [searchBy, setSearchBy] = useState<"email" | "id">("email");
 
   useEffect(() => {
     supabase
@@ -163,12 +164,10 @@ function Dashboard() {
   const todayActive = users.filter((u) => u.today_sessions > 0).length;
   const q = query.trim().toLowerCase();
   const filtered = q
-    ? users.filter(
-        (u) =>
-          u.user_id.toLowerCase().includes(q) ||
-          u.user_number.toString().includes(q) ||
-          (u.email ?? "").toLowerCase().includes(q) ||
-          (u.display_name ?? "").toLowerCase().includes(q)
+    ? users.filter((u) =>
+        searchBy === "email"
+          ? (u.email ?? "").toLowerCase().includes(q) || (u.display_name ?? "").toLowerCase().includes(q)
+          : u.user_number.toString() === q.replace("#", "")
       )
     : users;
 
@@ -194,12 +193,28 @@ function Dashboard() {
       <main className="px-8 py-10 max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-xl font-semibold">Users</h1>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by ID, #, email…"
-            className="w-64 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-primary/50 transition-colors"
-          />
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-full border border-white/10 overflow-hidden text-xs">
+              <button
+                onClick={() => { setSearchBy("email"); setQuery(""); }}
+                className={`px-3 py-1.5 transition-colors ${searchBy === "email" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Email
+              </button>
+              <button
+                onClick={() => { setSearchBy("id"); setQuery(""); }}
+                className={`px-3 py-1.5 transition-colors ${searchBy === "id" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                ID
+              </button>
+            </div>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={searchBy === "email" ? "Search by email…" : "Enter user ID (e.g. 3)"}
+              className="w-56 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-primary/50 transition-colors"
+            />
+          </div>
         </div>
 
         {/* Stats */}

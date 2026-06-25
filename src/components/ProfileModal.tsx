@@ -4,7 +4,7 @@ import { Camera, Check, LogOut, User, X } from "lucide-react";
 interface Props {
   open: boolean;
   onClose: () => void;
-  userId?: string;
+  userNumber?: number | null;
   email: string;
   displayName: string;
   avatarUrl: string | null;
@@ -16,7 +16,7 @@ interface Props {
 export function ProfileModal({
   open,
   onClose,
-  userId,
+  userNumber,
   email,
   displayName,
   avatarUrl,
@@ -131,8 +131,8 @@ export function ProfileModal({
                 <div className="text-sm font-medium text-foreground">{displayName}</div>
               )}
               <div className="text-xs text-muted-foreground">{email}</div>
-              {userId && (
-                <div className="text-[10px] text-muted-foreground/40 font-mono mt-1 select-all">{userId}</div>
+              {userNumber != null && (
+                <div className="text-[10px] text-muted-foreground/50 font-mono mt-1">#{userNumber}</div>
               )}
               {uploadError && (
                 <div className="text-[11px] text-red-400 mt-1">{uploadError}</div>

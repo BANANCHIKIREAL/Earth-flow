@@ -16,6 +16,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { useAuth } from "@/context/AuthContext";
 import { translations } from "@/lib/i18n";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/")({
   component: FocusSpace,
@@ -58,6 +59,17 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [headerImgError, setHeaderImgError] = useState(false);
+  const [userNumber, setUserNumber] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from("user_profiles")
+      .select("user_number")
+      .eq("user_id", userId)
+      .single()
+      .then(({ data }) => { if (data) setUserNumber(data.user_number); });
+  }, [userId]);
   const {
     durations,
     setDurations,
@@ -198,7 +210,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const profileModalEl = (
     <ProfileModal
       open={profileOpen} onClose={() => setProfileOpen(false)}
-      userId={userId} email={userEmail} displayName={displayName} avatarUrl={avatarUrl}
+      userNumber={userNumber} email={userEmail} displayName={displayName} avatarUrl={avatarUrl}
       onUpdateDisplayName={async (name) => { await updateDisplayName(name); }}
       onUploadAvatar={uploadAvatar}
       onSignOut={async () => { await signOut(); }}

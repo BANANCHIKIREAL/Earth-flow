@@ -156,8 +156,9 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
   const [searchBy, setSearchBy] = useState<"email" | "id">("email");
   const [impersonating, setImpersonating] = useState<string | null>(null);
 
-  const loginAs = async (user_id: string) => {
+  const loginAs = async (user_id: string, email: string) => {
     if (!serviceKey) { alert("Введи service role key при входе в админку"); return; }
+    if (!email) { alert("У пользователя нет email"); return; }
     setImpersonating(user_id);
     try {
       const { createClient } = await import("@supabase/supabase-js");
@@ -165,11 +166,9 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
         import.meta.env.VITE_SUPABASE_URL as string,
         serviceKey,
       );
-      const { data: userData } = await adminClient.auth.admin.getUserById(user_id);
-      if (!userData.user?.email) throw new Error("User email not found");
       const { data, error } = await adminClient.auth.admin.generateLink({
         type: "magiclink",
-        email: userData.user.email,
+        email,
       });
       if (error) throw error;
       window.open(data.properties.action_link, "_blank");
@@ -333,7 +332,7 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
                     {/* Login as */}
                     <td className="px-4 py-3 text-right">
                       <button
-                        onClick={() => void loginAs(u.user_id)}
+                        onClick={() => void loginAs(u.user_id, u.email)}
                         disabled={impersonating === u.user_id}
                         className="text-[11px] px-3 py-1 rounded-full border border-white/10 text-muted-foreground hover:text-foreground hover:border-white/25 transition-colors disabled:opacity-40"
                       >

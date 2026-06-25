@@ -198,7 +198,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const profileModalEl = (
     <ProfileModal
       open={profileOpen} onClose={() => setProfileOpen(false)}
-      email={userEmail} displayName={displayName} avatarUrl={avatarUrl}
+      userId={userId} email={userEmail} displayName={displayName} avatarUrl={avatarUrl}
       onUpdateDisplayName={async (name) => { await updateDisplayName(name); }}
       onUploadAvatar={uploadAvatar}
       onSignOut={async () => { await signOut(); }}
@@ -244,7 +244,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
             )}
           </div>
           <div className="flex-1" />
-          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v3.3.5</span></div>
+          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v3.4.0</span></div>
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-screen">
@@ -308,7 +308,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         <div className="mt-8 md:mt-10">{soundDockEl}</div>
       </main>
 
-      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v3.3.5</footer>
+      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v3.4.0</footer>
 
       {!isGuest && profileModalEl}
       {settingsPanelEl}

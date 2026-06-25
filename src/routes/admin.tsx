@@ -149,10 +149,20 @@ function Dashboard() {
   const loginAs = async (user_id: string) => {
     setImpersonating(user_id);
     try {
-      const { data, error } = await supabase.functions.invoke("admin-impersonate", {
-        body: { user_id, password: ADMIN_PASSWORD },
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+      const res = await fetch(`${supabaseUrl}/functions/v1/admin-impersonate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token ?? anonKey}`,
+          "apikey": anonKey,
+        },
+        body: JSON.stringify({ user_id, password: ADMIN_PASSWORD }),
       });
-      if (error || !data?.url) throw new Error(error?.message ?? "No link returned");
+      const data = await res.json();
+      if (!data?.url) throw new Error(data?.error ?? `HTTP ${res.status}`);
       window.open(data.url, "_blank");
     } catch (e) {
       alert("Failed: " + (e as Error).message);

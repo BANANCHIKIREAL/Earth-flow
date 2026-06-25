@@ -144,6 +144,22 @@ function Dashboard() {
   const [needsSetup, setNeedsSetup] = useState(false);
   const [query, setQuery] = useState("");
   const [searchBy, setSearchBy] = useState<"email" | "id">("email");
+  const [impersonating, setImpersonating] = useState<string | null>(null);
+
+  const loginAs = async (user_id: string) => {
+    setImpersonating(user_id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-impersonate", {
+        body: { user_id, password: ADMIN_PASSWORD },
+      });
+      if (error || !data?.url) throw new Error(error?.message ?? "No link returned");
+      window.open(data.url, "_blank");
+    } catch (e) {
+      alert("Failed: " + (e as Error).message);
+    } finally {
+      setImpersonating(null);
+    }
+  };
 
   useEffect(() => {
     supabase
@@ -245,9 +261,9 @@ function Dashboard() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06]">
-                  {["User", "#", "Registered", "Today", "Sessions", "Time"].map((h, i) => (
+                  {["User", "#", "Registered", "Today", "Sessions", "Time", ""].map((h, i) => (
                     <th
-                      key={h}
+                      key={i}
                       className={`px-4 py-3 text-[11px] uppercase tracking-widest font-medium text-muted-foreground ${i === 0 ? "text-left" : "text-right"}`}
                     >
                       {h}
@@ -294,6 +310,16 @@ function Dashboard() {
                     {/* Total time */}
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground tabular-nums">
                       {formatTime(u.total_time_seconds ?? 0)}
+                    </td>
+                    {/* Login as */}
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => void loginAs(u.user_id)}
+                        disabled={impersonating === u.user_id}
+                        className="text-[11px] px-3 py-1 rounded-full border border-white/10 text-muted-foreground hover:text-foreground hover:border-white/25 transition-colors disabled:opacity-40"
+                      >
+                        {impersonating === u.user_id ? "…" : "Login as"}
+                      </button>
                     </td>
                   </tr>
                 ))}

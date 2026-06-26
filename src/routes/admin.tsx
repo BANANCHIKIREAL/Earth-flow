@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { createClient } from "@supabase/supabase-js";
 
 const ADMIN_PASSWORD = "p:g=5%BBe&~#LXD";
 
@@ -286,16 +285,23 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
     setStreakUpdating(userId);
     const current = streaks[userId]?.data ?? { days: {}, restored: [], restores: {} };
     const next = direction === "add" ? addDayToStore(current) : removeDayFromStore(current);
-    const adminClient = createClient(
-      import.meta.env.VITE_SUPABASE_URL as string,
-      serviceKey,
-    );
-    const { error } = await adminClient.from("user_streaks").upsert({
-      user_id: userId,
-      data: next,
-      updated_at: new Date().toISOString(),
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const res = await fetch(`${supabaseUrl}/rest/v1/user_streaks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceKey}`,
+        "apikey": serviceKey,
+        "Prefer": "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify({ user_id: userId, data: next, updated_at: new Date().toISOString() }),
     });
-    if (error) { alert("Ошибка: " + error.message); setStreakUpdating(null); return; }
+    if (!res.ok) {
+      const msg = await res.text();
+      alert("Ошибка: " + msg);
+      setStreakUpdating(null);
+      return;
+    }
     setStreaks((prev) => ({
       ...prev,
       [userId]: { data: next, current: computeCurrentStreak(next) },

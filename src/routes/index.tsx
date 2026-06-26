@@ -6,7 +6,7 @@ import { SoundDock } from "@/components/SoundDock";
 import { Timer } from "@/components/Timer";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { TodayTasks } from "@/components/TodayTasks";
-import { ProfileModal } from "@/components/ProfileModal";
+import { ProfileModal, getMilestone } from "@/components/ProfileModal";
 import { useAudioMixer } from "@/hooks/useAudioMixer";
 import { useCustomTracks } from "@/hooks/useCustomTracks";
 import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
@@ -150,25 +150,29 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     onSetTaskCategory: setTaskCategory, copy,
   };
 
-  const avatarBtn = (cls: string) => (
-    <div className="flex items-center gap-1.5">
-      {STREAK_ENABLED && streak.currentStreak > 0 && (
-        <span className="text-[12px] font-semibold tabular-nums text-orange-400 pointer-events-none select-none leading-none">
-          🔥{streak.currentStreak}
-        </span>
-      )}
-      <div className="relative">
-        <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
-          {avatarUrl && !headerImgError ? (
-            <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
-          ) : avatarLetter}
-        </button>
-        {STREAK_ENABLED && streak.currentStreak === 0 && (
-          <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_6px_2px_var(--primary)]" />
+  const avatarBtn = (cls: string) => {
+    const { m } = STREAK_ENABLED && streak.currentStreak > 0 ? getMilestone(streak.currentStreak) : { m: null };
+    return (
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="relative">
+          <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
+            {avatarUrl && !headerImgError ? (
+              <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
+            ) : avatarLetter}
+          </button>
+          {STREAK_ENABLED && streak.currentStreak === 0 && (
+            <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_6px_2px_var(--primary)]" />
+          )}
+        </div>
+        {m && (
+          <div className="flex items-center gap-0.5 pointer-events-none select-none leading-none">
+            <span style={{ fontSize: 11, filter: m.anim !== "rainbow" ? m.filter : undefined }}>🔥</span>
+            <span className="text-[9px] font-bold tabular-nums" style={{ color: m.color }}>{streak.currentStreak}</span>
+          </div>
         )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const guestAuthBtns = (
     <>
@@ -273,9 +277,15 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
                   )}
                 </div>
                 <span className="truncate text-xs">{displayName || userEmail}</span>
-                {STREAK_ENABLED && streak.currentStreak > 0 && (
-                  <span className="ml-auto text-[11px] font-semibold tabular-nums text-orange-400 shrink-0">🔥{streak.currentStreak}</span>
-                )}
+                {STREAK_ENABLED && streak.currentStreak > 0 && (() => {
+                  const { m } = getMilestone(streak.currentStreak);
+                  return (
+                    <span className="ml-auto flex items-center gap-0.5 shrink-0 pointer-events-none select-none">
+                      <span style={{ fontSize: 12, filter: m.anim !== "rainbow" ? m.filter : undefined }}>🔥</span>
+                      <span className="text-[10px] font-bold tabular-nums" style={{ color: m.color }}>{streak.currentStreak}</span>
+                    </span>
+                  );
+                })()}
               </button>
             )}
           </div>

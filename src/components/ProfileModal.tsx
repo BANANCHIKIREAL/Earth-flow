@@ -129,7 +129,7 @@ const MILESTONES: Milestone[] = [
     filter: "", anim: "rainbow" },
 ];
 
-function getMilestone(streak: number) {
+export function getMilestone(streak: number) {
   let idx = 0;
   for (let i = 0; i < MILESTONES.length; i++) {
     if (streak >= MILESTONES[i].days) idx = i; else break;

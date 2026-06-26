@@ -215,6 +215,25 @@
 }
 .animate-pulse-soft { animation: pulse-soft 2.4s ease-in-out infinite; }
 
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.05); }
+}
+.animate-bounce-subtle { animation: bounce-subtle 1.4s ease-in-out infinite; }
+
+@keyframes flame-rainbow {
+  0%   { filter: sepia(1) saturate(6) hue-rotate(0deg)   drop-shadow(0 0 32px rgba(253,224,71,1)) drop-shadow(0 0 72px rgba(253,224,71,0.7)); }
+  25%  { filter: sepia(1) saturate(6) hue-rotate(90deg)  drop-shadow(0 0 32px rgba(74,222,128,1)) drop-shadow(0 0 72px rgba(74,222,128,0.7)); }
+  50%  { filter: sepia(1) saturate(6) hue-rotate(195deg) drop-shadow(0 0 32px rgba(56,189,248,1)) drop-shadow(0 0 72px rgba(56,189,248,0.7)); }
+  75%  { filter: sepia(1) saturate(6) hue-rotate(270deg) drop-shadow(0 0 32px rgba(192,132,252,1)) drop-shadow(0 0 72px rgba(192,132,252,0.7)); }
+  100% { filter: sepia(1) saturate(6) hue-rotate(360deg) drop-shadow(0 0 32px rgba(253,224,71,1)) drop-shadow(0 0 72px rgba(253,224,71,0.7)); }
+}
+@keyframes flame-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-8px) scale(1.06); }
+}
+.animate-flame-rainbow { animation: flame-rainbow 2.5s linear infinite, flame-float 1.6s ease-in-out infinite; }
+
 @keyframes sound-wave {
   0%, 100% {
     transform: scaleY(0.75);
@@ -242,6 +261,37 @@
 }
 .animate-page-enter {
   animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* For root app divs that contain fixed children — transform would break position:fixed */
+@keyframes app-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-app-enter {
+  animation: app-enter 0.35s ease-out both;
+}
+
+/* ── Page view transitions ── */
+@keyframes vt-exit {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-10px) scale(0.99); }
+}
+@keyframes vt-enter {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: vt-exit 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-enter 0.28s cubic-bezier(0, 0, 0.2, 1) both;
+  }
+  ::view-transition-image-pair(root) {
+    isolation: isolate;
+  }
 }
 
 @keyframes shake {

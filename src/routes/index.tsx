@@ -12,8 +12,9 @@ import { useCustomTracks } from "@/hooks/useCustomTracks";
 import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
 import { useDailyTasks } from "@/hooks/useDailyTasks";
 import { useFinishSound } from "@/hooks/useFinishSound";
-import { useSettings } from "@/hooks/useSettings";
+import { useSettings, clearLocalSettings } from "@/hooks/useSettings";
 import { useSessionTracker } from "@/hooks/useSessionTracker";
+import { useStreak } from "@/hooks/useStreak";
 import { useAuth } from "@/context/AuthContext";
 import { translations } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
@@ -49,13 +50,14 @@ function FocusSpace() {
     );
   }
 
-  return <FocusSpaceContent userId={user?.id} userEmail={user?.email ?? ""} />;
+  return <FocusSpaceContent key={user?.id ?? "guest"} userId={user?.id} userEmail={user?.email ?? ""} />;
 }
 
 function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: string }) {
   const { signOut, updateDisplayName, uploadAvatar, user } = useAuth();
   const isGuest = !user;
   useSessionTracker(user ?? null);
+  const streak = useStreak(userId);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [headerImgError, setHeaderImgError] = useState(false);
@@ -127,8 +129,9 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const completeTimer = useCallback(() => {
     playFinishSound();
     notifyTimerComplete();
+    streak.recordSession();
     if (stopSoundsOnTimerEnd) { stopAll(); customStopAll(); }
-  }, [notifyTimerComplete, playFinishSound, stopAll, stopSoundsOnTimerEnd]);
+  }, [notifyTimerComplete, playFinishSound, stopAll, stopSoundsOnTimerEnd, streak.recordSession]);
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined) ||
@@ -147,11 +150,16 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   };
 
   const avatarBtn = (cls: string) => (
-    <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
-      {avatarUrl && !headerImgError ? (
-        <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
-      ) : avatarLetter}
-    </button>
+    <div className="relative">
+      <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
+        {avatarUrl && !headerImgError ? (
+          <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
+        ) : avatarLetter}
+      </button>
+      {streak.currentStreak === 0 && (
+        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_6px_2px_var(--primary)]" />
+      )}
+    </div>
   );
 
   const guestAuthBtns = (
@@ -210,17 +218,17 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const profileModalEl = (
     <ProfileModal
       open={profileOpen} onClose={() => setProfileOpen(false)}
-      userNumber={userNumber} email={userEmail} displayName={displayName} avatarUrl={avatarUrl}
+      userNumber={userNumber} email={userEmail} displayName={displayName} avatarUrl={avatarUrl} streak={streak}
       onUpdateDisplayName={async (name) => { await updateDisplayName(name); }}
       onUploadAvatar={uploadAvatar}
-      onSignOut={async () => { await signOut(); }}
+      onSignOut={async () => { clearLocalSettings(); await signOut(); }}
     />
   );
 
   /* ── SIDEBAR layout ── */
   if (layout === "sidebar") {
     return (
-      <div className="dark relative min-h-screen w-full flex text-foreground overflow-hidden">
+      <div className="dark relative min-h-screen w-full flex text-foreground overflow-hidden animate-app-enter">
         <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
 
         <aside className="hidden lg:flex w-52 shrink-0 flex-col py-5 border-r border-white/[0.06] z-10 relative">
@@ -248,15 +256,20 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
               </>
             ) : (
               <button onClick={() => setProfileOpen(true)} title={userEmail} className="w-full h-10 px-3 rounded-xl flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
-                <div className="h-6 w-6 rounded-full bg-white/10 border border-white/15 inline-flex items-center justify-center text-[10px] font-semibold shrink-0 overflow-hidden">
-                  {avatarUrl && !headerImgError ? (<img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />) : avatarLetter}
+                <div className="relative shrink-0">
+                  <div className="h-6 w-6 rounded-full bg-white/10 border border-white/15 inline-flex items-center justify-center text-[10px] font-semibold overflow-hidden">
+                    {avatarUrl && !headerImgError ? (<img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />) : avatarLetter}
+                  </div>
+                  {streak.currentStreak === 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_5px_2px_var(--primary)]" />
+                  )}
                 </div>
                 <span className="truncate text-xs">{displayName || userEmail}</span>
               </button>
             )}
           </div>
           <div className="flex-1" />
-          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v3.4.0</span></div>
+          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v3.5.2</span></div>
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-screen">
@@ -292,7 +305,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
 
   /* ── CLASSIC layout ── */
   return (
-    <div className="dark relative min-h-screen w-full flex flex-col text-foreground">
+    <div className="dark relative min-h-screen w-full flex flex-col text-foreground animate-app-enter">
       <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
 
       <header className="flex items-center justify-between px-6 py-5">
@@ -320,7 +333,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         <div className="mt-8 md:mt-10">{soundDockEl}</div>
       </main>
 
-      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v3.4.0</footer>
+      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v3.5.2</footer>
 
       {!isGuest && profileModalEl}
       {settingsPanelEl}

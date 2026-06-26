@@ -115,6 +115,14 @@ function readJSON<T>(key: string, fallback: T): T {
   }
 }
 
+export function clearLocalSettings() {
+  [
+    KEY_DURATIONS, KEY_LUNCH_ENABLED, KEY_BG_VARIANT, KEY_BG_IMAGE, KEY_BG_BLUR,
+    KEY_TIMER_RING_STYLE, KEY_TIMER_RING_COLOR, KEY_TIMER_RING_WIDTH,
+    KEY_TIMER_FONT, KEY_TIMER_FONT_SIZE, KEY_STOP_SOUNDS_ON_TIMER_END, KEY_LAYOUT,
+  ].forEach((k) => { try { localStorage.removeItem(k); } catch {} });
+}
+
 export function useSettings(userId?: string) {
   const [durations, setDurationsState] = useState<TimerDurations>(DEFAULT_DURATIONS);
   const [lunchEnabled, setLunchEnabledState] = useState(false);

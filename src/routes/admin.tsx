@@ -114,6 +114,67 @@ function Avatar({ url, name, email }: { url: string | null; name: string | null;
   );
 }
 
+// ── Streak helpers (mirrors useStreak logic, pure functions) ─────────────────
+
+interface StreakStore {
+  days: Record<string, number>;
+  restored: string[];
+  restores: Record<string, number>;
+}
+
+const STREAK_GRACE = 2;
+const toIsoDate = (d = new Date()) => d.toISOString().slice(0, 10);
+
+function normalizeStore(raw: unknown): StreakStore {
+  const p = (raw ?? {}) as Partial<StreakStore>;
+  return { days: p.days ?? {}, restored: p.restored ?? [], restores: p.restores ?? {} };
+}
+
+function getStreakChains(store: StreakStore): string[][] {
+  const earned = new Set(Object.keys(store.days).filter((d) => store.days[d] > 0));
+  const all = [...new Set([...earned, ...(store.restored ?? [])])].sort();
+  if (all.length === 0) return [];
+  const chains: string[][] = [];
+  let chain: string[] = [all[0]];
+  for (let i = 1; i < all.length; i++) {
+    const gap = Math.round((new Date(all[i]).getTime() - new Date(all[i - 1]).getTime()) / 86400000);
+    if (gap > STREAK_GRACE + 1) { chains.push(chain); chain = [all[i]]; }
+    else chain.push(all[i]);
+  }
+  chains.push(chain);
+  return chains;
+}
+
+function computeCurrentStreak(store: StreakStore): number {
+  const today = toIsoDate();
+  const earned = new Set(Object.keys(store.days).filter((d) => store.days[d] > 0));
+  const chains = getStreakChains(store);
+  if (chains.length === 0) return 0;
+  const last = chains[chains.length - 1];
+  if (!last.includes(today)) return 0;
+  return last.filter((d) => earned.has(d)).length;
+}
+
+function addDayToStore(store: StreakStore): StreakStore {
+  const chains = getStreakChains(store);
+  const today = toIsoDate();
+  const earliest = chains.length > 0 ? chains[chains.length - 1][0] : today;
+  const target = toIsoDate(new Date(new Date(earliest).getTime() - 86400000));
+  return { ...store, days: { ...store.days, [target]: 1 } };
+}
+
+function removeDayFromStore(store: StreakStore): StreakStore {
+  const chains = getStreakChains(store);
+  if (chains.length === 0) return store;
+  const last = chains[chains.length - 1];
+  if (last.length === 0) return store;
+  const toRemove = last[0]; // remove earliest day of current chain
+  const newDays = { ...store.days };
+  delete newDays[toRemove];
+  const newRestored = (store.restored ?? []).filter((d) => d !== toRemove);
+  return { ...store, days: newDays, restored: newRestored };
+}
+
 // ── SQL hint ─────────────────────────────────────────────────────────────────
 
 const SETUP_SQL = `-- 1. Create table
@@ -155,6 +216,8 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
   const [query, setQuery] = useState("");
   const [searchBy, setSearchBy] = useState<"email" | "id">("email");
   const [impersonating, setImpersonating] = useState<string | null>(null);
+  const [streaks, setStreaks] = useState<Record<string, { data: StreakStore; current: number }>>({});
+  const [streakUpdating, setStreakUpdating] = useState<string | null>(null);
 
   const loginAs = async (user_id: string, email: string) => {
     if (!serviceKey) { alert("Введи legacy service_role key при входе в админку"); return; }
@@ -189,14 +252,44 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
       .select("user_number, user_id, email, display_name, avatar_url, registered_at, last_seen_at, today_sessions, total_sessions, total_time_seconds")
       .order("last_seen_at", { ascending: false })
       .then(({ data, error }) => {
-        if (error) {
-          setNeedsSetup(true);
-        } else {
-          setUsers((data ?? []) as UserProfile[]);
-        }
+        if (error) { setNeedsSetup(true); }
+        else { setUsers((data ?? []) as UserProfile[]); }
         setLoading(false);
       });
   }, []);
+
+  // Fetch streaks for all users
+  useEffect(() => {
+    if (loading || needsSetup) return;
+    void supabase
+      .from("user_streaks")
+      .select("user_id, data")
+      .then(({ data }) => {
+        if (!data) return;
+        const map: Record<string, { data: StreakStore; current: number }> = {};
+        for (const row of data) {
+          const store = normalizeStore(row.data);
+          map[row.user_id] = { data: store, current: computeCurrentStreak(store) };
+        }
+        setStreaks(map);
+      });
+  }, [loading, needsSetup]);
+
+  const adjustStreak = async (userId: string, direction: "add" | "remove") => {
+    setStreakUpdating(userId);
+    const current = streaks[userId]?.data ?? { days: {}, restored: [], restores: {} };
+    const next = direction === "add" ? addDayToStore(current) : removeDayFromStore(current);
+    await supabase.from("user_streaks").upsert({
+      user_id: userId,
+      data: next,
+      updated_at: new Date().toISOString(),
+    });
+    setStreaks((prev) => ({
+      ...prev,
+      [userId]: { data: next, current: computeCurrentStreak(next) },
+    }));
+    setStreakUpdating(null);
+  };
 
   const totalTime = users.reduce((s, u) => s + (u.total_time_seconds ?? 0), 0);
   const todayActive = users.filter((u) => u.today_sessions > 0).length;
@@ -283,7 +376,7 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06]">
-                  {["User", "#", "Registered", "Today", "Sessions", "Time", ""].map((h, i) => (
+                  {["User", "#", "Registered", "Today", "Sessions", "Time", "Streak", ""].map((h, i) => (
                     <th
                       key={i}
                       className={`px-4 py-3 text-[11px] uppercase tracking-widest font-medium text-muted-foreground ${i === 0 ? "text-left" : "text-right"}`}
@@ -332,6 +425,34 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
                     {/* Total time */}
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground tabular-nums">
                       {formatTime(u.total_time_seconds ?? 0)}
+                    </td>
+                    {/* Streak */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => void adjustStreak(u.user_id, "remove")}
+                          disabled={streakUpdating === u.user_id}
+                          className="h-6 w-6 rounded-md border border-white/10 text-muted-foreground hover:text-foreground hover:border-white/25 transition-colors disabled:opacity-30 text-sm leading-none flex items-center justify-center"
+                        >
+                          −
+                        </button>
+                        <span className="text-xs tabular-nums w-14 text-center">
+                          {streakUpdating === u.user_id
+                            ? "…"
+                            : streaks[u.user_id]
+                              ? streaks[u.user_id].current > 0
+                                ? `🔥 ${streaks[u.user_id].current}`
+                                : <span className="text-muted-foreground/40">—</span>
+                              : <span className="text-muted-foreground/20">·</span>}
+                        </span>
+                        <button
+                          onClick={() => void adjustStreak(u.user_id, "add")}
+                          disabled={streakUpdating === u.user_id}
+                          className="h-6 w-6 rounded-md border border-white/10 text-muted-foreground hover:text-foreground hover:border-white/25 transition-colors disabled:opacity-30 text-sm leading-none flex items-center justify-center"
+                        >
+                          +
+                        </button>
+                      </div>
                     </td>
                     {/* Login as */}
                     <td className="px-4 py-3 text-right">

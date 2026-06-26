@@ -170,19 +170,13 @@ function addDayToStore(store: StreakStore): StreakStore {
 
 function buildStreakStore(store: StreakStore, targetDays: number): StreakStore {
   const today = toIsoDate();
-  // Clear existing active chain days
-  const chains = getStreakChains(store);
-  const newDays: Record<string, number> = { ...store.days };
-  if (chains.length > 0) {
-    for (const d of chains[chains.length - 1]) delete newDays[d];
-  }
-  if (targetDays <= 0) return { ...store, days: newDays };
-  // Build targetDays consecutive days ending at today
+  if (targetDays <= 0) return { ...store, days: {}, restored: [] };
+  const newDays: Record<string, number> = {};
   for (let i = 0; i < targetDays; i++) {
     const date = toIsoDate(new Date(new Date(today).getTime() - i * 86400000));
-    newDays[date] = Math.max(newDays[date] ?? 0, 1);
+    newDays[date] = 1;
   }
-  return { ...store, days: newDays };
+  return { ...store, days: newDays, restored: [] };
 }
 
 function removeDayFromStore(store: StreakStore): StreakStore {

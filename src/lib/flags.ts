@@ -1,1 +1,1 @@
-export const STREAK_ENABLED = false;
+export const STREAK_ENABLED = true;

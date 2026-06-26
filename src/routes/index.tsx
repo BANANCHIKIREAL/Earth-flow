@@ -151,15 +151,22 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   };
 
   const avatarBtn = (cls: string) => (
-    <div className="relative">
-      <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
-        {avatarUrl && !headerImgError ? (
-          <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
-        ) : avatarLetter}
-      </button>
-      {STREAK_ENABLED && streak.currentStreak === 0 && (
-        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_6px_2px_var(--primary)]" />
+    <div className="flex items-center gap-1.5">
+      {STREAK_ENABLED && streak.currentStreak > 0 && (
+        <span className="text-[12px] font-semibold tabular-nums text-orange-400 pointer-events-none select-none leading-none">
+          🔥{streak.currentStreak}
+        </span>
       )}
+      <div className="relative">
+        <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
+          {avatarUrl && !headerImgError ? (
+            <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
+          ) : avatarLetter}
+        </button>
+        {STREAK_ENABLED && streak.currentStreak === 0 && (
+          <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_6px_2px_var(--primary)]" />
+        )}
+      </div>
     </div>
   );
 
@@ -261,11 +268,14 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
                   <div className="h-6 w-6 rounded-full bg-white/10 border border-white/15 inline-flex items-center justify-center text-[10px] font-semibold overflow-hidden">
                     {avatarUrl && !headerImgError ? (<img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />) : avatarLetter}
                   </div>
-                  {streak.currentStreak === 0 && (
+                  {STREAK_ENABLED && streak.currentStreak === 0 && (
                     <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_5px_2px_var(--primary)]" />
                   )}
                 </div>
                 <span className="truncate text-xs">{displayName || userEmail}</span>
+                {STREAK_ENABLED && streak.currentStreak > 0 && (
+                  <span className="ml-auto text-[11px] font-semibold tabular-nums text-orange-400 shrink-0">🔥{streak.currentStreak}</span>
+                )}
               </button>
             )}
           </div>

@@ -18,6 +18,7 @@ import { useStreak } from "@/hooks/useStreak";
 import { useAuth } from "@/context/AuthContext";
 import { translations } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
+import { STREAK_ENABLED } from "@/lib/flags";
 
 export const Route = createFileRoute("/")({
   component: FocusSpace,
@@ -156,7 +157,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
           <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
         ) : avatarLetter}
       </button>
-      {streak.currentStreak === 0 && (
+      {STREAK_ENABLED && streak.currentStreak === 0 && (
         <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_6px_2px_var(--primary)]" />
       )}
     </div>

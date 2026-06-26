@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Check, LogOut, RotateCcw, User, X, Zap } from "lucide-react";
 import type { StreakStats } from "@/hooks/useStreak";
+import { STREAK_ENABLED } from "@/lib/flags";
 
 interface Props {
   open: boolean;
@@ -268,7 +269,7 @@ export function ProfileModal({
           </div>
 
           {/* ── Streak section ── */}
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-4">
+          {STREAK_ENABLED && <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-4">
 
             {/* Flame upgrade display */}
             <FlameDisplay streak={currentStreak} />
@@ -331,7 +332,7 @@ export function ProfileModal({
               </div>
             )}
 
-          </div>
+          </div>}
 
           {/* Display name */}
           <div className="space-y-2">

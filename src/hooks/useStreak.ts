@@ -9,6 +9,7 @@ interface Store {
   days: StreakDays;
   restored: string[];
   restores: { [monthKey: string]: number };
+  v?: number; // version — bumped by admin overrides; higher version wins over local cache
 }
 
 const KEY = "ef:streak_v2";
@@ -35,10 +36,12 @@ function persist(s: Store) {
 
 function normalize(raw: unknown): Store {
   const p = (raw ?? {}) as Partial<Store>;
-  return { days: p.days ?? {}, restored: p.restored ?? [], restores: p.restores ?? {} };
+  return { days: p.days ?? {}, restored: p.restored ?? [], restores: p.restores ?? {}, v: p.v };
 }
 
 function mergeStores(a: Store, b: Store): Store {
+  // Remote has higher version (admin override) — trust it completely, clear local cache
+  if ((b.v ?? 0) > (a.v ?? 0)) return b;
   const days: StreakDays = { ...b.days };
   for (const [d, cnt] of Object.entries(a.days)) {
     days[d] = Math.max(days[d] ?? 0, cnt);
@@ -48,7 +51,7 @@ function mergeStores(a: Store, b: Store): Store {
   for (const [k, v] of Object.entries(a.restores)) {
     restores[k] = Math.max(restores[k] ?? 0, v);
   }
-  return { days, restored, restores };
+  return { days, restored, restores, v: Math.max(a.v ?? 0, b.v ?? 0) };
 }
 
 function allActiveDates(store: Store): string[] {

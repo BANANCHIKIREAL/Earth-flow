@@ -120,6 +120,7 @@ interface StreakStore {
   days: Record<string, number>;
   restored: string[];
   restores: Record<string, number>;
+  v?: number;
 }
 
 const STREAK_GRACE = 2;
@@ -170,13 +171,14 @@ function addDayToStore(store: StreakStore): StreakStore {
 
 function buildStreakStore(store: StreakStore, targetDays: number): StreakStore {
   const today = toIsoDate();
-  if (targetDays <= 0) return { ...store, days: {}, restored: [] };
+  const v = Date.now(); // bump version so client cache is overridden on next load
+  if (targetDays <= 0) return { ...store, days: {}, restored: [], v };
   const newDays: Record<string, number> = {};
   for (let i = 0; i < targetDays; i++) {
     const date = toIsoDate(new Date(new Date(today).getTime() - i * 86400000));
     newDays[date] = 1;
   }
-  return { ...store, days: newDays, restored: [] };
+  return { ...store, days: newDays, restored: [], v };
 }
 
 function removeDayFromStore(store: StreakStore): StreakStore {

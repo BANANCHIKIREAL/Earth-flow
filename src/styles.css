@@ -221,6 +221,12 @@
 }
 .animate-bounce-subtle { animation: bounce-subtle 1.4s ease-in-out infinite; }
 
+@keyframes flame-badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+.animate-flame-badge { animation: flame-badge-pulse 2.2s ease-in-out infinite; }
+
 @keyframes flame-rainbow {
   0%   { filter: sepia(1) saturate(6) hue-rotate(0deg)   drop-shadow(0 0 32px rgba(253,224,71,1)) drop-shadow(0 0 72px rgba(253,224,71,0.7)); }
   25%  { filter: sepia(1) saturate(6) hue-rotate(90deg)  drop-shadow(0 0 32px rgba(74,222,128,1)) drop-shadow(0 0 72px rgba(74,222,128,0.7)); }

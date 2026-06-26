@@ -168,6 +168,23 @@ function addDayToStore(store: StreakStore): StreakStore {
   return { ...store, days: { ...store.days, [target]: 1 } };
 }
 
+function buildStreakStore(store: StreakStore, targetDays: number): StreakStore {
+  const today = toIsoDate();
+  // Clear existing active chain days
+  const chains = getStreakChains(store);
+  const newDays: Record<string, number> = { ...store.days };
+  if (chains.length > 0) {
+    for (const d of chains[chains.length - 1]) delete newDays[d];
+  }
+  if (targetDays <= 0) return { ...store, days: newDays };
+  // Build targetDays consecutive days ending at today
+  for (let i = 0; i < targetDays; i++) {
+    const date = toIsoDate(new Date(new Date(today).getTime() - i * 86400000));
+    newDays[date] = Math.max(newDays[date] ?? 0, 1);
+  }
+  return { ...store, days: newDays };
+}
+
 function removeDayFromStore(store: StreakStore): StreakStore {
   const chains = getStreakChains(store);
   if (chains.length === 0) return store;
@@ -223,6 +240,7 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
   const [impersonating, setImpersonating] = useState<string | null>(null);
   const [streaks, setStreaks] = useState<Record<string, { data: StreakStore; current: number }>>({});
   const [streakUpdating, setStreakUpdating] = useState<string | null>(null);
+  const [streakInputs, setStreakInputs] = useState<Record<string, string>>({});
 
   const loginAs = async (user_id: string, email: string) => {
     if (!serviceKey) { alert("Введи legacy service_role key при входе в админку"); return; }
@@ -279,6 +297,35 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
         setStreaks(map);
       });
   }, [loading, needsSetup]);
+
+  const applyStreakInput = async (userId: string) => {
+    const raw = streakInputs[userId];
+    if (raw === undefined) return;
+    const val = parseInt(raw, 10);
+    if (isNaN(val) || val < 0) {
+      setStreakInputs((p) => { const n = { ...p }; delete n[userId]; return n; });
+      return;
+    }
+    if (!serviceKey) { alert("Нужен service_role key"); return; }
+    setStreakUpdating(userId);
+    const current = streaks[userId]?.data ?? { days: {}, restored: [], restores: {} };
+    const next = buildStreakStore(current, val);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const res = await fetch(`${supabaseUrl}/rest/v1/user_streaks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${serviceKey}`,
+        "apikey": serviceKey,
+        "Prefer": "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify({ user_id: userId, data: next, updated_at: new Date().toISOString() }),
+    });
+    if (!res.ok) { alert("Ошибка: " + await res.text()); setStreakUpdating(null); return; }
+    setStreaks((prev) => ({ ...prev, [userId]: { data: next, current: computeCurrentStreak(next) } }));
+    setStreakInputs((p) => { const n = { ...p }; delete n[userId]; return n; });
+    setStreakUpdating(null);
+  };
 
   const adjustStreak = async (userId: string, direction: "add" | "remove") => {
     if (!serviceKey) { alert("Для изменения стрика нужен service_role key — перелогинься в админку и введи его"); return; }
@@ -454,15 +501,34 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
                         >
                           −
                         </button>
-                        <span className="text-xs tabular-nums w-14 text-center">
-                          {streakUpdating === u.user_id
-                            ? "…"
-                            : streaks[u.user_id]
-                              ? streaks[u.user_id].current > 0
+                        {streakInputs[u.user_id] !== undefined ? (
+                          <input
+                            autoFocus
+                            type="number"
+                            min={0}
+                            value={streakInputs[u.user_id]}
+                            onChange={(e) => setStreakInputs((p) => ({ ...p, [u.user_id]: e.target.value }))}
+                            onBlur={() => void applyStreakInput(u.user_id)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void applyStreakInput(u.user_id);
+                              if (e.key === "Escape") setStreakInputs((p) => { const n = { ...p }; delete n[u.user_id]; return n; });
+                            }}
+                            className="w-14 text-center text-xs tabular-nums rounded border border-primary/50 bg-white/[0.06] text-foreground outline-none px-1 py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        ) : (
+                          <button
+                            onClick={() => setStreakInputs((p) => ({ ...p, [u.user_id]: String(streaks[u.user_id]?.current ?? 0) }))}
+                            disabled={streakUpdating === u.user_id}
+                            className="w-14 text-center text-xs tabular-nums hover:bg-white/[0.06] rounded px-1 py-0.5 transition-colors disabled:opacity-40"
+                            title="Нажми чтобы ввести число"
+                          >
+                            {streakUpdating === u.user_id
+                              ? "…"
+                              : streaks[u.user_id]?.current > 0
                                 ? `🔥 ${streaks[u.user_id].current}`
-                                : <span className="text-muted-foreground/40">—</span>
-                              : <span className="text-muted-foreground/20">·</span>}
-                        </span>
+                                : <span className="text-muted-foreground/40">—</span>}
+                          </button>
+                        )}
                         <button
                           onClick={() => void adjustStreak(u.user_id, "add")}
                           disabled={streakUpdating === u.user_id}

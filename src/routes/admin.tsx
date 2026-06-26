@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 
 const ADMIN_PASSWORD = "p:g=5%BBe&~#LXD";
 
@@ -158,8 +159,13 @@ function computeCurrentStreak(store: StreakStore): number {
 function addDayToStore(store: StreakStore): StreakStore {
   const chains = getStreakChains(store);
   const today = toIsoDate();
-  const earliest = chains.length > 0 ? chains[chains.length - 1][0] : today;
-  const target = toIsoDate(new Date(new Date(earliest).getTime() - 86400000));
+  const lastChain = chains.length > 0 ? chains[chains.length - 1] : null;
+  // If no active streak (no chain or today not in last chain) — start one from today
+  if (!lastChain || !lastChain.includes(today)) {
+    return { ...store, days: { ...store.days, [today]: 1 } };
+  }
+  // Active streak — extend backward by 1 day
+  const target = toIsoDate(new Date(new Date(lastChain[0]).getTime() - 86400000));
   return { ...store, days: { ...store.days, [target]: 1 } };
 }
 
@@ -276,14 +282,20 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
   }, [loading, needsSetup]);
 
   const adjustStreak = async (userId: string, direction: "add" | "remove") => {
+    if (!serviceKey) { alert("Для изменения стрика нужен service_role key — перелогинься в админку и введи его"); return; }
     setStreakUpdating(userId);
     const current = streaks[userId]?.data ?? { days: {}, restored: [], restores: {} };
     const next = direction === "add" ? addDayToStore(current) : removeDayFromStore(current);
-    await supabase.from("user_streaks").upsert({
+    const adminClient = createClient(
+      import.meta.env.VITE_SUPABASE_URL as string,
+      serviceKey,
+    );
+    const { error } = await adminClient.from("user_streaks").upsert({
       user_id: userId,
       data: next,
       updated_at: new Date().toISOString(),
     });
+    if (error) { alert("Ошибка: " + error.message); setStreakUpdating(null); return; }
     setStreaks((prev) => ({
       ...prev,
       [userId]: { data: next, current: computeCurrentStreak(next) },

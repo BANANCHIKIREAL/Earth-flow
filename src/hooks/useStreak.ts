@@ -24,7 +24,7 @@ function load(): Store {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const p = JSON.parse(raw) as Partial<Store>;
-      return { days: p.days ?? {}, restored: p.restored ?? [], restores: p.restores ?? {} };
+      return { days: p.days ?? {}, restored: p.restored ?? [], restores: p.restores ?? {}, v: p.v };
     }
   } catch {}
   return { days: {}, restored: [], restores: {} };
@@ -103,16 +103,19 @@ function computeStats(store: Store) {
 export function useStreak(userId?: string) {
   const [store, setStore] = useState<Store>(load);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [remoteFetched, setRemoteFetched] = useState(false);
 
   // Fetch from Supabase on login and merge with local
   useEffect(() => {
     if (!userId) return;
+    setRemoteFetched(false);
     void supabase
       .from("user_streaks")
       .select("data")
       .eq("user_id", userId)
       .maybeSingle()
       .then(({ data }) => {
+        setRemoteFetched(true);
         if (!data?.data) return;
         setStore((local) => {
           const merged = mergeStores(local, normalize(data.data));
@@ -122,19 +125,29 @@ export function useStreak(userId?: string) {
       });
   }, [userId]);
 
-  // Debounced sync to Supabase on every store change
+  // Debounced sync — only after remote data has been fetched to avoid overwriting admin changes.
+  // Uses version-safe RPC (upsert_streak_v) so a lower-version local write cannot overwrite
+  // a higher-version admin write. Falls back to direct upsert if RPC is unavailable.
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !remoteFetched) return;
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      void supabase.from("user_streaks").upsert({
-        user_id: userId,
-        data: store,
-        updated_at: new Date().toISOString(),
+    timerRef.current = setTimeout(async () => {
+      const { error } = await supabase.rpc("upsert_streak_v", {
+        p_user_id: userId,
+        p_data: store,
+        p_updated_at: new Date().toISOString(),
       });
+      if (error) {
+        // RPC not deployed yet — fall back to direct upsert
+        void supabase.from("user_streaks").upsert({
+          user_id: userId,
+          data: store,
+          updated_at: new Date().toISOString(),
+        });
+      }
     }, 1500);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [userId, store]);
+  }, [userId, store, remoteFetched]);
 
   // Continue existing streak on visit — don't auto-start from scratch
   useEffect(() => {

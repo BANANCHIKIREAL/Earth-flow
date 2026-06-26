@@ -128,7 +128,7 @@ const toIsoDate = (d = new Date()) => d.toISOString().slice(0, 10);
 
 function normalizeStore(raw: unknown): StreakStore {
   const p = (raw ?? {}) as Partial<StreakStore>;
-  return { days: p.days ?? {}, restored: p.restored ?? [], restores: p.restores ?? {} };
+  return { days: p.days ?? {}, restored: p.restored ?? [], restores: p.restores ?? {}, v: p.v };
 }
 
 function getStreakChains(store: StreakStore): string[][] {
@@ -223,6 +223,18 @@ RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
   SET total_time_seconds = total_time_seconds + p_seconds,
       last_seen_at = NOW()
   WHERE user_id = p_user_id;
+$$;
+
+-- 4. Version-safe streak upsert (prevents client cache from overwriting newer admin changes)
+-- Run this once so streak updates work correctly for all users.
+CREATE OR REPLACE FUNCTION upsert_streak_v(p_user_id UUID, p_data JSONB, p_updated_at TIMESTAMPTZ)
+RETURNS void LANGUAGE sql SECURITY INVOKER AS $$
+  INSERT INTO user_streaks (user_id, data, updated_at)
+  VALUES (p_user_id, p_data, p_updated_at)
+  ON CONFLICT (user_id) DO UPDATE
+    SET data = EXCLUDED.data, updated_at = EXCLUDED.updated_at
+    WHERE COALESCE((EXCLUDED.data->>'v')::bigint, 0)
+       >= COALESCE((user_streaks.data->>'v')::bigint, 0);
 $$;`;
 
 // ── Main dashboard ───────────────────────────────────────────────────────────
@@ -327,7 +339,8 @@ function Dashboard({ serviceKey }: { serviceKey: string }) {
     if (!serviceKey) { alert("Для изменения стрика нужен service_role key — перелогинься в админку и введи его"); return; }
     setStreakUpdating(userId);
     const current = streaks[userId]?.data ?? { days: {}, restored: [], restores: {} };
-    const next = direction === "add" ? addDayToStore(current) : removeDayFromStore(current);
+    const base = direction === "add" ? addDayToStore(current) : removeDayFromStore(current);
+    const next: StreakStore = { ...base, v: Date.now() };
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
     const res = await fetch(`${supabaseUrl}/rest/v1/user_streaks`, {
       method: "POST",

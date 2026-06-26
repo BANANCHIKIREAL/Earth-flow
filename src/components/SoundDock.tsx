@@ -71,7 +71,7 @@ export function SoundDock({
           <div className="border-t border-border" />
 
           {/* Custom tracks + add button row */}
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 min-[900px]:grid-cols-5">
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 min-[640px]:grid-cols-5">
             {customTracks.map((t) => (
               <CustomSoundCard
                 key={t.id}

@@ -119,17 +119,17 @@ function SoundCard({
               <span>{track.enabled ? "Playing" : "Idle"}</span>
               <span className="rounded-full bg-white/10 px-2 py-0.5">{Math.round(track.volume * 100)}%</span>
             </div>
-            <div className="flex items-end gap-1">
-              {waveDelays.map((delay) => (
-                <span
-                  key={delay}
-                  className={`h-3 w-1 rounded-full bg-white/60 ${
-                    track.enabled ? "animate-sound-wave" : "bg-white/10"
-                  }`}
-                  style={track.enabled ? { animationDelay: `${delay}ms` } : undefined}
-                />
-              ))}
-            </div>
+            {track.enabled && (
+              <div className="flex items-end gap-1">
+                {waveDelays.map((delay) => (
+                  <span
+                    key={delay}
+                    className="h-3 w-1 rounded-full bg-white/60 animate-sound-wave"
+                    style={{ animationDelay: `${delay}ms` }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </button>

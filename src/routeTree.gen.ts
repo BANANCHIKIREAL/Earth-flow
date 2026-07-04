@@ -72,12 +72,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/update-password'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/login'
-    | '/register'
-    | '/reset-password'
-    | '/update-password'
+  to: '/' | '/login' | '/register' | '/reset-password' | '/update-password'
   id:
     | '__root__'
     | '/'

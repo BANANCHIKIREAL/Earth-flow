@@ -167,6 +167,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         {m && (
           <div className="flex items-center gap-0.5 pointer-events-none select-none leading-none">
             <span
+              className={m.anim === "rainbow" ? "animate-flame-rainbow" : "animate-flame-badge"}
               style={{ fontSize: 11, filter: m.anim !== "rainbow" ? m.filter : undefined }}
             >🔥</span>
             <span
@@ -287,6 +288,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
                   return (
                     <span className="ml-auto flex items-center gap-0.5 shrink-0 pointer-events-none select-none">
                       <span
+                        className={m.anim === "rainbow" ? "animate-flame-rainbow" : "animate-flame-badge"}
                         style={{ fontSize: 12, filter: m.anim !== "rainbow" ? m.filter : undefined }}
                       >🔥</span>
                       <span

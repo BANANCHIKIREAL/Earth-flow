@@ -128,7 +128,7 @@ function CustomSoundCard({
 
   return (
     <div
-      className={`group relative glass rounded-3xl transition duration-300 ease-out p-3 min-h-24 ${
+      className={`group relative glass rounded-3xl transition duration-300 ease-out overflow-hidden p-3 min-h-24 ${
         track.enabled ? "glow-ring shadow-xl" : "hover:shadow-lg hover:border-foreground/20"
       }`}
     >

@@ -55,7 +55,7 @@ export function SoundMixer({ tracks, onToggle, onVolume, compact = false }: Prop
     <div
       className={`grid gap-3 ${
         compact
-          ? "grid-cols-2 sm:grid-cols-3 min-[640px]:grid-cols-5"
+          ? "grid-cols-2 sm:grid-cols-4"
           : "grid-cols-1 min-[420px]:grid-cols-2"
       }`}
     >

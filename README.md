@@ -1,32 +1,57 @@
-# Earth Flow
+<div align="center">
 
-A calm focus space — ambient sound mixer, Pomodoro timer, task tracker, and time analytics in one minimal interface.
+# 🌍 Earth Flow
 
-**Live:** https://earthflow.pro  
-**Repo:** https://github.com/BANANCHIKIREAL/Earth-flow
+A calm focus space — ambient sound mixer, Pomodoro timer,<br/>task tracker, and time analytics in one minimal interface.
 
----
+[![Live](https://img.shields.io/badge/Live-earthflow.pro-3dc9b0?style=flat-square&logo=vercel&logoColor=white)](https://earthflow.pro)
+[![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Supabase](https://img.shields.io/badge/Supabase-cloud-3ecf8e?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
 
-## Features
+<br/>
 
-- **Ambient Sound Mixer** — 16 layered nature sounds with individual volume control. Upload your own tracks.
-- **Focus Timer** — Configurable Pomodoro with optional lunch break, custom ring styles and fonts.
-- **Daily Tasks** — Task list with categories, live time tracking, and completion history.
-- **Time Analytics** — Donut chart showing time spent per category — day, week, month, or year.
-- **Backgrounds** — 10 gradient presets plus custom image upload synced to your account.
-- **Cloud Sync** — Settings, tasks, and custom backgrounds synced across devices via Supabase.
-- **Streak System** — Daily visit streak with flame badge, restore mechanic, and longest-streak record.
-- **Tutorial** — Spotlight-guided onboarding tour covering all key features.
+<img src="https://earthflow.pro/og-image.png" alt="Earth Flow preview" width="720" />
 
----
-
-## Tech Stack
-
-React 19 · TypeScript · TanStack Start · TanStack Router · TanStack Query · Tailwind CSS v4 · Supabase · Vite · Vercel · Lucide Icons
+</div>
 
 ---
 
-## Getting Started
+## ✨ Features
+
+| | Feature | Description |
+|---|---|---|
+| 🎛️ | **Ambient Sound Mixer** | 16 layered nature sounds with individual volume control. Upload your own tracks. |
+| ⏱️ | **Focus Timer** | Configurable Pomodoro with optional lunch break, custom ring styles and fonts. |
+| ✅ | **Daily Tasks** | Task list with categories, live time tracking, and completion history. |
+| 🍩 | **Time Analytics** | Donut chart showing time spent per category — day, week, month, or year. |
+| 🌌 | **Backgrounds** | 10 gradient presets plus custom image upload synced to your account. |
+| ☁️ | **Cloud Sync** | Settings, tasks, and custom backgrounds synced across devices via Supabase. |
+| 🔥 | **Streak System** | Daily visit streak with flame badge, restore mechanic, and longest-streak record. |
+| 🎓 | **Tutorial** | Spotlight-guided onboarding tour covering all key features. |
+
+---
+
+## 🛠 Tech Stack
+
+<div align="center">
+
+![React](https://img.shields.io/badge/React_19-20232a?style=for-the-badge&logo=react&logoColor=61dafb)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646cff?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_v4-06b6d4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
+</div>
+
+TanStack Start · TanStack Router · TanStack Query · Lucide Icons
+
+---
+
+## 🚀 Getting Started
 
 **Prerequisites:** Node.js 20+, a Supabase project.
 
@@ -43,11 +68,11 @@ npm run dev
 npm run build
 ```
 
-The build runs `generate-static-index.js` to produce a fully self-contained `dist/client/index.html` with OG meta tags baked in for social previews.
+> The build runs `generate-static-index.js` to produce a fully self-contained `dist/client/index.html` with OG meta tags baked in for social previews.
 
 ---
 
-## Environment Variables
+## 🔑 Environment Variables
 
 Create a `.env.local` file in the project root:
 
@@ -58,17 +83,19 @@ Create a `.env.local` file in the project root:
 
 ---
 
-## Supabase Setup
+## 🗄 Supabase Setup
+
+The app requires the following in your Supabase project:
 
 - Table `user_settings` — per-user settings JSON
 - Table `daily_tasks` — tasks and completion records
 - Table `user_streaks` — streak data
-- Storage bucket `user-backgrounds` (public) — custom background images
+- Storage bucket `user-backgrounds` *(public)* — custom background images
 - Storage bucket for avatars — user profile photos
 
 ---
 
-## Deployment
+## 📦 Deployment
 
 Deployed as a static SPA on Vercel via `@vercel/static-build`. The `vercel.json` handles SPA fallback routing — all routes redirect to `/index.html`.
 
@@ -76,7 +103,7 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 
 ---
 
-## Version History
+## 📋 Version History
 
 ### v4.2.3
 - Translated all remaining Russian strings in DonutChart, TodayTasks, ProfileModal, AddTrackModal

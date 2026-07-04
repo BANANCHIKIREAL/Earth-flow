@@ -97,7 +97,15 @@ async function main() {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Earth Flow</title>
+    <title>Earth Flow — Ambient sounds &amp; focus timer</title>
+    <meta name="description" content="A calm focus space with ambient sound mixer and Pomodoro timer." />
+    <meta property="og:title" content="Earth Flow" />
+    <meta property="og:description" content="Ambient sounds &amp; focus timer for deep work." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://earthflow.pro" />
+    <meta property="og:image" content="https://earthflow.pro/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://earthflow.pro/og-image.png" />
     ${styleFileName ? `<link rel="stylesheet" href="/assets/${styleFileName}" />` : ''}
   </head>
   <body>

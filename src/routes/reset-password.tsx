@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AuthLayout, inputCls, btnCls, errorCls } from "@/components/AuthLayout";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Сброс пароля — Earth Flow" }] }),
+  head: () => ({ meta: [{ title: "Reset Password — Earth Flow" }] }),
   component: ResetPasswordPage,
 });
 
@@ -21,7 +21,7 @@ function ResetPasswordPage() {
     setError(null);
     const { error } = await resetPassword(email);
     if (error) {
-      setError("Не удалось отправить письмо. Проверьте email.");
+      setError("Failed to send email. Please check the address.");
       setSubmitting(false);
     } else {
       setSent(true);
@@ -36,18 +36,18 @@ function ResetPasswordPage() {
             ✉️
           </div>
           <div>
-            <h2 className="font-display text-2xl text-foreground">Письмо отправлено</h2>
+            <h2 className="font-display text-2xl text-foreground">Email sent</h2>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-              Проверьте почту{" "}
+              Check your inbox at{" "}
               <span className="text-foreground font-medium">{email}</span>.<br />
-              Перейдите по ссылке для сброса пароля.
+              Click the link to reset your password.
             </p>
           </div>
           <p className="text-xs text-muted-foreground/50">
-            Не видите письмо? Проверьте папку «Спам».
+            Don't see the email? Check your spam folder.
           </p>
           <Link to="/login" className="inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Вернуться к входу
+            ← Back to sign in
           </Link>
         </div>
       </AuthLayout>
@@ -58,8 +58,8 @@ function ResetPasswordPage() {
     <AuthLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="font-display text-3xl text-foreground tracking-tight">Восстановить пароль</h1>
-          <p className="text-sm text-muted-foreground mt-1.5">Отправим ссылку для сброса на почту</p>
+          <h1 className="font-display text-3xl text-foreground tracking-tight">Reset your password</h1>
+          <p className="text-sm text-muted-foreground mt-1.5">We'll send a reset link to your email</p>
         </div>
 
         <div className="space-y-4">
@@ -70,20 +70,20 @@ function ResetPasswordPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Ваш email"
+              placeholder="Your email"
               required
               autoComplete="email"
               className={inputCls}
             />
             <button type="submit" disabled={submitting} className={btnCls}>
-              {submitting ? "Отправка…" : "Отправить ссылку"}
+              {submitting ? "Sending…" : "Send reset link"}
             </button>
           </form>
         </div>
 
         <div className="text-center">
           <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Вернуться к входу
+            ← Back to sign in
           </Link>
         </div>
       </div>

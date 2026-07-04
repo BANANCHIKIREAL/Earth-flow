@@ -38,7 +38,7 @@ export function SoundDock({
   const totalActive = activeCount + customTracks.filter((t) => t.enabled).length;
 
   return (
-    <section className="w-full">
+    <section className="w-full" data-tutorial="sound-dock">
       <div className="mx-auto max-w-5xl glass rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
@@ -106,8 +106,8 @@ function AddSoundCard({ onClick }: { onClick: () => void }) {
         <Plus className="h-5 w-5" />
       </span>
       <div className="text-center">
-        <div className="text-xs font-semibold text-foreground/80">Своя музыка</div>
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Добавить</div>
+        <div className="text-xs font-semibold text-foreground/80">Your music</div>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Add</div>
       </div>
     </button>
   );
@@ -135,7 +135,7 @@ function CustomSoundCard({
       <button
         onClick={() => onRemove(track.id)}
         className="absolute top-2 right-2 h-5 w-5 rounded-full bg-foreground/10 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all z-10"
-        title="Удалить"
+        title="Remove"
         type="button"
       >
         <Trash2 size={10} />

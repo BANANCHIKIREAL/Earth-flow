@@ -512,7 +512,7 @@ export function SettingsPanel({
 
           {/* Layout */}
           <section className="space-y-3">
-            <SectionTitle>Вид экрана</SectionTitle>
+            <SectionTitle>Layout</SectionTitle>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setLayout("classic")}
@@ -526,7 +526,7 @@ export function SettingsPanel({
                   </div>
                   <div className="h-2 w-full rounded-sm bg-current opacity-50" />
                 </div>
-                <div className="text-xs font-medium">Классический</div>
+                <div className="text-xs font-medium">Classic</div>
               </button>
               <button
                 onClick={() => setLayout("sidebar")}
@@ -537,7 +537,7 @@ export function SettingsPanel({
                   <div className="flex-1 rounded-sm bg-current opacity-50" />
                   <div className="w-4 rounded-sm bg-current opacity-70" />
                 </div>
-                <div className="text-xs font-medium">С панелями</div>
+                <div className="text-xs font-medium">Sidebar</div>
               </button>
             </div>
           </section>

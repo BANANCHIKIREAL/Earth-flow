@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Pause, Play, RotateCcw } from "lucide-react";
+import { Pause, Play, RotateCcw, Settings } from "lucide-react";
 import type { TimerFontStyle, TimerRingStyle } from "@/hooks/useSettings";
 import { useTimer, type TimerDurations, type TimerPhase } from "@/hooks/useTimer";
 import type { translations } from "@/lib/i18n";
@@ -18,6 +18,7 @@ export function Timer({
   ringWidth,
   fontStyle,
   fontSize,
+  onOpenSettings,
   copy,
 }: {
   durations: TimerDurations;
@@ -27,6 +28,7 @@ export function Timer({
   ringWidth: number;
   fontStyle: TimerFontStyle;
   fontSize: number;
+  onOpenSettings?: () => void;
   copy: typeof translations.en;
 }) {
   const { phase, remaining, running, total, start, pause, reset } = useTimer(
@@ -49,7 +51,7 @@ export function Timer({
   const c = 2 * Math.PI * r;
 
   return (
-    <div className="flex flex-col items-center gap-8 select-none w-full">
+    <div className="flex flex-col items-center gap-8 select-none w-full" data-tutorial="timer">
       <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
         {phase === "focus" ? copy.deepFocus : copy.lunchBreak}
       </div>
@@ -93,7 +95,7 @@ export function Timer({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3" data-tutorial="timer-controls">
         <button
           onClick={reset}
           className="h-12 w-12 rounded-full glass flex items-center justify-center hover:text-primary transition-colors"
@@ -108,7 +110,13 @@ export function Timer({
         >
           {running ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-1" />}
         </button>
-        <div className="h-12 w-12" />
+        <button
+          onClick={onOpenSettings}
+          className="h-12 w-12 rounded-full glass flex items-center justify-center hover:text-primary transition-colors"
+          aria-label="Settings"
+        >
+          <Settings size={18} />
+        </button>
       </div>
     </div>
   );

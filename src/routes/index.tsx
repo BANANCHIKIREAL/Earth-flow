@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Settings } from "lucide-react";
 import { Background } from "@/components/Background";
 import { SoundDock } from "@/components/SoundDock";
 import { Timer } from "@/components/Timer";
@@ -19,6 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 import { translations } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 import { STREAK_ENABLED } from "@/lib/flags";
+import { Tutorial, useTutorial } from "@/components/Tutorial";
 
 export const Route = createFileRoute("/")({
   component: FocusSpace,
@@ -59,6 +59,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const isGuest = !user;
   useSessionTracker(user ?? null);
   const streak = useStreak(userId);
+  const { show: tutorialShow, complete: tutorialComplete } = useTutorial();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [headerImgError, setHeaderImgError] = useState(false);
@@ -195,7 +196,8 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     <Timer
       durations={durations} lunchEnabled={lunchEnabled} onComplete={completeTimer}
       ringStyle={timerRingStyle} ringWidth={timerRingWidth}
-      fontStyle={timerFontStyle} fontSize={timerFontSize} copy={copy}
+      fontStyle={timerFontStyle} fontSize={timerFontSize}
+      onOpenSettings={() => setSettingsOpen(true)} copy={copy}
     />
   );
 
@@ -250,19 +252,16 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
 
         <aside className="hidden min-[900px]:flex w-52 shrink-0 flex-col py-5 border-r border-white/[0.06] z-10 relative">
-          <div className="px-5 mb-4">
-            <div className="flex items-center gap-2">
+          <div className="px-5 mb-4 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft shrink-0" />
               <span className="text-sm tracking-wide">
                 <span className="font-display text-base">Earth</span>
                 <span className="text-muted-foreground"> Flow</span>
               </span>
-            </div>
+            </Link>
           </div>
           <div className="px-3 space-y-0.5">
-            <button onClick={() => setSettingsOpen(true)} className="w-full h-10 px-3 rounded-xl flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
-              <Settings size={15} />{copy.settings}
-            </button>
             {isGuest ? (
               <>
                 <Link to="/login" className="w-full h-10 px-3 rounded-xl flex items-center text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
@@ -302,17 +301,18 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
             )}
           </div>
           <div className="flex-1" />
-          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v3.5.2</span></div>
+          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v4.1.0</span></div>
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-screen">
           <header className="min-[900px]:hidden flex items-center justify-between px-5 py-4 border-b border-white/[0.06] relative z-10">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
-              <span className="text-sm tracking-wide"><span className="font-display text-base">Earth</span><span className="text-muted-foreground"> Flow</span></span>
-            </div>
+              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
+                <span className="text-sm tracking-wide"><span className="font-display text-base">Earth</span><span className="text-muted-foreground"> Flow</span></span>
+              </Link>
+              </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => setSettingsOpen(true)} className="h-9 px-3 rounded-full glass text-xs inline-flex items-center gap-2 hover:text-primary transition-colors"><Settings size={14} />{copy.settings}</button>
               {isGuest ? guestAuthBtns : avatarBtn("h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden")}
             </div>
           </header>
@@ -320,18 +320,19 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
           <main className="flex-1 flex flex-col items-center justify-center px-6 py-10">
             <h1 className="sr-only">Earth Flow — ambient sounds and focus timer</h1>
             {timerEl}
-            <div className="min-[900px]:hidden mt-10 w-full max-w-md"><TodayTasks {...taskProps} /></div>
+            <div className="min-[900px]:hidden mt-10 w-full max-w-md" data-tutorial="tasks"><TodayTasks {...taskProps} /></div>
           </main>
 
           <div className="px-5 pb-5 min-[900px]:px-6 min-[900px]:pb-6 relative z-10">{soundDockEl}</div>
         </div>
 
-        <aside className="hidden min-[900px]:flex w-80 xl:w-96 shrink-0 flex-col py-5 px-4 border-l border-white/[0.06] z-10 relative overflow-y-auto">
+        <aside className="hidden min-[900px]:flex w-80 xl:w-96 shrink-0 flex-col py-5 px-4 border-l border-white/[0.06] z-10 relative overflow-y-auto" data-tutorial="tasks">
           <TodayTasks {...taskProps} />
         </aside>
 
         {!isGuest && profileModalEl}
         {settingsPanelEl}
+        {tutorialShow && <Tutorial onComplete={tutorialComplete} />}
       </div>
     );
   }
@@ -343,16 +344,15 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
 
       <header className="flex items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
-          <span className="text-sm tracking-wide">
-            <span className="font-display text-base">Earth</span>
-            <span className="text-muted-foreground"> Flow</span>
-          </span>
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
+            <span className="text-sm tracking-wide">
+              <span className="font-display text-base">Earth</span>
+              <span className="text-muted-foreground"> Flow</span>
+            </span>
+          </Link>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setSettingsOpen(true)} className="h-9 px-4 rounded-full glass text-xs inline-flex items-center gap-2 hover:text-primary transition-colors">
-            <Settings size={14} />{copy.settings}
-          </button>
           {isGuest ? guestAuthBtns : avatarBtn("h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden")}
         </div>
       </header>
@@ -361,15 +361,16 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         <h1 className="sr-only">Earth Flow — ambient sounds and focus timer</h1>
         <div className="grid items-center gap-8 min-[900px]:grid-cols-[minmax(280px,1fr)_minmax(320px,420px)]">
           <div className="flex justify-center min-[900px]:justify-end">{timerEl}</div>
-          <div className="flex justify-center min-[900px]:justify-start"><TodayTasks {...taskProps} /></div>
+          <div className="flex justify-center min-[900px]:justify-start" data-tutorial="tasks"><TodayTasks {...taskProps} /></div>
         </div>
         <div className="mt-8 md:mt-10">{soundDockEl}</div>
       </main>
 
-      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v3.5.2</footer>
+      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v4.1.0</footer>
 
       {!isGuest && profileModalEl}
       {settingsPanelEl}
+      {tutorialShow && <Tutorial onComplete={tutorialComplete} />}
     </div>
   );
 }

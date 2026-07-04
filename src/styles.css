@@ -89,6 +89,28 @@
     radial-gradient(ellipse 60% 50% at 15% 70%, oklch(0.42 0.11 190 / 0.5), transparent 55%),
     radial-gradient(ellipse 65% 45% at 82% 60%, oklch(0.38 0.1 215 / 0.4), transparent 60%),
     linear-gradient(180deg, oklch(0.09 0.04 208), oklch(0.12 0.05 198), oklch(0.08 0.03 220));
+
+  --gradient-mist:
+    radial-gradient(ellipse 90% 70% at 40% 15%, oklch(0.90 0.01 210 / 0.9), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 72% 78%, oklch(0.82 0.01 218 / 0.7), transparent 55%),
+    linear-gradient(160deg, oklch(0.84 0.01 212), oklch(0.74 0.01 220), oklch(0.80 0.01 206));
+
+  --gradient-stone:
+    radial-gradient(ellipse 90% 65% at 35% 20%, oklch(0.66 0.01 213 / 0.8), transparent 60%),
+    radial-gradient(ellipse 65% 55% at 74% 74%, oklch(0.58 0.01 218 / 0.6), transparent 55%),
+    linear-gradient(160deg, oklch(0.62 0.01 213), oklch(0.53 0.01 220), oklch(0.58 0.01 206));
+
+  --gradient-mahogany:
+    radial-gradient(ellipse 90% 70% at 35% 25%, oklch(0.22 0.05 50 / 0.7), transparent 65%),
+    radial-gradient(ellipse 70% 60% at 70% 72%, oklch(0.17 0.04 44 / 0.5), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 20% 75%, oklch(0.19 0.04 48 / 0.4), transparent 65%),
+    linear-gradient(180deg, oklch(0.15 0.04 48), oklch(0.10 0.03 42), oklch(0.13 0.04 45));
+
+  --gradient-wine:
+    radial-gradient(ellipse 90% 70% at 38% 22%, oklch(0.23 0.09 14 / 0.7), transparent 65%),
+    radial-gradient(ellipse 70% 60% at 68% 72%, oklch(0.18 0.08 8 / 0.5), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 18% 74%, oklch(0.20 0.07 10 / 0.4), transparent 65%),
+    linear-gradient(180deg, oklch(0.17 0.07 12), oklch(0.11 0.06 6), oklch(0.14 0.06 9));
 }
 
 .dark {
@@ -147,6 +169,10 @@
   .bg-sakura { background: var(--gradient-sakura); }
   .bg-galaxy { background: var(--gradient-galaxy); }
   .bg-arctic { background: var(--gradient-arctic); }
+  .bg-mist { background: var(--gradient-mist); }
+  .bg-stone { background: var(--gradient-stone); }
+  .bg-mahogany { background: var(--gradient-mahogany); }
+  .bg-wine { background: var(--gradient-wine); }
   .font-display { font-family: var(--font-display); }
   .font-geometric { font-family: "Trebuchet MS", "Segoe UI", "Helvetica Neue", sans-serif; }
   .font-rounded { font-family: "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif; }

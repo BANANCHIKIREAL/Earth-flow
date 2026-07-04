@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 
 function EarthGraphic({ className = "w-64 h-64" }: { className?: string }) {
   return (
@@ -35,14 +36,10 @@ function EarthGraphic({ className = "w-64 h-64" }: { className?: string }) {
         }
       `}</style>
 
-      {/* Outer decorative rings */}
       <circle cx="160" cy="160" r="156" stroke="currentColor" strokeOpacity="0.04" strokeWidth="1" />
       <circle cx="160" cy="160" r="138" stroke="currentColor" strokeOpacity="0.05" strokeWidth="1" />
-
-      {/* Globe border — subtle breathing */}
       <circle cx="160" cy="160" r="118" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" className="e-border" />
 
-      {/* Static parallels (horizontal — stay fixed for correct axis-rotation feel) */}
       <g clipPath="url(#earth-clip)" stroke="currentColor" fill="none">
         <line x1="42" y1="100" x2="278" y2="100" strokeOpacity="0.06" strokeWidth="0.75" />
         <line x1="42" y1="130" x2="278" y2="130" strokeOpacity="0.08" strokeWidth="0.75" />
@@ -51,14 +48,12 @@ function EarthGraphic({ className = "w-64 h-64" }: { className?: string }) {
         <line x1="42" y1="220" x2="278" y2="220" strokeOpacity="0.06" strokeWidth="0.75" />
       </g>
 
-      {/* Rotating meridians — creates globe-spin illusion */}
       <g clipPath="url(#earth-clip)" stroke="currentColor" fill="none" className="e-meridians">
         <ellipse cx="160" cy="160" rx="16"  ry="118" strokeOpacity="0.07" strokeWidth="0.75" />
         <ellipse cx="160" cy="160" rx="55"  ry="118" strokeOpacity="0.09" strokeWidth="0.75" />
         <ellipse cx="160" cy="160" rx="94"  ry="118" strokeOpacity="0.08" strokeWidth="0.75" />
       </g>
 
-      {/* Orbiting accent arc + dot (like a satellite ring) */}
       <g className="e-orbit">
         <path
           d="M 42 160 A 118 118 0 0 1 160 42"
@@ -70,7 +65,6 @@ function EarthGraphic({ className = "w-64 h-64" }: { className?: string }) {
         <circle cx="87" cy="86" r="2.5" fill="currentColor" fillOpacity="0.6" />
       </g>
 
-      {/* Center dot */}
       <circle cx="160" cy="160" r="2" fill="currentColor" fillOpacity="0.3" />
     </svg>
   );
@@ -82,31 +76,31 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       <div className="hidden min-[900px]:flex w-[44%] xl:w-[40%] shrink-0 flex-col items-center justify-center p-16 relative overflow-hidden" style={{ background: "#0c0c0e" }}>
         <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] to-transparent pointer-events-none" />
         <div className="relative z-10 flex flex-col items-center text-center gap-10">
-          <div className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
             <span className="text-sm text-muted-foreground tracking-widest uppercase">
               <span className="font-display text-base normal-case text-foreground">Earth</span>{" "}Flow
             </span>
-          </div>
+          </Link>
           <EarthGraphic />
           <div className="space-y-2.5 max-w-[260px]">
             <p className="font-display text-[1.6rem] leading-snug text-foreground">
-              Сосредоточься<br />на главном
+              Focus on<br />what matters
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Ambient звуки и Pomodoro таймер для глубокой фокусировки
+              Ambient sounds and Pomodoro timer for deep focus
             </p>
           </div>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-8 py-12 min-h-screen" style={{ background: "#111115" }}>
-        <div className="min-[900px]:hidden flex items-center gap-2 mb-10">
+        <Link to="/" className="min-[900px]:hidden flex items-center gap-2 mb-10 hover:opacity-80 transition-opacity">
           <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
           <span className="text-sm text-muted-foreground">
             <span className="font-display text-base text-foreground">Earth</span> Flow
           </span>
-        </div>
+        </Link>
         <div className="w-full max-w-sm">{children}</div>
       </div>
     </div>
@@ -140,7 +134,7 @@ export function Divider() {
   return (
     <div className="flex items-center gap-3 py-1">
       <div className="flex-1 border-t border-white/10" />
-      <span className="text-[11px] text-muted-foreground/50">или</span>
+      <span className="text-[11px] text-muted-foreground/50">or</span>
       <div className="flex-1 border-t border-white/10" />
     </div>
   );

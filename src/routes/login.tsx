@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AuthLayout, GoogleIcon, Divider, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Вход — Earth Flow" }] }),
+  head: () => ({ meta: [{ title: "Sign In — Earth Flow" }] }),
   component: LoginPage,
 });
 
@@ -26,7 +26,7 @@ function LoginPage() {
     setError(null);
     const { error } = await signIn(email, password);
     if (error) {
-      setError("Неверный email или пароль");
+      setError("Invalid email or password");
       setSubmitting(false);
     }
   };
@@ -35,8 +35,8 @@ function LoginPage() {
     <AuthLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="font-display text-3xl text-foreground tracking-tight">С возвращением</h1>
-          <p className="text-sm text-muted-foreground mt-1.5">Войдите, чтобы продолжить</p>
+          <h1 className="font-display text-3xl text-foreground tracking-tight">Welcome back</h1>
+          <p className="text-sm text-muted-foreground mt-1.5">Sign in to continue</p>
         </div>
 
         <div className="space-y-4">
@@ -56,13 +56,13 @@ function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Пароль"
+              placeholder="Password"
               required
               autoComplete="current-password"
               className={inputCls}
             />
             <button type="submit" disabled={submitting} className={btnCls}>
-              {submitting ? "Входим…" : "Войти"}
+              {submitting ? "Signing in…" : "Sign in"}
             </button>
           </form>
 
@@ -70,20 +70,20 @@ function LoginPage() {
 
           <button onClick={() => void signInWithGoogle()} className={ghostBtnCls}>
             <GoogleIcon />
-            Продолжить с Google
+            Continue with Google
           </button>
         </div>
 
         <div className="space-y-2 text-center text-xs text-muted-foreground">
           <div>
             <Link to="/reset-password" className="hover:text-foreground transition-colors">
-              Забыли пароль?
+              Forgot password?
             </Link>
           </div>
           <div>
-            Нет аккаунта?{" "}
+            Don't have an account?{" "}
             <Link to="/register" className="text-foreground hover:text-primary transition-colors font-medium">
-              Создать
+              Sign up
             </Link>
           </div>
         </div>

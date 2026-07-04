@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AuthLayout, GoogleIcon, Divider, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
 
 export const Route = createFileRoute("/register")({
-  head: () => ({ meta: [{ title: "Регистрация — Earth Flow" }] }),
+  head: () => ({ meta: [{ title: "Sign Up — Earth Flow" }] }),
   validateSearch: (search: Record<string, unknown>) => ({
     email: typeof search.email === "string" ? search.email : undefined,
   }),
@@ -40,10 +40,10 @@ function getStrength(p: string): { score: number; label: string; color: string }
   if (/[A-Z]/.test(p)) score++;
   if (/[0-9]/.test(p)) score++;
   if (/[^A-Za-z0-9]/.test(p)) score++;
-  if (score <= 1) return { score: 1, label: "Слабый",   color: "bg-red-500" };
-  if (score === 2) return { score: 2, label: "Средний",  color: "bg-orange-400" };
-  if (score === 3) return { score: 3, label: "Хороший",  color: "bg-yellow-400" };
-  return              { score: 4, label: "Сильный",   color: "bg-green-400" };
+  if (score <= 1) return { score: 1, label: "Weak",   color: "bg-red-500" };
+  if (score === 2) return { score: 2, label: "Fair",   color: "bg-orange-400" };
+  if (score === 3) return { score: 3, label: "Good",   color: "bg-yellow-400" };
+  return              { score: 4, label: "Strong",  color: "bg-green-400" };
 }
 
 function RegisterPage() {
@@ -65,11 +65,11 @@ function RegisterPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) { setError("Пароль должен содержать минимум 6 символов"); return; }
-    if (/[а-яёА-ЯЁ]/.test(password)) { setError("Пароль не может содержать русские буквы"); return; }
-    if (isBanned(password)) { setError("Этот пароль слишком распространённый — придумайте что-нибудь уникальное"); return; }
-    if (strength.score < 2) { setError("Пароль слишком слабый — добавьте цифры или заглавные буквы"); return; }
-    if (password !== confirm) { setError("Пароли не совпадают"); return; }
+    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    if (/[а-яёА-ЯЁ]/.test(password)) { setError("Password cannot contain Cyrillic characters"); return; }
+    if (isBanned(password)) { setError("This password is too common — please choose something unique"); return; }
+    if (strength.score < 2) { setError("Password too weak — add numbers or uppercase letters"); return; }
+    if (password !== confirm) { setError("Passwords don't match"); return; }
     setSubmitting(true);
     setError(null);
     const { error } = await signUp(email, password);
@@ -79,7 +79,7 @@ function RegisterPage() {
         error.message.toLowerCase().includes("already been registered") ||
         error.message.toLowerCase().includes("user already exists")
       ) {
-        setError("Аккаунт с этой почтой уже существует. Попробуйте войти.");
+        setError("An account with this email already exists. Try signing in.");
       } else {
         setError(error.message);
       }
@@ -97,25 +97,25 @@ function RegisterPage() {
             📬
           </div>
           <div>
-            <h2 className="font-display text-2xl text-foreground">Проверьте почту</h2>
+            <h2 className="font-display text-2xl text-foreground">Check your email</h2>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-              Мы отправили письмо на{" "}
+              We sent a message to{" "}
               <span className="text-foreground font-medium">{email}</span>.<br />
-              Перейдите по ссылке для подтверждения аккаунта.
+              Click the link to confirm your account.
             </p>
           </div>
           <p className="text-xs text-muted-foreground/50 leading-relaxed">
-            Не видите письмо? Проверьте папку «Спам».<br />
-            Если письмо не пришло — возможно эта почта уже зарегистрирована.{" "}
+            Don't see the email? Check your spam folder.<br />
+            If it never arrives, this email may already be registered.{" "}
             <Link to="/login" className="underline hover:text-muted-foreground transition-colors">
-              Попробуйте войти.
+              Try signing in.
             </Link>
           </p>
           <button
             onClick={() => { setSuccess(false); setSubmitting(false); }}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← Вернуться к регистрации
+            ← Back to sign up
           </button>
         </div>
       </AuthLayout>
@@ -126,8 +126,8 @@ function RegisterPage() {
     <AuthLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="font-display text-3xl text-foreground tracking-tight">Создать аккаунт</h1>
-          <p className="text-sm text-muted-foreground mt-1.5">Имя можно добавить позже в настройках</p>
+          <h1 className="font-display text-3xl text-foreground tracking-tight">Create account</h1>
+          <p className="text-sm text-muted-foreground mt-1.5">You can add your name later in settings</p>
         </div>
 
         <div className="space-y-4">
@@ -147,7 +147,7 @@ function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Пароль (мин. 6 символов)"
+              placeholder="Password (min. 6 characters)"
               required
               autoComplete="new-password"
               className={inputCls}
@@ -165,7 +165,7 @@ function RegisterPage() {
                   ))}
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[11px] text-muted-foreground/60">Надёжность пароля</span>
+                  <span className="text-[11px] text-muted-foreground/60">Password strength</span>
                   <span className={`text-[11px] font-medium transition-colors ${
                     strength.score <= 1 ? "text-red-400" :
                     strength.score === 2 ? "text-orange-400" :
@@ -178,13 +178,13 @@ function RegisterPage() {
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Повторите пароль"
+              placeholder="Confirm password"
               required
               autoComplete="new-password"
               className={inputCls}
             />
             <button type="submit" disabled={submitting} className={btnCls}>
-              {submitting ? "Создание…" : "Создать аккаунт"}
+              {submitting ? "Creating…" : "Create account"}
             </button>
           </form>
 
@@ -192,14 +192,14 @@ function RegisterPage() {
 
           <button onClick={() => void signInWithGoogle()} className={ghostBtnCls}>
             <GoogleIcon />
-            Продолжить с Google
+            Continue with Google
           </button>
         </div>
 
         <div className="text-center text-xs text-muted-foreground">
-          Уже есть аккаунт?{" "}
+          Already have an account?{" "}
           <Link to="/login" className="text-foreground hover:text-primary transition-colors font-medium">
-            Войти
+            Sign in
           </Link>
         </div>
       </div>

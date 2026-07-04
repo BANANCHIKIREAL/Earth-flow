@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Minus,
   Plus,
+  Loader2,
 } from "lucide-react";
 import { BACKGROUNDS, type BackgroundVariant } from "./Background";
 import type { FinishSound } from "@/hooks/useFinishSound";
@@ -30,10 +31,14 @@ import {
 } from "@/hooks/useSettings";
 import { toColorInputValue } from "@/lib/color";
 import type { translations } from "@/lib/i18n";
+import { supabase } from "@/lib/supabase";
+
+const MAX_BG_BYTES = 5 * 1024 * 1024;
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  userId?: string;
   durations: TimerDurations;
   setDurations: (d: Partial<TimerDurations>) => void;
   lunchEnabled: boolean;
@@ -73,6 +78,7 @@ interface Props {
 export function SettingsPanel({
   open,
   onClose,
+  userId,
   durations,
   setDurations,
   lunchEnabled,
@@ -111,6 +117,9 @@ export function SettingsPanel({
   const fileRef = useRef<HTMLInputElement>(null);
   const audioFileRef = useRef<HTMLInputElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -119,13 +128,31 @@ export function SettingsPanel({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") setBgImage(reader.result);
-    };
-    reader.readAsDataURL(file);
+    setUploadError(null);
+    const isLarge = file.size > MAX_BG_BYTES;
+    if (userId && !isLarge) {
+      setUploading(true);
+      const path = `${userId}/bg`;
+      const { error } = await supabase.storage
+        .from("user-backgrounds")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      setUploading(false);
+      if (error) {
+        setUploadError("Upload failed, try again");
+        return;
+      }
+      const { data } = supabase.storage.from("user-backgrounds").getPublicUrl(path);
+      setBgImage(data.publicUrl);
+    } else {
+      if (isLarge) setUploadError("Image over 5 MB — saved locally only, won't sync across devices");
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") setBgImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -471,21 +498,25 @@ export function SettingsPanel({
             />
             <div className="flex gap-2">
               <button
-                onClick={() => fileRef.current?.click()}
-                className="flex-1 h-10 rounded-full bg-foreground text-background text-sm font-medium inline-flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                onClick={() => { if (!uploading) fileRef.current?.click(); }}
+                disabled={uploading}
+                className="flex-1 h-10 rounded-full bg-foreground text-background text-sm font-medium inline-flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <Upload size={14} />
-                {bgImage ? copy.changeBackground : copy.uploadImage}
+                {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                {uploading ? "Uploading…" : bgImage ? copy.changeBackground : copy.uploadImage}
               </button>
-              {bgImage && (
+              {bgImage && !uploading && (
                 <button
-                  onClick={() => setBgImage(null)}
+                  onClick={() => { setBgImage(null); setUploadError(null); }}
                   className="h-10 px-4 rounded-full glass text-sm inline-flex items-center gap-2 hover:text-primary transition-colors"
                 >
                   <RotateCcw size={14} /> {copy.reset}
                 </button>
               )}
             </div>
+            {uploadError && (
+              <p className="text-xs text-yellow-400/80">{uploadError}</p>
+            )}
           </section>
 
           {/* Background blur */}

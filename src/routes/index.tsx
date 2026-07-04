@@ -213,6 +213,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const settingsPanelEl = (
     <SettingsPanel
       open={settingsOpen} onClose={() => setSettingsOpen(false)}
+      userId={userId}
       durations={durations} setDurations={setDurations}
       lunchEnabled={lunchEnabled} setLunchEnabled={setLunchEnabled}
       stopSoundsOnTimerEnd={stopSoundsOnTimerEnd} setStopSoundsOnTimerEnd={setStopSoundsOnTimerEnd}
@@ -301,7 +302,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
             )}
           </div>
           <div className="flex-1" />
-          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v4.1.0</span></div>
+          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v4.2.2</span></div>
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-screen">
@@ -366,7 +367,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         <div className="mt-8 md:mt-10">{soundDockEl}</div>
       </main>
 
-      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v4.1.0</footer>
+      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v4.2.2</footer>
 
       {!isGuest && profileModalEl}
       {settingsPanelEl}

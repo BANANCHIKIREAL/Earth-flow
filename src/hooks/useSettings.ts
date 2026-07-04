@@ -191,6 +191,7 @@ export function useSettings(userId?: string) {
           }
           if (typeof s.lunchEnabled === "boolean") setLunchEnabledState(s.lunchEnabled);
           if (typeof s.bgVariant === "string") setBgVariantState(s.bgVariant as BackgroundVariant);
+          if (typeof s.bgImageUrl === "string") setBgImageState(s.bgImageUrl);
           if (typeof s.bgBlur === "number") setBgBlurState(clampBlur(s.bgBlur));
           if (typeof s.customTimerRingColor === "string") setCustomTimerRingColorState(s.customTimerRingColor);
           if (typeof s.timerRingStyleId === "string") {
@@ -300,6 +301,7 @@ export function useSettings(userId?: string) {
           durations,
           lunchEnabled,
           bgVariant,
+          bgImageUrl: bgImage?.startsWith("http") ? bgImage : null,
           bgBlur,
           timerRingStyleId: timerRingStyle.id,
           customTimerRingColor,

@@ -55,7 +55,7 @@ export function AddTrackModal({ open, onClose, onAddFromFile }: Props) {
 
           <div className="flex items-center justify-between">
             <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-              Своя музыка
+              Your music
             </div>
             <button
               onClick={onClose}
@@ -80,13 +80,13 @@ export function AddTrackModal({ open, onClose, onAddFromFile }: Props) {
               <div className="text-center">
                 <div className="text-sm font-medium truncate max-w-[200px]">{pendingFile.name}</div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {(pendingFile.size / 1024 / 1024).toFixed(1)} МБ
+                  {(pendingFile.size / 1024 / 1024).toFixed(1)} MB
                 </div>
               </div>
             ) : (
               <div className="text-center">
-                <div className="text-sm text-foreground/70">Перетащите аудиофайл</div>
-                <div className="text-xs text-muted-foreground mt-0.5">или нажмите для выбора</div>
+                <div className="text-sm text-foreground/70">Drag an audio file</div>
+                <div className="text-xs text-muted-foreground mt-0.5">or click to browse</div>
               </div>
             )}
           </div>
@@ -106,14 +106,14 @@ export function AddTrackModal({ open, onClose, onAddFromFile }: Props) {
                 disabled={adding}
                 className="flex-1 h-9 rounded-full glass border border-border text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
               >
-                Убрать
+                Remove
               </button>
               <button
                 onClick={() => void handleAdd()}
                 disabled={adding}
                 className="flex-1 h-9 rounded-full bg-foreground text-background text-xs font-medium hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50 disabled:scale-100"
               >
-                {adding ? "Добавление…" : "Добавить"}
+                {adding ? "Adding…" : "Add"}
               </button>
             </div>
           ) : (
@@ -121,12 +121,12 @@ export function AddTrackModal({ open, onClose, onAddFromFile }: Props) {
               onClick={() => fileRef.current?.click()}
               className="w-full h-9 rounded-full glass border border-border text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              Выбрать файл
+              Choose file
             </button>
           )}
 
           <p className="text-center text-[11px] text-muted-foreground/50">
-            Треки хранятся локально и не синхронизируются между устройствами
+            Tracks are stored locally and won't sync across devices
           </p>
         </div>
       </div>

@@ -1,8 +1,12 @@
 @import "tailwindcss";
-@source "./";
+@source "./**/*.{tsx,ts,jsx,js,html}";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
+@theme {
+  --breakpoint-panel: 900px;
+}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

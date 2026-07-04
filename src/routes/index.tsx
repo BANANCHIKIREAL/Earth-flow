@@ -251,7 +251,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
       <div className="dark relative min-h-screen w-full flex text-foreground overflow-hidden animate-app-enter">
         <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
 
-        <aside className="hidden min-[900px]:flex w-52 shrink-0 flex-col py-5 border-r border-white/[0.06] z-10 relative">
+        <aside className="hidden panel:flex w-52 shrink-0 flex-col py-5 border-r border-white/[0.06] z-10 relative">
           <div className="px-5 mb-4 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft shrink-0" />
@@ -305,7 +305,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-screen">
-          <header className="min-[900px]:hidden flex items-center justify-between px-5 py-4 border-b border-white/[0.06] relative z-10">
+          <header className="panel:hidden flex items-center justify-between px-5 py-4 border-b border-white/[0.06] relative z-10">
             <div className="flex items-center gap-2">
               <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
@@ -320,13 +320,13 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
           <main className="flex-1 flex flex-col items-center justify-center px-6 py-10">
             <h1 className="sr-only">Earth Flow — ambient sounds and focus timer</h1>
             {timerEl}
-            <div className="min-[900px]:hidden mt-10 w-full max-w-md" data-tutorial="tasks"><TodayTasks {...taskProps} /></div>
+            <div className="panel:hidden mt-10 w-full max-w-md" data-tutorial="tasks"><TodayTasks {...taskProps} /></div>
           </main>
 
-          <div className="px-5 pb-5 min-[900px]:px-6 min-[900px]:pb-6 relative z-10">{soundDockEl}</div>
+          <div className="px-5 pb-5 panel:px-6 panel:pb-6 relative z-10">{soundDockEl}</div>
         </div>
 
-        <aside className="hidden min-[900px]:flex w-80 xl:w-96 shrink-0 flex-col py-5 px-4 border-l border-white/[0.06] z-10 relative overflow-y-auto" data-tutorial="tasks">
+        <aside className="hidden panel:flex w-80 xl:w-96 shrink-0 flex-col py-5 px-4 border-l border-white/[0.06] z-10 relative overflow-y-auto" data-tutorial="tasks">
           <TodayTasks {...taskProps} />
         </aside>
 
@@ -357,11 +357,11 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         </div>
       </header>
 
-      <main className="flex-1 px-6 pt-8 pb-10 min-[900px]:px-10 min-[900px]:pt-4">
+      <main className="flex-1 px-6 pt-8 pb-10 panel:px-10 panel:pt-4">
         <h1 className="sr-only">Earth Flow — ambient sounds and focus timer</h1>
-        <div className="grid items-center gap-8 min-[900px]:grid-cols-[minmax(280px,1fr)_minmax(320px,420px)]">
-          <div className="flex justify-center min-[900px]:justify-end">{timerEl}</div>
-          <div className="flex justify-center min-[900px]:justify-start" data-tutorial="tasks"><TodayTasks {...taskProps} /></div>
+        <div className="grid items-center gap-8 panel:grid-cols-[minmax(280px,1fr)_minmax(320px,420px)]">
+          <div className="flex justify-center panel:justify-end">{timerEl}</div>
+          <div className="flex justify-center panel:justify-start" data-tutorial="tasks"><TodayTasks {...taskProps} /></div>
         </div>
         <div className="mt-8 md:mt-10">{soundDockEl}</div>
       </main>

@@ -220,7 +220,7 @@ export function SettingsPanel({
               <SectionTitle>{copy.countdownFont}</SectionTitle>
               <span className="text-xs tabular-nums text-muted-foreground">{timerFontSize}px</span>
             </div>
-            <div className="grid grid-cols-2 min-[600px]:grid-cols-3 min-[900px]:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 min-[600px]:grid-cols-3 panel:grid-cols-4 gap-2">
               {TIMER_FONT_STYLES.map((style) => (
                 <button
                   key={style.id}

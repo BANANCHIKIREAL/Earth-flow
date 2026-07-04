@@ -81,9 +81,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Earth Flow" },
       { property: "og:description", content: "Ambient sounds & focus timer" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "/og-image.png" },
+      { property: "og:image", content: "https://earthflow.pro/og-image.png" },
+      { property: "og:url", content: "https://earthflow.pro" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "/og-image.png" },
+      { name: "twitter:image", content: "https://earthflow.pro/og-image.png" },
     ],
     links: [
       {

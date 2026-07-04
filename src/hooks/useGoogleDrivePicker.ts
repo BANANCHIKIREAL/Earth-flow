@@ -53,7 +53,7 @@ export function useGoogleDrivePicker() {
         );
 
       new google.picker.PickerBuilder()
-        .setTitle("Выберите аудиофайл")
+        .setTitle("Select an audio file")
         .addView(view)
         .setOAuthToken(token)
         .setDeveloperKey(API_KEY)

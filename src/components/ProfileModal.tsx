@@ -220,7 +220,7 @@ export function ProfileModal({
     setUploading(true);
     const { error } = await onUploadAvatar(file);
     setUploading(false);
-    if (error) setUploadError("Не удалось загрузить фото. Попробуйте ещё раз.");
+    if (error) setUploadError("Failed to upload photo. Please try again.");
   };
 
   if (!open) return null;
@@ -236,7 +236,7 @@ export function ProfileModal({
 
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Профиль</div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Profile</div>
             <button onClick={onClose} className="h-8 w-8 rounded-full glass flex items-center justify-center hover:text-primary transition-colors">
               <X size={14} />
             </button>
@@ -278,17 +278,17 @@ export function ProfileModal({
             {currentStreak === 0 && (
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 space-y-3">
                 <div className="space-y-1">
-                  <div className="text-xs font-medium text-foreground/80">Активируй свой огонёк!</div>
+                  <div className="text-xs font-medium text-foreground/80">Start your streak!</div>
                   <div className="text-[11px] text-muted-foreground leading-relaxed">
-                    Заходи каждый день и огонёк будет расти и становиться круче.
-                    Пропустишь 3 дня — стрик сбросится, но его можно вернуть — до 3 раз в месяц.
+                    Visit every day and your flame will grow stronger.
+                    Miss 3 days and the streak resets, but you can restore it — up to 3 times a month.
                   </div>
                 </div>
                 <button
                   onClick={() => streak.recordSession()}
                   className="w-full h-9 rounded-lg bg-primary/10 border border-primary/20 text-sm font-medium text-primary hover:bg-primary/15 hover:border-primary/35 transition-all"
                 >
-                  Начать огонёк 🔥
+                  Start streak 🔥
                 </button>
               </div>
             )}
@@ -313,11 +313,11 @@ export function ProfileModal({
                 <div className="flex items-start gap-2">
                   <span className="text-lg leading-none mt-0.5">{canRestore ? "💔" : "😢"}</span>
                   <div>
-                    <div className="text-xs font-medium text-foreground/80">Стрик прерван</div>
+                    <div className="text-xs font-medium text-foreground/80">Streak broken</div>
                     <div className="text-[10px] text-muted-foreground mt-0.5">
                       {canRestore
-                        ? `Осталось ${restoresLeft} из 3 восстановлений в этом месяце.`
-                        : "Лимит восстановлений исчерпан (3/3). Стрик начнётся заново."}
+                        ? `${restoresLeft} of 3 restores left this month.`
+                        : "Restore limit reached (3/3). Streak will start fresh."}
                     </div>
                   </div>
                 </div>
@@ -326,7 +326,7 @@ export function ProfileModal({
                     onClick={() => streak.restoreStreak()}
                     className="w-full h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-400 font-medium inline-flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition-colors"
                   >
-                    <RotateCcw size={12} /> Восстановить стрик
+                    <RotateCcw size={12} /> Restore streak
                   </button>
                 )}
               </div>
@@ -337,14 +337,14 @@ export function ProfileModal({
           {/* Display name */}
           <div className="space-y-2">
             <label className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-              <User size={11} /> Имя
+              <User size={11} /> Name
             </label>
             <div className="flex gap-2">
               <input
                 value={draft}
                 onChange={(e) => { setDraft(e.target.value); setSaved(false); }}
                 onKeyDown={(e) => { if (e.key === "Enter") void handleSave(); }}
-                placeholder="Добавить имя"
+                placeholder="Add name"
                 className="flex-1 min-w-0 rounded-full border border-border bg-foreground/5 px-4 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
               />
               <button
@@ -363,7 +363,7 @@ export function ProfileModal({
             className="w-full h-9 rounded-full glass border border-border text-sm inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-red-400 hover:border-red-400/40 transition-colors"
           >
             <LogOut size={14} />
-            Выйти из аккаунта
+            Sign out
           </button>
         </div>
       </div>

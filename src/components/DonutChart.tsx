@@ -97,7 +97,7 @@ export function DonutChart({ tasks, archivedTasks = [], hiddenIds = [], categori
             strokeWidth={outerR - innerR} strokeDasharray="6 10" opacity={0.18} />
         </svg>
         <p className="text-sm text-center">
-          Добавь задачи — они появятся<br />на диаграмме автоматически
+          Add tasks — they'll appear<br />on the chart automatically
         </p>
       </div>
     );
@@ -226,7 +226,7 @@ export function DonutChart({ tasks, archivedTasks = [], hiddenIds = [], categori
               <foreignObject x={trashX} y={trashY} width={iconSize} height={iconSize}>
                 <button
                   onClick={(e) => { e.stopPropagation(); onRemoveFromChart?.(s.id); }}
-                  title="Удалить с графика"
+                  title="Remove from chart"
                   style={{
                     width: iconSize,
                     height: iconSize,

@@ -202,7 +202,7 @@ export function TodayTasks({
               onChange={(e) => setNewCatName(e.target.value)}
               onBlur={handleAddCategory}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCategory(); } if (e.key === "Escape") { setAddingCat(false); setNewCatName(""); } }}
-              placeholder="Название..."
+              placeholder="Task name..."
               className="w-28 rounded-full border border-primary bg-foreground/5 px-3 py-0.5 text-xs outline-none placeholder:text-muted-foreground"
             />
           ) : (
@@ -212,7 +212,7 @@ export function TodayTasks({
               className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
             >
               <Tag size={10} />
-              Категория
+              Category
             </button>
           )}
         </div>
@@ -291,8 +291,8 @@ export function TodayTasks({
       <Dialog open={chartOpen} onOpenChange={setChartOpen}>
         <DialogContent className="dark glass max-w-2xl border-border bg-background/95 text-foreground max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl">Распределение времени</DialogTitle>
-            <DialogDescription>Время, потраченное на задачи за выбранный период.</DialogDescription>
+            <DialogTitle className="font-display text-2xl">Time distribution</DialogTitle>
+            <DialogDescription>Time spent on tasks in the selected period.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-wrap gap-2">
             {(["day", "week", "month", "year"] as StatsPeriod[]).map((p) => (
@@ -305,7 +305,7 @@ export function TodayTasks({
                     : "border-border bg-foreground/5 text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {p === "day" ? "День" : p === "week" ? "Неделя" : p === "month" ? "Месяц" : "Год"}
+                {p === "day" ? "Day" : p === "week" ? "Week" : p === "month" ? "Month" : "Year"}
               </button>
             ))}
           </div>
@@ -378,14 +378,14 @@ function CategorySummary({ tasks, archivedTasks, hiddenIds, categories }: Catego
 
   return (
     <div className="space-y-2 rounded-2xl border border-border bg-foreground/5 p-4">
-      <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground mb-3">По категориям</div>
+      <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground mb-3">By category</div>
       {stats.map(({ cat, count, totalSec }) => (
         <div key={cat.id} className="space-y-1">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cat.color }} />
               <span className="text-sm truncate">{cat.name}</span>
-              <span className="text-xs text-muted-foreground shrink-0">{count} {count === 1 ? "задача" : count < 5 ? "задачи" : "задач"}</span>
+              <span className="text-xs text-muted-foreground shrink-0">{count} {count === 1 ? "task" : "tasks"}</span>
             </div>
             <span className="text-sm font-semibold tabular-nums shrink-0" style={{ color: cat.color }}>
               {fmtSeconds(totalSec)}

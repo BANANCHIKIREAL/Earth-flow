@@ -105,6 +105,13 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 
 ## 📋 Version History
 
+### v4.3.0 — Landing Page
+- New animated landing page at `/welcome`: starfield canvas, shimmer headline, live ticking timer mock with 3D tilt and equalizer, scrolling sounds marquee, scroll-reveal sections
+- Clickable atmosphere tiles — theme applies live on the page and carries into the app
+- Landing is now the home page for logged-out visitors; guests enter the app via "Start focusing"
+- Logged-in users see a profile chip in the landing header instead of Sign in / Sign up
+- App logo (all layouts) now links to the landing page
+
 ### v4.2.3
 - Translated all remaining Russian strings in DonutChart, TodayTasks, ProfileModal, AddTrackModal
 - Google Drive picker title translated

@@ -43,7 +43,16 @@ export const Route = createFileRoute("/")({
 function FocusSpace() {
   const { user, loading } = useAuth();
 
-  if (loading) {
+  const guestEntered =
+    typeof window !== "undefined" && sessionStorage.getItem("ef-app-entered") === "1";
+
+  useEffect(() => {
+    if (!loading && !user && !guestEntered) {
+      window.location.replace("/welcome");
+    }
+  }, [loading, user, guestEntered]);
+
+  if (loading || (!user && !guestEntered)) {
     return (
       <div className="dark min-h-screen flex items-center justify-center bg-background">
         <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
@@ -254,7 +263,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
 
         <aside className="hidden panel:flex w-52 shrink-0 flex-col py-5 border-r border-white/[0.06] z-10 relative">
           <div className="px-5 mb-4 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Link to="/welcome" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft shrink-0" />
               <span className="text-sm tracking-wide">
                 <span className="font-display text-base">Earth</span>
@@ -302,13 +311,13 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
             )}
           </div>
           <div className="flex-1" />
-          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v4.2.3</span></div>
+          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v4.3.0</span></div>
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0 min-h-screen">
           <header className="panel:hidden flex items-center justify-between px-5 py-4 border-b border-white/[0.06] relative z-10">
             <div className="flex items-center gap-2">
-              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <Link to="/welcome" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
                 <span className="text-sm tracking-wide"><span className="font-display text-base">Earth</span><span className="text-muted-foreground"> Flow</span></span>
               </Link>
@@ -345,7 +354,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
 
       <header className="flex items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link to="/welcome" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
             <span className="text-sm tracking-wide">
               <span className="font-display text-base">Earth</span>
@@ -367,7 +376,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         <div className="mt-8 md:mt-10">{soundDockEl}</div>
       </main>
 
-      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v4.2.3</footer>
+      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v4.3.0</footer>
 
       {!isGuest && profileModalEl}
       {settingsPanelEl}

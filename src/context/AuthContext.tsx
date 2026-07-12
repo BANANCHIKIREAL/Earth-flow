@@ -14,6 +14,11 @@ interface AuthContextType {
   updatePassword: (password: string) => Promise<{ error: Error | null }>;
   updateDisplayName: (name: string) => Promise<{ error: Error | null }>;
   uploadAvatar: (file: File) => Promise<{ error: Error | null }>;
+  removeAvatar: () => Promise<{ error: Error | null }>;
+  updateEmail: (email: string) => Promise<{ error: Error | null }>;
+  requestDeleteCode: () => Promise<{ error: Error | null }>;
+  verifyDeleteCode: (code: string) => Promise<{ error: Error | null }>;
+  deleteAccount: () => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -101,6 +106,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: updateError as Error | null };
   };
 
+  const removeAvatar = async () => {
+    if (!user) return { error: new Error("Not authenticated") };
+    // Best-effort: clean up stored avatar files
+    try {
+      const { data: files } = await supabase.storage.from("avatars").list(user.id);
+      if (files?.length) {
+        await supabase.storage
+          .from("avatars")
+          .remove(files.map((f) => `${user.id}/${f.name}`));
+      }
+    } catch {}
+    const { error } = await supabase.auth.updateUser({ data: { avatar_url: null } });
+    if (!error) {
+      const { data: { user: fresh } } = await supabase.auth.getUser();
+      if (fresh) setUser(fresh);
+    }
+    return { error: error as Error | null };
+  };
+
+  const updateEmail = async (email: string) => {
+    const { error } = await supabase.auth.updateUser(
+      { email },
+      { emailRedirectTo: window.location.origin },
+    );
+    return { error: error as Error | null };
+  };
+
+  const requestDeleteCode = async () => {
+    if (!user?.email) return { error: new Error("Not authenticated") };
+    const { error } = await supabase.auth.signInWithOtp({
+      email: user.email,
+      options: { shouldCreateUser: false },
+    });
+    return { error: error as Error | null };
+  };
+
+  const verifyDeleteCode = async (code: string) => {
+    if (!user?.email) return { error: new Error("Not authenticated") };
+    const { error } = await supabase.auth.verifyOtp({
+      email: user.email,
+      token: code,
+      type: "email",
+    });
+    return { error: error as Error | null };
+  };
+
+  const deleteAccount = async () => {
+    const { data: { session: current } } = await supabase.auth.getSession();
+    if (!current) return { error: new Error("Not authenticated") };
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${current.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+          },
+        },
+      );
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        return { error: new Error(body.error ?? `Request failed (${res.status})`) };
+      }
+    } catch (e) {
+      return { error: e as Error };
+    }
+    await supabase.auth.signOut();
+    return { error: null };
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -115,6 +191,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updatePassword,
         updateDisplayName,
         uploadAvatar,
+        removeAvatar,
+        updateEmail,
+        requestDeleteCode,
+        verifyDeleteCode,
+        deleteAccount,
       }}
     >
       {children}

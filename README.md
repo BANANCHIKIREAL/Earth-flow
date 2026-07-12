@@ -105,6 +105,15 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 
 ## 📋 Version History
 
+### v4.4.0 — Profile Overhaul
+- Profile modal redesigned: gradient banner, overlapping avatar, animated tab switch, bottom segmented control (Profile / Settings)
+- Account info: email, member number, member since date, sign-in method (Google / Email)
+- Change password from profile — via email confirmation link
+- Change email — confirmation sent to both old and new address
+- Photo management moved to Settings: upload, change, remove (with confirmation)
+- Delete account — requires a 6-digit email code; wipes settings, tasks, streaks and files via Edge Function
+- New danger-styled confirmation email template
+
 ### v4.3.0 — Landing Page
 - New animated landing page at `/welcome`: starfield canvas, shimmer headline, live ticking timer mock with 3D tilt and equalizer, scrolling sounds marquee, scroll-reveal sections
 - Clickable atmosphere tiles — theme applies live on the page and carries into the app

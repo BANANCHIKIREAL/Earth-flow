@@ -408,7 +408,7 @@ function WelcomePage() {
         <header className="ef-in ef-in-1 flex w-full items-center justify-between px-6 py-6">
           <div className="flex items-baseline gap-2">
             <span className="font-display text-xl tracking-tight">Earth Flow</span>
-            <span className="text-[10px] text-muted-foreground/50 tabular-nums">v4.4.0</span>
+            <span className="text-[10px] text-muted-foreground/50 tabular-nums">v4.4.1</span>
           </div>
           <div className="flex items-center gap-2">
             {user ? (
@@ -626,7 +626,7 @@ function WelcomePage() {
 
         {/* Footer */}
         <footer className="mx-auto flex w-full max-w-5xl items-center justify-center px-6 pb-10 text-xs text-muted-foreground/50">
-          <span>Earth Flow · v4.4.0</span>
+          <span>Earth Flow · v4.4.1</span>
         </footer>
       </div>
     </div>

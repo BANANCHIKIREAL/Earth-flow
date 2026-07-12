@@ -105,6 +105,9 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 
 ## 📋 Version History
 
+### v4.4.1
+- Fixed recurring "mobile layout on desktop" production bug for good: stale built CSS committed in `public/assets` was overriding fresh styles on every Vercel build. Removed committed assets, dropped the copy step, gitignored `public/assets`, and made the static index generator always pick the newest stylesheet
+
 ### v4.4.0 — Profile Overhaul
 - Profile modal redesigned: gradient banner, overlapping avatar, animated tab switch, bottom segmented control (Profile / Settings)
 - Account info: email, member number, member since date, sign-in method (Google / Email)

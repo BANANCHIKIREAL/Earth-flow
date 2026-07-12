@@ -43,8 +43,17 @@ async function parseStartManifest(...assetDirs) {
 async function findStyleFile(clientAssetsDir) {
   const fs = await import('node:fs');
   const clientFiles = await fs.promises.readdir(clientAssetsDir);
-  const css = clientFiles.find((f) => /^styles[-].*\.css$/.test(f));
-  return css ? normalizeAssetPath(css) : null;
+  const candidates = clientFiles.filter((f) => /^styles[-].*\.css$/.test(f));
+  if (candidates.length === 0) return null;
+  // Pick the newest file — stale hashed copies may linger from build caches
+  const withTimes = await Promise.all(
+    candidates.map(async (f) => ({
+      f,
+      mtime: (await fs.promises.stat(resolve(clientAssetsDir, f))).mtimeMs,
+    })),
+  );
+  withTimes.sort((a, b) => b.mtime - a.mtime);
+  return normalizeAssetPath(withTimes[0].f);
 }
 
 async function assertBrowserBundle(assetPath) {

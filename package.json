@@ -8,7 +8,7 @@
     "dev": "vite dev --port 8081",
     "build": "vite build",
     "postbuild": "node ./scripts/generate-static-index.js",
-    "vercel-build": "npm run build && node ./scripts/copy-client-assets.js",
+    "vercel-build": "npm run build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

@@ -461,6 +461,8 @@
   border: 1px solid transparent;
   border-radius: 15px;
   color: oklch(0.77 0.025 230 / 0.58);
+  cursor: default;
+  user-select: none;
   transition:
     border-color 180ms ease,
     background-color 180ms ease,
@@ -492,7 +494,6 @@
   font-size: 9px;
 }
 
-.panel-rail-link:hover,
 .panel-rail-link.is-active {
   border-color: oklch(0.82 0.12 200 / 0.19);
   background: oklch(0.82 0.12 200 / 0.065);

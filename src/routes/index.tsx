@@ -423,21 +423,21 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
 
           <nav className="panel-rail-nav" aria-label="Panel workspace sections">
             <span className="panel-rail-label">Workspace</span>
-            <a href="#panel-focus" className="panel-rail-link is-active">
+            <div className="panel-rail-link is-active">
               <span>01</span>
               <strong>Focus</strong>
               <small>{focusMinutes} min</small>
-            </a>
-            <a href="#panel-sound" className="panel-rail-link">
+            </div>
+            <div className="panel-rail-link">
               <span>02</span>
               <strong>Sound</strong>
               <small>{totalActive} active</small>
-            </a>
-            <a href="#panel-tasks" className="panel-rail-link">
+            </div>
+            <div className="panel-rail-link">
               <span>03</span>
               <strong>Tasks</strong>
               <small>{openTasks} open</small>
-            </a>
+            </div>
           </nav>
 
           <div className="panel-rail-spacer" />

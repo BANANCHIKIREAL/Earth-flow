@@ -105,6 +105,9 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 
 ## 📋 Version History
 
+### v4.5.1
+- Made the Panels workspace rail indicators static and non-interactive
+
 ### v4.5.0 — New interface modes
 - Added the experimental Orbit focus interface with orbital settings navigation
 - Rebuilt Sidebar as the responsive Panels workspace

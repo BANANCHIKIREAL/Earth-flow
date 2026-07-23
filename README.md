@@ -105,6 +105,11 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 
 ## 📋 Version History
 
+### v4.5.0 — New interface modes
+- Added the experimental Orbit focus interface with orbital settings navigation
+- Rebuilt Sidebar as the responsive Panels workspace
+- Added layout-specific settings panels, smoother interactions, and consistent version display
+
 ### v4.4.1
 - Fixed recurring "mobile layout on desktop" production bug for good: stale built CSS committed in `public/assets` was overriding fresh styles on every Vercel build. Removed committed assets, dropped the copy step, gitignored `public/assets`, and made the static index generator always pick the newest stylesheet
 

@@ -16,6 +16,8 @@ const KEY_TIMER_FONT_SIZE = "focus-space:timer-font-size";
 const KEY_STOP_SOUNDS_ON_TIMER_END = "focus-space:stop-sounds-on-timer-end";
 const KEY_LAYOUT = "ef-layout";
 
+export type LayoutMode = "classic" | "sidebar" | "orbit";
+
 export const MIN_BLUR = 0;
 export const MAX_BLUR = 40;
 export const DEFAULT_BLUR = 0;
@@ -115,6 +117,10 @@ function readJSON<T>(key: string, fallback: T): T {
   }
 }
 
+function isLayoutMode(value: unknown): value is LayoutMode {
+  return value === "classic" || value === "sidebar" || value === "orbit";
+}
+
 export function clearLocalSettings() {
   [
     KEY_DURATIONS, KEY_LUNCH_ENABLED, KEY_BG_VARIANT, KEY_BG_IMAGE, KEY_BG_BLUR,
@@ -135,7 +141,7 @@ export function useSettings(userId?: string) {
   const [timerFontStyle, setTimerFontStyleState] = useState<TimerFontStyle>(TIMER_FONT_STYLES[0]);
   const [timerFontSize, setTimerFontSizeState] = useState<number>(DEFAULT_TIMER_FONT_SIZE);
   const [stopSoundsOnTimerEnd, setStopSoundsOnTimerEndState] = useState(false);
-  const [layout, setLayoutState] = useState<"classic" | "sidebar">("classic");
+  const [layout, setLayoutState] = useState<LayoutMode>("classic");
   const [hydrated, setHydrated] = useState(false);
   const [cloudLoaded, setCloudLoaded] = useState(false);
 
@@ -167,7 +173,7 @@ export function useSettings(userId?: string) {
     const stopSoundsRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_STOP_SOUNDS_ON_TIMER_END) : null;
     setStopSoundsOnTimerEndState(stopSoundsRaw === "true");
     const layoutRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_LAYOUT) : null;
-    if (layoutRaw === "classic" || layoutRaw === "sidebar") setLayoutState(layoutRaw);
+    if (isLayoutMode(layoutRaw)) setLayoutState(layoutRaw);
     setHydrated(true);
   }, []);
 
@@ -202,7 +208,7 @@ export function useSettings(userId?: string) {
           if (typeof s.timerFontStyleId === "string") setTimerFontStyleState(getTimerFontStyle(s.timerFontStyleId));
           if (typeof s.timerFontSize === "number") setTimerFontSizeState(clampTimerFontSize(s.timerFontSize));
           if (typeof s.stopSoundsOnTimerEnd === "boolean") setStopSoundsOnTimerEndState(s.stopSoundsOnTimerEnd);
-          if (s.layout === "classic" || s.layout === "sidebar") setLayoutState(s.layout);
+          if (isLayoutMode(s.layout)) setLayoutState(s.layout);
         } else {
           // New account with no saved settings — reset to defaults so localStorage from another account doesn't bleed in
           setBgVariantState("galaxy");
@@ -286,7 +292,7 @@ export function useSettings(userId?: string) {
     try { localStorage.setItem(KEY_STOP_SOUNDS_ON_TIMER_END, String(enabled)); } catch {}
   }, []);
 
-  const setLayout = useCallback((l: "classic" | "sidebar") => {
+  const setLayout = useCallback((l: LayoutMode) => {
     setLayoutState(l);
     try { localStorage.setItem(KEY_LAYOUT, l); } catch {}
   }, []);

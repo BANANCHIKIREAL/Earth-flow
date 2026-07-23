@@ -81,10 +81,14 @@ async function main() {
       routes: {},
     };
 
-  const clientEntry = routerManifestData.clientEntry;
+  const rootRoute = routerManifestData.routes?.__root__;
+  const rootModuleScript = rootRoute?.scripts?.find(
+    (script) => script?.attrs?.type === "module" && script.attrs.src,
+  );
+  const clientEntry = routerManifestData.clientEntry ?? rootModuleScript?.attrs?.src;
   if (!clientEntry) {
     console.error(
-      'No clientEntry in TanStack start manifest; aborting index generation.',
+      "No browser client entry in TanStack start manifest; aborting index generation.",
     );
     process.exit(1);
   }

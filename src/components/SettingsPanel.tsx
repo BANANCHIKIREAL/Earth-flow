@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import {
   Bell,
   BellRing,
@@ -28,12 +29,25 @@ import {
   MIN_TIMER_RING_WIDTH,
   TIMER_FONT_STYLES,
   TIMER_RING_STYLES,
+  type LayoutMode,
 } from "@/hooks/useSettings";
 import { toColorInputValue } from "@/lib/color";
 import type { translations } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 
 const MAX_BG_BYTES = 5 * 1024 * 1024;
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => unknown;
+};
+
+const ORBIT_SETTING_NODES = [
+  { id: "timer", label: "Timer", index: "01" },
+  { id: "type", label: "Type", index: "02" },
+  { id: "ring", label: "Ring", index: "03" },
+  { id: "sound", label: "Sound", index: "04" },
+  { id: "scene", label: "Scene", index: "05" },
+  { id: "layout", label: "Layout", index: "06" },
+] as const;
 
 interface Props {
   open: boolean;
@@ -70,8 +84,8 @@ interface Props {
   onPreviewFinishSound: () => void;
   notificationPermission: NotificationPermission | "unsupported";
   onRequestNotifications: () => void;
-  layout: "classic" | "sidebar";
-  setLayout: (l: "classic" | "sidebar") => void;
+  layout: LayoutMode;
+  setLayout: (l: LayoutMode) => void;
   copy: typeof translations.en;
 }
 
@@ -119,6 +133,7 @@ export function SettingsPanel({
   const colorInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [activeOrbitSetting, setActiveOrbitSetting] = useState<string | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -127,6 +142,10 @@ export function SettingsPanel({
     if (open) window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) setActiveOrbitSetting(null);
+  }, [open]);
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
@@ -155,28 +174,81 @@ export function SettingsPanel({
     }
   };
 
+  const switchOrbitSetting = (id: string | null) => {
+    if (activeOrbitSetting === id) return;
+
+    const update = () => setActiveOrbitSetting(id);
+    const transitionDocument = document as ViewTransitionDocument;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (transitionDocument.startViewTransition && !reduceMotion) {
+      transitionDocument.startViewTransition(() => {
+        flushSync(update);
+      });
+      return;
+    }
+
+    update();
+  };
+
+  const orbitSectionClass = (id: string, base: string) =>
+    `${base} ${layout === "orbit" && activeOrbitSetting !== id ? "hidden" : ""}`;
+
+  const activeOrbitNode = ORBIT_SETTING_NODES.find((node) => node.id === activeOrbitSetting);
+  const isOrbitLayout = layout === "orbit";
+  const isPanelsLayout = layout === "sidebar";
+  const settingsEyebrow = isOrbitLayout
+    ? "Orbit controls"
+    : isPanelsLayout
+      ? "Panel controls"
+      : copy.settings;
+  const settingsTitle = isOrbitLayout
+    ? "Configure your focus space"
+    : isPanelsLayout
+      ? "Configure your workspace"
+      : copy.yourFocusSpace;
+
   return (
     <>
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 ${
+          isOrbitLayout
+            ? "orbit-settings-backdrop"
+            : isPanelsLayout
+              ? "panels-settings-backdrop"
+              : "bg-black/40"
+        } ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
       <aside
         className={`settings-panel fixed top-0 z-50 h-full glass transition-transform duration-300 ease-out ${
-          layout === "classic"
-            ? `right-0 border-l border-border ${open ? "translate-x-0" : "translate-x-full"}`
-            : `left-0 border-r border-border ${open ? "translate-x-0" : "-translate-x-full"}`
+          isOrbitLayout
+            ? "orbit-settings-panel"
+            : isPanelsLayout
+              ? "panels-settings-panel"
+              : ""
+        } ${
+          layout === "sidebar"
+            ? `left-0 border-r border-border ${open ? "translate-x-0" : "-translate-x-full"}`
+            : `right-0 border-l border-border ${open ? "translate-x-0" : "translate-x-full"}`
         }`}
         aria-hidden={!open}
       >
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+        <div className="settings-panel-header flex items-center justify-between px-6 py-5 border-b border-border">
           <div>
             <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-              {copy.settings}
+              {settingsEyebrow}
             </div>
-            <h2 className="font-display text-2xl">{copy.yourFocusSpace}</h2>
+            <h2 className="font-display text-2xl">{settingsTitle}</h2>
+            {(isOrbitLayout || isPanelsLayout) && (
+              <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
+                {isOrbitLayout
+                  ? "Timer · sound · appearance · layout"
+                  : "Modules · appearance · sound · layout"}
+              </p>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -187,9 +259,75 @@ export function SettingsPanel({
           </button>
         </div>
 
-        <div className="overflow-y-auto h-[calc(100%-89px)] px-6 py-6 space-y-8">
+        <div className="settings-panel-content overflow-y-auto h-[calc(100%-89px)] px-6 py-6">
+          <div
+            className={`${
+              layout === "orbit"
+                ? `orbit-settings-stage ${
+                    activeOrbitSetting === null ? "is-orbit-view" : "is-detail-view"
+                  }`
+                : "settings-stage"
+            }`}
+          >
+          {layout === "orbit" && activeOrbitSetting === null && (
+            <nav className="orbit-settings-map" aria-label="Orbit settings sections">
+              <div className="orbit-system" aria-hidden="true">
+                <span className="orbit-path orbit-track-1" />
+                <span className="orbit-path orbit-track-2" />
+                <span className="orbit-path orbit-track-3" />
+                <span className="orbit-path orbit-track-4" />
+                <span className="orbit-path orbit-track-5" />
+                <span className="orbit-path orbit-track-6" />
+                <span className="orbit-core-pulse" />
+              </div>
+              <div className="orbit-system-core">
+                <span>Orbit</span>
+                <strong>Control</strong>
+                <small>6 modules</small>
+              </div>
+              {ORBIT_SETTING_NODES.map((node) => (
+                <button
+                  key={node.id}
+                  type="button"
+                  className={`orbit-setting-node orbit-node-${node.id} ${
+                    activeOrbitSetting === node.id ? "is-active" : ""
+                  }`}
+                  onClick={() => switchOrbitSetting(node.id)}
+                  aria-label={`Open ${node.label} settings`}
+                >
+                  <span>{node.index}</span>
+                  <strong>{node.label}</strong>
+                </button>
+              ))}
+              <p className="orbit-map-hint">Select a satellite</p>
+            </nav>
+          )}
+
+          {layout === "orbit" && activeOrbitSetting !== null && (
+            <div className="orbit-detail-header">
+              <button type="button" onClick={() => switchOrbitSetting(null)}>
+                <span aria-hidden="true">←</span>
+                Back to orbit
+              </button>
+              <div>
+                <span>Active satellite</span>
+                <strong>
+                  {activeOrbitNode?.index} · {activeOrbitNode?.label}
+                </strong>
+              </div>
+            </div>
+          )}
+
+          <div
+            className={`settings-sections space-y-8 ${
+              layout === "orbit" && activeOrbitSetting === null ? "hidden" : ""
+            }`}
+          >
           {/* Timer */}
-          <section className="space-y-4">
+          <section
+            id="orbit-setting-timer"
+            className={orbitSectionClass("timer", "space-y-4")}
+          >
             <SectionTitle>{copy.timer}</SectionTitle>
             <TimeStepper
               label={copy.focusTime}
@@ -242,7 +380,10 @@ export function SettingsPanel({
           </section>
 
           {/* Countdown font */}
-          <section className="space-y-4">
+          <section
+            id="orbit-setting-type"
+            className={orbitSectionClass("type", "space-y-4")}
+          >
             <div className="flex items-baseline justify-between">
               <SectionTitle>{copy.countdownFont}</SectionTitle>
               <span className="text-xs tabular-nums text-muted-foreground">{timerFontSize}px</span>
@@ -284,7 +425,10 @@ export function SettingsPanel({
           </section>
 
           {/* Timer ring */}
-          <section className="space-y-4">
+          <section
+            id="orbit-setting-ring"
+            className={orbitSectionClass("ring", "space-y-4")}
+          >
             <div className="flex items-baseline justify-between">
               <SectionTitle>{copy.timerRing}</SectionTitle>
               <span className="text-xs tabular-nums text-muted-foreground">{timerRingWidth}px</span>
@@ -354,7 +498,10 @@ export function SettingsPanel({
           </section>
 
           {/* Finish sound */}
-          <section className="space-y-4">
+          <section
+            id="orbit-setting-sound"
+            className={orbitSectionClass("sound", "space-y-4")}
+          >
             <div className="flex items-center justify-between gap-3">
               <SectionTitle>{copy.finishSound}</SectionTitle>
               <button
@@ -442,7 +589,10 @@ export function SettingsPanel({
           </section>
 
           {/* Atmosphere */}
-          <section className="space-y-4">
+          <section
+            id="orbit-setting-scene"
+            className={orbitSectionClass("scene", "space-y-4")}
+          >
             <SectionTitle>{copy.atmosphere}</SectionTitle>
             <div className="flex flex-wrap gap-2">
               {BACKGROUNDS.map((b) => (
@@ -465,7 +615,7 @@ export function SettingsPanel({
           </section>
 
           {/* Custom image */}
-          <section className="space-y-4">
+          <section className={orbitSectionClass("scene", "space-y-4")}>
             <SectionTitle>{copy.customBackground}</SectionTitle>
 
             <div
@@ -520,7 +670,7 @@ export function SettingsPanel({
           </section>
 
           {/* Background blur */}
-          <section className="space-y-3">
+          <section className={orbitSectionClass("scene", "space-y-3")}>
             <div className="flex items-baseline justify-between">
               <SectionTitle>{copy.backgroundBlur}</SectionTitle>
               <span className="text-xs tabular-nums text-muted-foreground">{bgBlur}px</span>
@@ -542,11 +692,15 @@ export function SettingsPanel({
           </section>
 
           {/* Layout */}
-          <section className="space-y-3">
+          <section
+            id="orbit-setting-layout"
+            className={orbitSectionClass("layout", "space-y-3")}
+          >
             <SectionTitle>Layout</SectionTitle>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => setLayout("classic")}
+                aria-pressed={layout === "classic"}
                 className={`rounded-2xl glass p-3 text-left transition-all space-y-2.5 ${layout === "classic" ? "glow-ring text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <div className="space-y-1 opacity-60">
@@ -561,6 +715,7 @@ export function SettingsPanel({
               </button>
               <button
                 onClick={() => setLayout("sidebar")}
+                aria-pressed={layout === "sidebar"}
                 className={`rounded-2xl glass p-3 text-left transition-all space-y-2.5 ${layout === "sidebar" ? "glow-ring text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <div className="flex gap-1 h-8 opacity-60">
@@ -568,11 +723,31 @@ export function SettingsPanel({
                   <div className="flex-1 rounded-sm bg-current opacity-50" />
                   <div className="w-4 rounded-sm bg-current opacity-70" />
                 </div>
-                <div className="text-xs font-medium">Sidebar</div>
+                <div>
+                  <div className="text-xs font-medium">Panels</div>
+                  <div className="text-[8px] uppercase tracking-wider opacity-60">Workspace</div>
+                </div>
+              </button>
+              <button
+                onClick={() => setLayout("orbit")}
+                aria-pressed={layout === "orbit"}
+                className={`relative overflow-hidden rounded-2xl glass p-3 text-left transition-all space-y-2.5 ${layout === "orbit" ? "glow-ring text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                <div className="relative h-8 opacity-70">
+                  <div className="absolute inset-x-1 top-1/2 h-px bg-current opacity-30" />
+                  <div className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current opacity-40" />
+                  <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-current" />
+                  <div className="absolute left-[calc(50%+12px)] top-1 h-1.5 w-1.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" />
+                </div>
+                <div>
+                  <div className="text-xs font-medium">Orbit</div>
+                  <div className="text-[8px] uppercase tracking-wider opacity-60">Experimental</div>
+                </div>
               </button>
             </div>
           </section>
-
+          </div>
+          </div>
         </div>
       </aside>
     </>

@@ -17,6 +17,7 @@ import { useStreak } from "@/hooks/useStreak";
 import { useAuth } from "@/context/AuthContext";
 import { translations } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
+import { APP_VERSION_LABEL } from "@/lib/version";
 import { STREAK_ENABLED } from "@/lib/flags";
 import { Tutorial, useTutorial } from "@/components/Tutorial";
 
@@ -192,10 +193,17 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
 
   const guestAuthBtns = (
     <>
-      <Link to="/login" className="h-9 px-4 rounded-full border border-white/15 text-xs inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+      <Link
+        to="/login"
+        className="h-9 px-4 rounded-full border border-white/15 text-xs inline-flex items-center text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-primary/10 hover:-translate-y-0.5 hover:shadow-[0_0_24px_-8px_var(--primary)] transition-all duration-300 ease-out"
+      >
         Log in
       </Link>
-      <Link to="/register" search={{ email: undefined }} className="h-9 px-4 rounded-full bg-foreground text-background text-xs inline-flex items-center font-semibold hover:bg-foreground/90 transition-colors">
+      <Link
+        to="/register"
+        search={{ email: undefined }}
+        className="h-9 px-4 rounded-full border border-transparent bg-foreground text-background text-xs inline-flex items-center font-semibold hover:bg-primary hover:border-primary hover:-translate-y-0.5 hover:shadow-[0_0_28px_-8px_var(--primary)] transition-all duration-300 ease-out"
+      >
         Sign up
       </Link>
     </>
@@ -255,43 +263,231 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     />
   );
 
+  /* ── ORBIT layout ── */
+  if (layout === "orbit") {
+    const openTasks = tasks.length - doneCount;
+    const soundChannels = tracks.length + customTracks.length;
+
+    return (
+      <div className="orbit-shell dark relative min-h-screen w-full overflow-x-hidden text-foreground animate-app-enter">
+        <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
+        <div className="orbit-grid-overlay" aria-hidden="true" />
+
+        <header className="relative z-20 mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-5 py-5 panel:px-8">
+          <Link
+            to="/welcome"
+            className="group inline-flex items-center gap-3 transition-opacity hover:opacity-80"
+          >
+            <span className="orbit-brand-mark" aria-hidden="true">
+              <span />
+            </span>
+            <span>
+              <span className="block font-display text-lg leading-none">Earth Flow</span>
+              <span className="mt-1 block text-[8px] uppercase tracking-[0.34em] text-muted-foreground">
+                Focus observatory
+              </span>
+            </span>
+          </Link>
+
+          <div className="hidden items-center gap-3 text-[9px] uppercase tracking-[0.3em] text-muted-foreground md:flex">
+            <span className="h-px w-10 bg-foreground/20" />
+            Orbit interface
+            <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-primary">
+              Experimental
+            </span>
+            <span className="h-px w-10 bg-foreground/20" />
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isGuest
+              ? guestAuthBtns
+              : avatarBtn(
+                  "h-9 w-9 rounded-full border border-primary/25 bg-background/45 inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden shadow-[0_0_24px_-8px_var(--primary)]",
+                )}
+          </div>
+        </header>
+
+        <main className="relative z-10 px-4 pb-8 panel:px-8">
+          <h1 className="sr-only">Earth Flow — ambient sounds and focus timer</h1>
+
+          <div className="mx-auto max-w-[1600px]">
+            <div className="orbit-dashboard">
+              <aside className="orbit-task-cell" data-tutorial="tasks">
+                <div className="orbit-cell-label">
+                  <span>01</span>
+                  <span>Mission queue</span>
+                  <span>{String(openTasks).padStart(2, "0")} open</span>
+                </div>
+                <TodayTasks {...taskProps} fillHeight />
+              </aside>
+
+              <section className="orbit-core" aria-label="Focus timer command center">
+                <div className="orbit-crosshair" aria-hidden="true" />
+                <div className="orbit-ring orbit-ring-outer" aria-hidden="true">
+                  <span className="orbit-satellite orbit-satellite-a" />
+                  <span className="orbit-satellite orbit-satellite-b" />
+                </div>
+                <div className="orbit-ring orbit-ring-inner" aria-hidden="true" />
+                <div className="orbit-axis orbit-axis-horizontal" aria-hidden="true" />
+                <div className="orbit-axis orbit-axis-vertical" aria-hidden="true" />
+
+                <div className="absolute left-6 top-6 z-10 flex items-center gap-2 text-[9px] uppercase tracking-[0.3em] text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_12px_var(--primary)]" />
+                  Session core
+                </div>
+
+                <div className="relative z-10 flex w-full max-w-lg items-center justify-center px-4 py-16">
+                  {timerEl}
+                </div>
+
+                <div className="absolute inset-x-6 bottom-5 z-10 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/60">
+                  <span>Stay with one thing</span>
+                </div>
+              </section>
+
+              <aside className="orbit-telemetry">
+                <div className="orbit-cell-label">
+                  <span>02</span>
+                  <span>Session overview</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="orbit-metric">
+                    <span>Cycle</span>
+                    <strong>{Math.round(durations.focus / 60)}</strong>
+                    <small>minutes</small>
+                  </div>
+                  <div className="orbit-metric">
+                    <span>Channels</span>
+                    <strong>{String(soundChannels).padStart(2, "0")}</strong>
+                    <small>ambient</small>
+                  </div>
+                  <div className="orbit-metric">
+                    <span>Queue</span>
+                    <strong>{String(openTasks).padStart(2, "0")}</strong>
+                    <small>objectives</small>
+                  </div>
+                </div>
+                <p className="orbit-summary-note">
+                  These values update when you change the timer, add sounds, or complete tasks.
+                </p>
+              </aside>
+            </div>
+
+            <section className="orbit-sound-cell">
+              <div className="orbit-cell-label px-1">
+                <span>03</span>
+                <span>Ambient channels</span>
+                <span>{activeCount > 0 ? `${activeCount} live` : "Standing by"}</span>
+              </div>
+              {soundDockEl}
+            </section>
+          </div>
+        </main>
+
+        <footer className="relative z-10 flex items-center justify-between px-6 pb-5 text-[9px] uppercase tracking-[0.24em] text-muted-foreground/35 panel:px-8">
+          <span>Earth Flow / Orbit</span>
+          <span>{APP_VERSION_LABEL}</span>
+        </footer>
+
+        {!isGuest && profileModalEl}
+        {settingsPanelEl}
+        {tutorialShow && <Tutorial onComplete={tutorialComplete} />}
+      </div>
+    );
+  }
+
   /* ── SIDEBAR layout ── */
   if (layout === "sidebar") {
-    return (
-      <div className="dark relative min-h-screen w-full flex text-foreground overflow-hidden animate-app-enter">
-        <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
+    const openTasks = tasks.length - doneCount;
+    const totalChannels = tracks.length + customTracks.length;
+    const totalActive = activeCount + customTracks.filter((track) => track.enabled).length;
+    const focusMinutes = Math.round(durations.focus / 60);
 
-        <aside className="hidden panel:flex w-52 shrink-0 flex-col py-5 border-r border-white/[0.06] z-10 relative">
-          <div className="px-5 mb-4 flex items-center justify-between">
-            <Link to="/welcome" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft shrink-0" />
-              <span className="text-sm tracking-wide">
-                <span className="font-display text-base">Earth</span>
-                <span className="text-muted-foreground"> Flow</span>
+    return (
+      <div className="panel-shell dark relative min-h-screen w-full text-foreground animate-app-enter">
+        <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
+        <div className="panel-grid-overlay" aria-hidden="true" />
+
+        <aside className="panel-command-rail">
+          <Link to="/welcome" className="panel-brand">
+            <span className="panel-brand-mark" aria-hidden="true">
+              <span />
+            </span>
+            <span>
+              <span className="block font-display text-xl leading-none">Earth Flow</span>
+              <span className="mt-1 block text-[8px] uppercase tracking-[0.28em] text-muted-foreground">
+                Panel workspace
               </span>
-            </Link>
-          </div>
-          <div className="px-3 space-y-0.5">
+            </span>
+          </Link>
+
+          <nav className="panel-rail-nav" aria-label="Panel workspace sections">
+            <span className="panel-rail-label">Workspace</span>
+            <a href="#panel-focus" className="panel-rail-link is-active">
+              <span>01</span>
+              <strong>Focus</strong>
+              <small>{focusMinutes} min</small>
+            </a>
+            <a href="#panel-sound" className="panel-rail-link">
+              <span>02</span>
+              <strong>Sound</strong>
+              <small>{totalActive} active</small>
+            </a>
+            <a href="#panel-tasks" className="panel-rail-link">
+              <span>03</span>
+              <strong>Tasks</strong>
+              <small>{openTasks} open</small>
+            </a>
+          </nav>
+
+          <div className="panel-rail-spacer" />
+
+          <div className="panel-rail-user">
             {isGuest ? (
               <>
-                <Link to="/login" className="w-full h-10 px-3 rounded-xl flex items-center text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
+                <Link to="/login" className="panel-rail-auth">
                   Log in
                 </Link>
-                <Link to="/register" search={{ email: undefined }} className="w-full h-10 px-3 rounded-xl flex items-center text-sm bg-foreground/10 hover:bg-foreground/15 text-foreground font-medium transition-colors">
+                <Link
+                  to="/register"
+                  search={{ email: undefined }}
+                  className="panel-rail-auth is-primary"
+                >
                   Sign up
                 </Link>
               </>
             ) : (
-              <button onClick={() => setProfileOpen(true)} title={userEmail} className="w-full h-10 px-3 rounded-xl flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors">
+              <button
+                onClick={() => setProfileOpen(true)}
+                title={userEmail}
+                className="panel-user-button"
+              >
                 <div className="relative shrink-0">
-                  <div className="h-6 w-6 rounded-full bg-white/10 border border-white/15 inline-flex items-center justify-center text-[10px] font-semibold overflow-hidden">
-                    {avatarUrl && !headerImgError ? (<img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />) : avatarLetter}
+                  <div className="panel-user-avatar">
+                    {avatarUrl && !headerImgError ? (
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        className="h-full w-full object-cover"
+                        onError={() => setHeaderImgError(true)}
+                      />
+                    ) : (
+                      avatarLetter
+                    )}
                   </div>
                   {STREAK_ENABLED && streak.currentStreak === 0 && (
                     <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary animate-bounce-subtle pointer-events-none shadow-[0_0_5px_2px_var(--primary)]" />
                   )}
                 </div>
-                <span className="truncate text-xs">{displayName || userEmail}</span>
+                <span className="min-w-0 text-left">
+                  <span className="block truncate text-xs text-foreground">
+                    {displayName || userEmail}
+                  </span>
+                  <span className="block text-[8px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Profile
+                  </span>
+                </span>
                 {STREAK_ENABLED && streak.currentStreak > 0 && (() => {
                   const { m } = getMilestone(streak.currentStreak);
                   return (
@@ -310,34 +506,111 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
               </button>
             )}
           </div>
-          <div className="flex-1" />
-          <div className="px-5 mb-1"><span className="text-[10px] text-muted-foreground/30 tabular-nums select-none">v4.4.1</span></div>
+
+          <div className="panel-rail-footer">
+            <span>Earth Flow</span>
+            <span>{APP_VERSION_LABEL}</span>
+          </div>
         </aside>
 
-        <div className="flex-1 flex flex-col min-w-0 min-h-screen">
-          <header className="panel:hidden flex items-center justify-between px-5 py-4 border-b border-white/[0.06] relative z-10">
-            <div className="flex items-center gap-2">
-              <Link to="/welcome" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
-                <span className="text-sm tracking-wide"><span className="font-display text-base">Earth</span><span className="text-muted-foreground"> Flow</span></span>
+        <div className="panel-workspace">
+          <header className="panel-workspace-header">
+            <div className="panel-mobile-brand">
+              <Link to="/welcome" className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_12px_var(--primary)]" />
+                <span className="font-display text-lg">Earth Flow</span>
+                <span className="panel-mobile-version">{APP_VERSION_LABEL}</span>
               </Link>
+              <div className="flex items-center gap-2">
+                {isGuest
+                  ? guestAuthBtns
+                  : avatarBtn(
+                      "h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden",
+                    )}
               </div>
-            <div className="flex items-center gap-2">
-              {isGuest ? guestAuthBtns : avatarBtn("h-9 w-9 rounded-full glass border border-border inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden")}
+            </div>
+
+            <div className="panel-workspace-title">
+              <span>Panels / Focus workspace</span>
+              <strong>Today’s command deck</strong>
+            </div>
+
+            <div className="panel-live-metrics" aria-label="Current focus overview">
+              <div>
+                <span>Cycle</span>
+                <strong>{focusMinutes}</strong>
+                <small>min</small>
+              </div>
+              <div>
+                <span>Audio</span>
+                <strong>{totalActive}</strong>
+                <small>of {totalChannels}</small>
+              </div>
+              <div>
+                <span>Tasks</span>
+                <strong>{openTasks}</strong>
+                <small>open</small>
+              </div>
             </div>
           </header>
 
-          <main className="flex-1 flex flex-col items-center justify-center px-6 py-10">
+          <main className="panel-stage">
             <h1 className="sr-only">Earth Flow — ambient sounds and focus timer</h1>
-            {timerEl}
-            <div className="panel:hidden mt-10 w-full max-w-md" data-tutorial="tasks"><TodayTasks {...taskProps} /></div>
-          </main>
 
-          <div className="px-5 pb-5 panel:px-6 panel:pb-6 relative z-10">{soundDockEl}</div>
+            <section id="panel-focus" className="panel-module panel-timer-module">
+              <div className="panel-module-header">
+                <div>
+                  <span>01</span>
+                  <strong>Focus console</strong>
+                </div>
+                <small>{focusMinutes} minute cycle</small>
+              </div>
+              <div className="panel-timer-body">{timerEl}</div>
+            </section>
+
+            <section
+              id="panel-tasks-mobile"
+              className="panel-module panel-mobile-tasks"
+              data-tutorial="tasks"
+            >
+              <div className="panel-module-header">
+                <div>
+                  <span>03</span>
+                  <strong>Task panel</strong>
+                </div>
+                <small>{openTasks} open</small>
+              </div>
+              <TodayTasks {...taskProps} fillHeight />
+            </section>
+
+            <section id="panel-sound" className="panel-module panel-sound-module">
+              <div className="panel-module-header">
+                <div>
+                  <span>02</span>
+                  <strong>Ambient desk</strong>
+                </div>
+                <small>{totalActive > 0 ? `${totalActive} playing` : "Ready"}</small>
+              </div>
+              <div className="panel-sound-body">{soundDockEl}</div>
+            </section>
+          </main>
         </div>
 
-        <aside className="hidden panel:flex w-80 xl:w-96 shrink-0 flex-col py-5 px-4 border-l border-white/[0.06] z-10 relative overflow-y-auto" data-tutorial="tasks">
-          <TodayTasks {...taskProps} />
+        <aside
+          id="panel-tasks"
+          className="panel-tasks-module"
+          data-tutorial="tasks"
+        >
+          <div className="panel-module-header">
+            <div>
+              <span>03</span>
+              <strong>Task panel</strong>
+            </div>
+            <small>{openTasks} open</small>
+          </div>
+          <div className="panel-tasks-body">
+            <TodayTasks {...taskProps} fillHeight />
+          </div>
         </aside>
 
         {!isGuest && profileModalEl}
@@ -376,7 +649,9 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
         <div className="mt-8 md:mt-10">{soundDockEl}</div>
       </main>
 
-      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">v4.4.1</footer>
+      <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">
+        {APP_VERSION_LABEL}
+      </footer>
 
       {!isGuest && profileModalEl}
       {settingsPanelEl}

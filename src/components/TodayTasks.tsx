@@ -28,6 +28,7 @@ interface Props {
   onRemoveCategory: (id: string) => void;
   onSetTaskCategory: (taskId: string, categoryId: string | null) => void;
   copy: typeof translations.en;
+  fillHeight?: boolean;
 }
 
 export function TodayTasks({
@@ -47,6 +48,7 @@ export function TodayTasks({
   onRemoveCategory,
   onSetTaskCategory,
   copy,
+  fillHeight = false,
 }: Props) {
   const [draft, setDraft] = useState("");
   const [draftCategoryId, setDraftCategoryId] = useState<string | null>(null);
@@ -108,7 +110,11 @@ export function TodayTasks({
   };
 
   return (
-    <section className="glass w-full max-w-md rounded-2xl p-4 md:p-5">
+    <section
+      className={`glass w-full max-w-md rounded-2xl p-4 md:p-5 ${
+        fillHeight ? "flex h-full min-h-0 flex-col" : ""
+      }`}
+    >
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -218,9 +224,17 @@ export function TodayTasks({
         </div>
       </form>
 
-      <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+      <div
+        className={`space-y-2 overflow-y-auto pr-1 ${
+          fillHeight ? "min-h-[220px] flex-1" : "max-h-64"
+        }`}
+      >
         {tasks.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-foreground/5 px-4 py-7 text-center">
+          <div
+            className={`rounded-2xl border border-dashed border-border bg-foreground/5 px-4 text-center ${
+              fillHeight ? "flex h-full min-h-[220px] flex-col items-center justify-center py-10" : "py-7"
+            }`}
+          >
             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground">
               <ListTodo size={18} />
             </div>

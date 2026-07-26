@@ -11,6 +11,7 @@ import {
   Minus,
   Plus,
   Loader2,
+  Check,
 } from "lucide-react";
 import { BACKGROUNDS, type BackgroundVariant } from "./Background";
 import type { FinishSound } from "@/hooks/useFinishSound";
@@ -594,21 +595,46 @@ export function SettingsPanel({
             className={orbitSectionClass("scene", "space-y-4")}
           >
             <SectionTitle>{copy.atmosphere}</SectionTitle>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-4 gap-2 min-[420px]:grid-cols-6">
               {BACKGROUNDS.map((b) => (
                 <button
                   key={b.id}
+                  type="button"
                   onClick={() => {
                     setBgVariant(b.id);
                     setBgImage(null);
                   }}
-                  className={`h-9 px-4 rounded-full text-xs glass transition-all ${
+                  className={`group relative aspect-square overflow-hidden rounded-2xl border bg-${b.id} transition-all duration-500 ${
                     bgVariant === b.id && !bgImage
-                      ? "text-foreground glow-ring"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "border-white/80 glow-ring scale-[1.03]"
+                      : "border-white/10 hover:scale-[1.06] hover:rotate-1 hover:border-white/35"
                   }`}
+                  title={b.label}
+                  aria-label={`Apply ${b.label} background`}
+                  aria-pressed={bgVariant === b.id && !bgImage}
                 >
-                  {b.label}
+                  <span
+                    className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-black/25 opacity-70 transition-opacity duration-500 group-hover:opacity-30"
+                    aria-hidden="true"
+                  />
+                  <span
+                    className={`absolute inset-2 rounded-xl border transition-all duration-500 ${
+                      bgVariant === b.id && !bgImage
+                        ? "border-white/30 opacity-100"
+                        : "border-white/0 opacity-0 group-hover:border-white/15 group-hover:opacity-100"
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <span
+                    className={`absolute right-2.5 top-2.5 grid h-6 w-6 place-items-center rounded-full border border-white/30 bg-black/40 text-white shadow-lg backdrop-blur-md transition-all duration-300 ${
+                      bgVariant === b.id && !bgImage
+                        ? "scale-100 opacity-100"
+                        : "scale-75 opacity-0"
+                    }`}
+                    aria-hidden="true"
+                  >
+                    <Check size={13} strokeWidth={2.5} />
+                  </span>
                 </button>
               ))}
             </div>

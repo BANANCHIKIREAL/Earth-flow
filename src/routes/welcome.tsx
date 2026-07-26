@@ -109,6 +109,14 @@ const PRESET_SWATCHES: BackgroundVariant[] = [
   "stone",
   "mahogany",
   "wine",
+  "iridescent",
+  "nebula",
+  "lagoon",
+  "ultraviolet",
+  "sunset",
+  "opal",
+  "moonbow",
+  "peacock",
 ];
 
 /* ── Starfield overlay ── */
@@ -581,7 +589,7 @@ function WelcomePage() {
           <p className="mb-6 text-xs text-muted-foreground/60">
             Click a tile — the page changes live. Your choice carries into the app.
           </p>
-          <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-11">
+          <div className="grid grid-cols-5 gap-2.5 sm:grid-cols-7 lg:grid-cols-10">
             {PRESET_SWATCHES.map((v) => (
               <button
                 key={v}

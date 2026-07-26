@@ -115,6 +115,54 @@
     radial-gradient(ellipse 70% 60% at 68% 72%, oklch(0.18 0.08 8 / 0.5), transparent 60%),
     radial-gradient(ellipse 60% 45% at 18% 74%, oklch(0.20 0.07 10 / 0.4), transparent 65%),
     linear-gradient(180deg, oklch(0.17 0.07 12), oklch(0.11 0.06 6), oklch(0.14 0.06 9));
+
+  --gradient-iridescent:
+    radial-gradient(circle at 15% 20%, oklch(0.64 0.24 330 / 0.72), transparent 36%),
+    radial-gradient(circle at 84% 22%, oklch(0.72 0.18 205 / 0.68), transparent 38%),
+    radial-gradient(circle at 50% 88%, oklch(0.68 0.2 285 / 0.7), transparent 42%),
+    linear-gradient(135deg, oklch(0.12 0.07 285), oklch(0.13 0.06 230), oklch(0.1 0.06 330));
+
+  --gradient-nebula:
+    radial-gradient(ellipse 75% 55% at 18% 68%, oklch(0.55 0.26 318 / 0.72), transparent 58%),
+    radial-gradient(ellipse 65% 45% at 76% 26%, oklch(0.57 0.22 265 / 0.7), transparent 55%),
+    radial-gradient(ellipse 45% 35% at 55% 58%, oklch(0.7 0.16 40 / 0.38), transparent 58%),
+    linear-gradient(145deg, oklch(0.055 0.04 275), oklch(0.12 0.08 310), oklch(0.06 0.04 245));
+
+  --gradient-lagoon:
+    radial-gradient(ellipse 80% 60% at 12% 18%, oklch(0.66 0.15 175 / 0.72), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 88% 74%, oklch(0.55 0.18 225 / 0.7), transparent 58%),
+    radial-gradient(circle at 58% 38%, oklch(0.72 0.13 195 / 0.38), transparent 38%),
+    linear-gradient(155deg, oklch(0.08 0.06 185), oklch(0.11 0.07 225), oklch(0.07 0.04 205));
+
+  --gradient-ultraviolet:
+    radial-gradient(circle at 25% 28%, oklch(0.58 0.29 295 / 0.75), transparent 42%),
+    radial-gradient(circle at 76% 72%, oklch(0.58 0.28 338 / 0.7), transparent 45%),
+    radial-gradient(circle at 68% 14%, oklch(0.56 0.2 255 / 0.5), transparent 36%),
+    linear-gradient(140deg, oklch(0.07 0.06 285), oklch(0.12 0.08 325), oklch(0.06 0.05 260));
+
+  --gradient-sunset:
+    radial-gradient(ellipse 85% 58% at 50% 94%, oklch(0.72 0.2 42 / 0.82), transparent 58%),
+    radial-gradient(ellipse 65% 50% at 18% 42%, oklch(0.58 0.23 350 / 0.66), transparent 56%),
+    radial-gradient(ellipse 65% 48% at 84% 28%, oklch(0.5 0.2 285 / 0.62), transparent 58%),
+    linear-gradient(180deg, oklch(0.11 0.07 285), oklch(0.18 0.1 350), oklch(0.18 0.09 35));
+
+  --gradient-opal:
+    radial-gradient(circle at 18% 24%, oklch(0.7 0.13 190 / 0.68), transparent 38%),
+    radial-gradient(circle at 82% 22%, oklch(0.68 0.15 330 / 0.62), transparent 40%),
+    radial-gradient(circle at 55% 84%, oklch(0.72 0.13 95 / 0.55), transparent 42%),
+    linear-gradient(145deg, oklch(0.16 0.045 215), oklch(0.2 0.055 300), oklch(0.16 0.045 170));
+
+  --gradient-moonbow:
+    radial-gradient(ellipse 95% 28% at 50% 58%, oklch(0.68 0.2 210 / 0.52), transparent 58%),
+    radial-gradient(ellipse 82% 34% at 48% 52%, oklch(0.65 0.23 300 / 0.52), transparent 60%),
+    radial-gradient(ellipse 70% 40% at 52% 45%, oklch(0.66 0.2 355 / 0.46), transparent 62%),
+    linear-gradient(155deg, oklch(0.055 0.035 245), oklch(0.1 0.06 285), oklch(0.055 0.04 220));
+
+  --gradient-peacock:
+    radial-gradient(ellipse 68% 64% at 18% 22%, oklch(0.58 0.18 165 / 0.72), transparent 56%),
+    radial-gradient(ellipse 68% 62% at 82% 24%, oklch(0.52 0.2 245 / 0.68), transparent 57%),
+    radial-gradient(ellipse 70% 55% at 58% 84%, oklch(0.48 0.2 305 / 0.58), transparent 58%),
+    linear-gradient(145deg, oklch(0.07 0.05 180), oklch(0.09 0.07 235), oklch(0.07 0.05 285));
 }
 
 .dark {
@@ -177,6 +225,25 @@
   .bg-stone { background: var(--gradient-stone); }
   .bg-mahogany { background: var(--gradient-mahogany); }
   .bg-wine { background: var(--gradient-wine); }
+  .bg-iridescent { background: var(--gradient-iridescent); }
+  .bg-nebula { background: var(--gradient-nebula); }
+  .bg-lagoon { background: var(--gradient-lagoon); }
+  .bg-ultraviolet { background: var(--gradient-ultraviolet); }
+  .bg-sunset { background: var(--gradient-sunset); }
+  .bg-opal { background: var(--gradient-opal); }
+  .bg-moonbow { background: var(--gradient-moonbow); }
+  .bg-peacock { background: var(--gradient-peacock); }
+  .bg-iridescent,
+  .bg-nebula,
+  .bg-lagoon,
+  .bg-ultraviolet,
+  .bg-sunset,
+  .bg-opal,
+  .bg-moonbow,
+  .bg-peacock {
+    background-size: 138% 138%;
+    animation: atmosphere-shimmer 58s ease-in-out infinite alternate;
+  }
   .font-display { font-family: var(--font-display); }
   .font-geometric { font-family: "Trebuchet MS", "Segoe UI", "Helvetica Neue", sans-serif; }
   .font-rounded { font-family: "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif; }
@@ -205,6 +272,34 @@
     .settings-panel {
       width: min(92vw, calc(560px * var(--settings-scale, 1)));
     }
+  }
+}
+
+@keyframes atmosphere-shimmer {
+  0% {
+    background-position: 42% 44%;
+    filter: saturate(0.99);
+  }
+  50% {
+    background-position: 53% 49%;
+    filter: saturate(1.025);
+  }
+  100% {
+    background-position: 47% 56%;
+    filter: saturate(1.01);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-iridescent,
+  .bg-nebula,
+  .bg-lagoon,
+  .bg-ultraviolet,
+  .bg-sunset,
+  .bg-opal,
+  .bg-moonbow,
+  .bg-peacock {
+    animation: none;
   }
 }
 

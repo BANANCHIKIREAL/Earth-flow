@@ -1,7 +1,9 @@
 export type BackgroundVariant =
   | "aurora" | "dusk" | "forest" | "waves"
   | "ember" | "sakura" | "galaxy" | "arctic"
-  | "mist" | "stone" | "mahogany" | "wine";
+  | "mist" | "stone" | "mahogany" | "wine"
+  | "iridescent" | "nebula" | "lagoon" | "ultraviolet"
+  | "sunset" | "opal" | "moonbow" | "peacock";
 
 export const BACKGROUNDS: { id: BackgroundVariant; label: string }[] = [
   { id: "galaxy",   label: "Galaxy" },
@@ -16,9 +18,22 @@ export const BACKGROUNDS: { id: BackgroundVariant; label: string }[] = [
   { id: "stone",    label: "Stone" },
   { id: "mahogany", label: "Mahogany" },
   { id: "wine",     label: "Wine" },
+  { id: "iridescent", label: "Iridescent" },
+  { id: "nebula",     label: "Nebula" },
+  { id: "lagoon",     label: "Lagoon" },
+  { id: "ultraviolet", label: "Ultraviolet" },
+  { id: "sunset",     label: "Sunset" },
+  { id: "opal",       label: "Opal" },
+  { id: "moonbow",    label: "Moonbow" },
+  { id: "peacock",    label: "Peacock" },
 ];
 
-const STATIC_VARIANTS = ["aurora", "dusk", "forest", "ember", "sakura", "galaxy", "arctic", "mist", "stone", "mahogany", "wine"] as const;
+const STATIC_VARIANTS = [
+  "aurora", "dusk", "forest", "ember", "sakura", "galaxy",
+  "arctic", "mist", "stone", "mahogany", "wine", "iridescent",
+  "nebula", "lagoon", "ultraviolet", "sunset", "opal", "moonbow",
+  "peacock",
+] as const;
 
 interface Props {
   variant: BackgroundVariant;

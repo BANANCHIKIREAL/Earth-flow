@@ -110,6 +110,10 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 
 ## 📋 Version History
 
+### v5.0.2 — Account method detection
+- Fixed Google accounts with an added password incorrectly showing `Add password`
+- Password status is now checked securely for the current authenticated account
+
 ### v5.0.0 — Security, account reliability, and release polish
 - Hardened Supabase row-level security and Storage policies, restricted RPC access, and removed the unsafe admin impersonation function
 - Strengthened password requirements and account deletion cleanup, including custom audio and all user-owned Storage objects

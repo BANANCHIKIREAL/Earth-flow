@@ -4,6 +4,7 @@ import type { StreakStats } from "@/hooks/useStreak";
 import { STREAK_ENABLED } from "@/lib/flags";
 import { isBossStreak } from "@/lib/streakBoss";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
   open: boolean;
@@ -234,6 +235,7 @@ export function ProfileModal({
   const [deleteState, setDeleteState] = useState<"idle" | "confirm" | "sending-code" | "code" | "deleting" | "error">("idle");
   const [deleteCode, setDeleteCode] = useState("");
   const [deleteCodeError, setDeleteCodeError] = useState<string | null>(null);
+  const [hasAccountPassword, setHasAccountPassword] = useState<boolean | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -263,8 +265,9 @@ export function ProfileModal({
     ...(user?.identities?.map((identity) => identity.provider) ?? []),
   ]);
   const hasGoogleSignIn = signInProviders.has("google");
-  const hasPasswordSignIn = signInProviders.has("email");
-  const needsPassword = hasGoogleSignIn && !hasPasswordSignIn;
+  const hasPasswordSignIn =
+    hasAccountPassword ?? signInProviders.has("email");
+  const needsPassword = hasAccountPassword === false;
   const provider = hasGoogleSignIn
     ? hasPasswordSignIn
       ? "Google + Email"
@@ -273,6 +276,24 @@ export function ProfileModal({
 
   useEffect(() => { setDraft(displayName); }, [displayName]);
   useEffect(() => { setImgError(false); }, [avatarUrl]);
+
+  useEffect(() => {
+    if (!open || !user) {
+      setHasAccountPassword(null);
+      return;
+    }
+
+    let cancelled = false;
+    setHasAccountPassword(null);
+    void supabase.rpc("has_account_password").then(({ data, error }) => {
+      if (cancelled || error) return;
+      setHasAccountPassword(typeof data === "boolean" ? data : null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, user]);
 
   useEffect(() => {
     if (!open) return;

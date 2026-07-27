@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <radialGradient id="focus-bg" cx="28%" cy="18%" r="82%">
+      <stop offset="0%" stop-color="#36d8ff"/>
+      <stop offset="46%" stop-color="#202a44"/>
+      <stop offset="100%" stop-color="#101525"/>
+    </radialGradient>
+    <linearGradient id="focus-ring" x1="44" y1="150" x2="148" y2="42">
+      <stop offset="0%" stop-color="#86f4c4"/>
+      <stop offset="52%" stop-color="#55ddff"/>
+      <stop offset="100%" stop-color="#b78cff"/>
+    </linearGradient>
+    <filter id="focus-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="192" height="192" rx="52" fill="url(#focus-bg)"/>
+  <circle cx="96" cy="104" r="52" fill="#08111f" fill-opacity=".5" stroke="#ffffff" stroke-opacity=".11" stroke-width="10"/>
+  <path d="M96 52a52 52 0 1 1-45.4 77.4" fill="none" stroke="url(#focus-ring)" stroke-width="10" stroke-linecap="round" filter="url(#focus-glow)"/>
+  <path d="M82 103l10 10 22-25" fill="none" stroke="#f7fbff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M80 34h32M96 34v16" fill="none" stroke="#f7fbff" stroke-opacity=".9" stroke-width="9" stroke-linecap="round"/>
+</svg>

@@ -82,7 +82,11 @@ function LoginPage() {
           </div>
           <div>
             Don't have an account?{" "}
-            <Link to="/register" className="text-foreground hover:text-primary transition-colors font-medium">
+            <Link
+              to="/register"
+              search={{ email: undefined }}
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
               Sign up
             </Link>
           </div>

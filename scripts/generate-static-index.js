@@ -104,6 +104,76 @@ async function main() {
 
   const styleFileName = await findStyleFile(clientAssetsDir);
   const routerManifestJson = JSON.stringify(routerManifestData);
+  const bootSkeletonHtml = `
+    <div class="app-boot-shell">
+      <div class="dark app-loading-skeleton" role="status" aria-label="Loading Earth Flow">
+        <div class="app-loading-glow app-loading-glow-a" aria-hidden="true"></div>
+        <div class="app-loading-glow app-loading-glow-b" aria-hidden="true"></div>
+        <header class="app-loading-header" aria-hidden="true">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="app-skeleton-block" style="width:10px;height:10px;border-radius:999px"></span>
+            <span class="app-skeleton-block" style="width:96px;height:12px;border-radius:999px"></span>
+          </div>
+          <span class="app-skeleton-block" style="width:36px;height:36px;border-radius:999px"></span>
+        </header>
+        <main class="app-loading-grid" aria-hidden="true">
+          <aside class="app-loading-card app-loading-sidebar">
+            <span class="app-skeleton-block" style="width:34%;height:10px;border-radius:999px"></span>
+            <div class="app-loading-nav-stack">
+              ${[72, 58, 68].map((width) => `
+                <div class="app-loading-nav-item">
+                  <span class="app-skeleton-block" style="width:28px;height:28px;border-radius:8px"></span>
+                  <div style="display:flex;min-width:0;flex:1;flex-direction:column;gap:8px">
+                    <span class="app-skeleton-block" style="width:${width}%;height:10px;border-radius:999px"></span>
+                    <span class="app-skeleton-block" style="width:42%;height:10px;border-radius:999px"></span>
+                  </div>
+                </div>`).join("")}
+            </div>
+          </aside>
+          <section class="app-loading-card app-loading-focus">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span class="app-skeleton-block" style="width:18%;height:10px;border-radius:999px"></span>
+              <span class="app-skeleton-block" style="width:80px;height:28px;border-radius:999px"></span>
+            </div>
+            <div class="app-loading-timer">
+              <div class="app-loading-timer-inner">
+                <span class="app-skeleton-block" style="width:52%;height:10px;border-radius:999px"></span>
+                <span class="app-skeleton-block" style="width:32%;height:10px;border-radius:999px"></span>
+              </div>
+            </div>
+            <div class="app-loading-controls">
+              <span class="app-skeleton-block" style="width:40px;height:40px;border-radius:999px"></span>
+              <span class="app-skeleton-block" style="width:112px;height:48px;border-radius:999px"></span>
+              <span class="app-skeleton-block" style="width:40px;height:40px;border-radius:999px"></span>
+            </div>
+            <div class="app-loading-task-list">
+              ${[76, 62, 70].map((width) => `
+                <div class="app-loading-task">
+                  <span class="app-skeleton-block" style="width:16px;height:16px;border-radius:999px"></span>
+                  <span class="app-skeleton-block" style="width:${width}%;height:10px;border-radius:999px"></span>
+                </div>`).join("")}
+            </div>
+          </section>
+          <aside class="app-loading-card app-loading-mixer">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span class="app-skeleton-block" style="width:38%;height:10px;border-radius:999px"></span>
+              <span class="app-skeleton-block" style="width:28px;height:28px;border-radius:999px"></span>
+            </div>
+            <div class="app-loading-sound-grid">
+              ${[72, 58, 68, 62].map((width) => `
+                <div class="app-loading-sound">
+                  <span class="app-skeleton-block" style="width:36px;height:36px;border-radius:12px"></span>
+                  <div style="display:flex;min-width:0;flex:1;flex-direction:column;gap:8px">
+                    <span class="app-skeleton-block" style="width:${width}%;height:10px;border-radius:999px"></span>
+                    <span class="app-skeleton-block" style="width:100%;height:10px;border-radius:999px"></span>
+                  </div>
+                </div>`).join("")}
+            </div>
+          </aside>
+        </main>
+        <span class="sr-only">Loading Earth Flow</span>
+      </div>
+    </div>`;
 
   const indexHtml = `<!doctype html>
 <html lang="en">
@@ -121,8 +191,9 @@ async function main() {
     <meta name="twitter:image" content="https://earthflow.pro/og-image.png" />
     ${styleFileName ? `<link rel="stylesheet" href="/assets/${styleFileName}" />` : ''}
   </head>
-  <body>
+  <body style="margin:0;background:#090b11">
     <div id="root"></div>
+    ${bootSkeletonHtml}
     <script>
       window.$_TSR = window.$_TSR || {
         h: () => {},

@@ -66,7 +66,7 @@ function RegisterPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
-    if (/[а-яёА-ЯЁ]/.test(password)) { setError("Password cannot contain Cyrillic characters"); return; }
+    if (/[\u0400-\u04ff]/.test(password)) { setError("Password cannot contain Cyrillic characters"); return; }
     if (isBanned(password)) { setError("This password is too common — please choose something unique"); return; }
     if (strength.score < 2) { setError("Password too weak — add numbers or uppercase letters"); return; }
     if (password !== confirm) { setError("Passwords don't match"); return; }

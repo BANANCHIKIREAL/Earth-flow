@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, CalendarDays, Check, Hash, KeyRound, LogOut, Mail, RotateCcw, Settings, Trash2, User, X, Zap } from "lucide-react";
 import type { StreakStats } from "@/hooks/useStreak";
 import { STREAK_ENABLED } from "@/lib/flags";
+import { isBossStreak } from "@/lib/streakBoss";
 import { useAuth } from "@/context/AuthContext";
 
 interface Props {
@@ -138,13 +139,37 @@ export function getMilestone(streak: number) {
   return { m: MILESTONES[idx], idx, next: MILESTONES[idx + 1] ?? null };
 }
 
-function FlameDisplay({ streak }: { streak: number }) {
+function FlameDisplay({ streak, boss = false }: { streak: number; boss?: boolean }) {
   const { m, idx, next } = getMilestone(streak);
   const progress = next ? Math.min(1, (streak - m.days) / (next.days - m.days)) : 1;
   const anim =
     m.anim === "rainbow" ? "animate-flame-rainbow" :
     m.anim === "pulse"   ? "animate-pulse-soft" :
     m.anim === "bounce"  ? "animate-bounce-subtle" : "";
+
+  if (boss) {
+    return (
+      <div className="boss-streak-showcase" aria-label={`Boss streak: ${streak} days`}>
+        <div className="boss-streak-stars" aria-hidden="true">
+          <span>✦</span><span>✧</span><span>✦</span><span>✧</span>
+        </div>
+        <div className="boss-streak-emblem" aria-hidden="true">
+          <span className="boss-streak-orbit boss-streak-orbit-a"><i /></span>
+          <span className="boss-streak-orbit boss-streak-orbit-b"><i /></span>
+          <span className="boss-streak-crown">♛</span>
+          <span className="boss-streak-flame">🔥</span>
+          <span className="boss-streak-core" />
+        </div>
+        <div className="boss-streak-title">BOSS STREAK</div>
+        <div className="boss-streak-subtitle">
+          <span>USER #0005 EXCLUSIVE</span>
+          <span className="boss-streak-divider" />
+          <span>{streak} DAYS</span>
+        </div>
+        <div className="boss-streak-max">MAXIMUM OVERDRIVE</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-3 w-full">
@@ -305,6 +330,7 @@ export function ProfileModal({
 
   const { currentStreak, longestStreak, totalDays, isStreakBroken, canRestore, monthlyRestoresUsed } = streak;
   const restoresLeft = 3 - monthlyRestoresUsed;
+  const bossStreak = isBossStreak(userNumber, currentStreak);
 
   return (
     <>
@@ -325,14 +351,16 @@ export function ProfileModal({
       `}</style>
       <div onClick={onClose} className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className="ef-pm-in glass border border-border rounded-3xl w-full max-w-sm pointer-events-auto overflow-hidden max-h-[90vh] flex flex-col">
+        <div className={bossStreak ? "ef-pm-in boss-profile-modal glass rounded-3xl w-full max-w-sm pointer-events-auto overflow-hidden max-h-[90vh] flex flex-col" : "ef-pm-in glass border border-border rounded-3xl w-full max-w-sm pointer-events-auto overflow-hidden max-h-[90vh] flex flex-col"}>
 
           {/* Banner */}
           <div
-            className="relative h-24 shrink-0"
+            className={bossStreak ? "boss-profile-banner relative h-24 shrink-0" : "relative h-24 shrink-0"}
             style={{
               background:
-                "radial-gradient(ellipse 90% 130% at 50% -30%, oklch(0.82 0.12 200 / 0.28), transparent 70%), linear-gradient(180deg, oklch(1 0 0 / 0.05), transparent)",
+                bossStreak
+                  ? "radial-gradient(ellipse 75% 160% at 50% -38%, rgba(253,224,71,0.2), transparent 55%), radial-gradient(ellipse 100% 150% at 15% -35%, rgba(56,189,248,0.22), transparent 68%), radial-gradient(ellipse 90% 140% at 88% -30%, rgba(192,132,252,0.2), transparent 65%), linear-gradient(180deg, rgba(255,255,255,0.05), transparent)"
+                  : "radial-gradient(ellipse 90% 130% at 50% -30%, oklch(0.82 0.12 200 / 0.28), transparent 70%), linear-gradient(180deg, oklch(1 0 0 / 0.05), transparent)",
             }}
           >
             <div className="absolute left-5 top-5 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -348,17 +376,19 @@ export function ProfileModal({
 
           {/* Avatar — overlaps banner, persists across tabs (photo changes via Settings) */}
           <div className="relative z-10 -mt-11 flex justify-center">
-            <div className="relative h-[88px] w-[88px] rounded-full overflow-hidden border-2 border-border shadow-[0_0_30px_oklch(0.82_0.12_200_/_0.2)]">
-              {avatarUrl && !imgError ? (
-                <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setImgError(true)} />
-              ) : (
-                <div className="w-full h-full bg-foreground/10 backdrop-blur flex items-center justify-center text-3xl font-semibold">{avatarLetter}</div>
-              )}
-              {uploading && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <div className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                </div>
-              )}
+            <div className={bossStreak ? "boss-profile-avatar-shell relative h-[88px] w-[88px] rounded-full" : "relative h-[88px] w-[88px] rounded-full"}>
+              <div className="relative h-full w-full rounded-full overflow-hidden border-2 border-border shadow-[0_0_30px_oklch(0.82_0.12_200_/_0.2)]">
+                {avatarUrl && !imgError ? (
+                  <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setImgError(true)} />
+                ) : (
+                  <div className="w-full h-full bg-foreground/10 backdrop-blur flex items-center justify-center text-3xl font-semibold">{avatarLetter}</div>
+                )}
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  </div>
+                )}
+              </div>
             </div>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleAvatarFile(f); e.target.value = ""; }} />
           </div>
@@ -368,8 +398,9 @@ export function ProfileModal({
             <div className="font-display text-xl text-foreground">{displayName || "Anonymous"}</div>
             <div className="mt-0.5 text-xs text-muted-foreground">{email}</div>
             {userNumber != null && (
-              <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-                <Hash size={9} /> {userNumber}
+              <span className={bossStreak ? "boss-profile-id mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[9px] font-mono" : "mt-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-muted-foreground"}>
+                {bossStreak && <span aria-hidden="true">♛</span>}
+                <Hash size={9} /> {bossStreak ? "0005 · BOSS CLASS" : userNumber}
               </span>
             )}
             {uploadError && <div className="text-[11px] text-red-400 mt-1.5">{uploadError}</div>}
@@ -417,10 +448,10 @@ export function ProfileModal({
           </div>
 
           {/* ── Streak section ── */}
-          {STREAK_ENABLED && <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-4">
+          {STREAK_ENABLED && <div className={bossStreak ? "boss-streak-panel p-4 space-y-4" : "rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-4"}>
 
             {/* Flame upgrade display */}
-            <FlameDisplay streak={currentStreak} />
+            <FlameDisplay streak={currentStreak} boss={bossStreak} />
 
             {/* Activate streak prompt (only when streak = 0) */}
             {currentStreak === 0 && (
@@ -486,12 +517,29 @@ export function ProfileModal({
             )}
 
             {tab === "settings" && (
-              <div key="settings" className="ef-pm-tab space-y-4">
+              <div key="settings" className="ef-pm-tab profile-settings-layout">
+
+          <div className="profile-settings-intro">
+            <div>
+              <div className="profile-settings-eyebrow">PROFILE CONTROL</div>
+              <div className="profile-settings-title">Account settings</div>
+              <div className="profile-settings-copy">Manage your identity, access and session in one place.</div>
+            </div>
+          </div>
+
+          <section className="profile-settings-card">
+            <div className="profile-settings-card-header">
+              <span className="profile-settings-card-icon"><User size={13} /></span>
+              <div>
+                <div className="profile-settings-card-title">Personal details</div>
+                <div className="profile-settings-card-copy">Your public name and profile picture.</div>
+              </div>
+            </div>
 
           {/* Display name */}
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-              <User size={11} /> Name
+          <div className="profile-settings-field space-y-2">
+            <label className="profile-settings-label">
+              Display name
             </label>
             <div className="flex gap-2">
               <input
@@ -512,9 +560,9 @@ export function ProfileModal({
           </div>
 
           {/* Photo */}
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-              <Camera size={11} /> Photo
+          <div className="profile-settings-field space-y-2">
+            <label className="profile-settings-label">
+              Profile photo
             </label>
             <div className="flex gap-2">
               <button
@@ -551,13 +599,23 @@ export function ProfileModal({
               )}
             </div>
           </div>
+          </section>
+
+          <section className="profile-settings-card">
+            <div className="profile-settings-card-header">
+              <span className="profile-settings-card-icon"><KeyRound size={13} /></span>
+              <div>
+                <div className="profile-settings-card-title">Account access</div>
+                <div className="profile-settings-card-copy">Update your sign-in email and password.</div>
+              </div>
+            </div>
 
           {/* Email */}
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-              <Mail size={11} /> Email
+          <div className="profile-settings-field space-y-2">
+            <label className="profile-settings-label">
+              <Mail size={11} /> Email address
             </label>
-            <div className="rounded-xl border border-border bg-foreground/5 px-4 py-3 space-y-2.5">
+            <div className="profile-settings-row space-y-2.5">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-sm text-foreground">Email address</div>
@@ -614,11 +672,11 @@ export function ProfileModal({
           </div>
 
           {/* Security */}
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
-              <KeyRound size={11} /> Security
+          <div className="profile-settings-field space-y-2">
+            <label className="profile-settings-label">
+              <KeyRound size={11} /> Password
             </label>
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-foreground/5 px-4 py-3">
+            <div className="profile-settings-row flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm text-foreground">Password</div>
                 <div className="text-[11px] text-muted-foreground leading-relaxed">
@@ -655,18 +713,26 @@ export function ProfileModal({
               </button>
             </div>
           </div>
+          </section>
 
           {/* Sign out */}
-          <button
-            onClick={() => void onSignOut()}
-            className="w-full h-10 rounded-xl glass border border-border text-sm inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <LogOut size={14} />
-            Sign out
-          </button>
+          <section className="profile-settings-card profile-settings-session">
+            <div className="min-w-0">
+              <div className="profile-settings-card-title">Current session</div>
+              <div className="profile-settings-card-copy">Sign out securely on this device.</div>
+            </div>
+            <button
+              onClick={() => void onSignOut()}
+              className="profile-settings-signout"
+            >
+              <LogOut size={13} />
+              Sign out
+            </button>
+          </section>
 
           {/* Danger zone */}
-          <div className="rounded-xl border border-red-400/15 bg-red-400/[0.03] p-3.5 space-y-2.5">
+          <section className="profile-settings-danger">
+            <div className="profile-settings-danger-label">DANGER ZONE</div>
             <div className="flex items-start gap-2.5">
               <Trash2 size={14} className="mt-0.5 shrink-0 text-red-400/70" />
               <div>
@@ -767,7 +833,7 @@ export function ProfileModal({
                 </button>
               </div>
             )}
-          </div>
+          </section>
 
               </div>
             )}

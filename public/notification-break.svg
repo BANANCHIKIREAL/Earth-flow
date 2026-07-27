@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <radialGradient id="break-bg" cx="72%" cy="18%" r="86%">
+      <stop offset="0%" stop-color="#bc8cff"/>
+      <stop offset="45%" stop-color="#252447"/>
+      <stop offset="100%" stop-color="#111526"/>
+    </radialGradient>
+    <linearGradient id="break-ring" x1="42" y1="144" x2="150" y2="48">
+      <stop offset="0%" stop-color="#62e7ff"/>
+      <stop offset="50%" stop-color="#9beccb"/>
+      <stop offset="100%" stop-color="#d49aff"/>
+    </linearGradient>
+    <filter id="break-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="192" height="192" rx="52" fill="url(#break-bg)"/>
+  <circle cx="96" cy="104" r="52" fill="#090d1b" fill-opacity=".5" stroke="#ffffff" stroke-opacity=".11" stroke-width="10"/>
+  <path d="M96 52a52 52 0 1 1-50.4 64.7" fill="none" stroke="url(#break-ring)" stroke-width="10" stroke-linecap="round" filter="url(#break-glow)"/>
+  <path d="M107 78c-16 4-24 17-21 32 3 15 17 24 32 21-8 9-22 14-35 10-20-6-31-27-25-47 6-20 27-31 47-25 4 1 8 3 11 6-3 0-6 1-9 3z" fill="#f7fbff"/>
+  <path d="M80 34h32M96 34v16" fill="none" stroke="#f7fbff" stroke-opacity=".9" stroke-width="9" stroke-linecap="round"/>
+</svg>

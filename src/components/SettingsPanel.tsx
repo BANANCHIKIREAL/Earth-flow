@@ -12,6 +12,10 @@ import {
   Plus,
   Loader2,
   Check,
+  Cloud,
+  CloudOff,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { BACKGROUNDS, type BackgroundVariant } from "./Background";
 import type { FinishSound } from "@/hooks/useFinishSound";
@@ -85,8 +89,14 @@ interface Props {
   onPreviewFinishSound: () => void;
   notificationPermission: NotificationPermission | "unsupported";
   onRequestNotifications: () => void;
+  onPreviewNotification: () => void;
   layout: LayoutMode;
   setLayout: (l: LayoutMode) => void;
+  customSoundSyncEnabled: boolean;
+  onSetCustomSoundSyncEnabled: (enabled: boolean) => void;
+  customSoundCloudCount: number;
+  customSoundMaxCloudTracks: number;
+  customSoundSyncBusy: boolean;
   copy: typeof translations.en;
 }
 
@@ -125,8 +135,14 @@ export function SettingsPanel({
   onPreviewFinishSound,
   notificationPermission,
   onRequestNotifications,
+  onPreviewNotification,
   layout,
   setLayout,
+  customSoundSyncEnabled,
+  onSetCustomSoundSyncEnabled,
+  customSoundCloudCount,
+  customSoundMaxCloudTracks,
+  customSoundSyncBusy,
   copy,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -573,14 +589,96 @@ export function SettingsPanel({
                 </button>
               )}
             </div>
+            <div className={`relative overflow-hidden rounded-[1.65rem] border p-4 transition-all duration-700 ${
+              customSoundSyncEnabled
+                ? "border-sky-300/25 bg-sky-300/[0.07] shadow-[0_18px_70px_-34px_rgba(125,211,252,0.8)]"
+                : "border-white/10 bg-white/[0.035]"
+            }`}>
+              <div
+                aria-hidden="true"
+                className={`pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full blur-3xl transition-opacity duration-700 ${
+                  customSoundSyncEnabled ? "bg-sky-300/15 opacity-100" : "bg-white/5 opacity-30"
+                }`}
+              />
+              <div className="relative flex items-start gap-3">
+                <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border transition-all duration-500 ${
+                  customSoundSyncEnabled
+                    ? "border-sky-200/25 bg-sky-200/10 text-sky-200"
+                    : "border-white/10 bg-white/5 text-muted-foreground"
+                }`}>
+                  {customSoundSyncBusy ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : customSoundSyncEnabled ? (
+                    <Cloud size={18} />
+                  ) : (
+                    <CloudOff size={18} />
+                  )}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground">Cloud Sound Library</p>
+                    {customSoundSyncEnabled && <Sparkles size={12} className="text-sky-200/80" />}
+                  </div>
+                  <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                    {userId
+                      ? customSoundSyncEnabled
+                        ? "Create private compressed copies for your other signed-in devices. Originals stay on this device."
+                        : "Off by default. Your sounds remain only on this device."
+                      : "Sign in to create private cloud copies of your sounds."}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={customSoundSyncEnabled}
+                  aria-label="Cloud Sound Library"
+                  disabled={!userId}
+                  onClick={() => onSetCustomSoundSyncEnabled(!customSoundSyncEnabled)}
+                  className={`relative mt-1 h-7 w-12 shrink-0 rounded-full border transition-all duration-500 disabled:cursor-not-allowed disabled:opacity-35 ${
+                    customSoundSyncEnabled
+                      ? "border-sky-200/30 bg-sky-300/25"
+                      : "border-white/10 bg-black/20"
+                  }`}
+                >
+                  <span className={`absolute top-1 h-[18px] w-[18px] rounded-full shadow-sm transition-all duration-500 ease-out ${
+                    customSoundSyncEnabled
+                      ? "left-[25px] bg-sky-100 shadow-sky-200/40"
+                      : "left-1 bg-white/45"
+                  }`} />
+                </button>
+              </div>
+              <div className="relative mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
+                  <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/65">Cloud slots</p>
+                  <p className="mt-1 text-sm font-semibold tabular-nums">
+                    {customSoundCloudCount}<span className="text-muted-foreground">/{customSoundMaxCloudTracks}</span>
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
+                  <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/65">Each copy</p>
+                  <p className="mt-1 text-sm font-semibold">≤ 900 KB</p>
+                </div>
+              </div>
+              <div className="relative mt-3 flex items-center gap-2 text-[10px] text-muted-foreground/65">
+                <ShieldCheck size={12} />
+                <span>Private access · up to 90 seconds · optimized WebM audio</span>
+              </div>
+            </div>
             <button
-              onClick={onRequestNotifications}
-              disabled={notificationPermission === "granted" || notificationPermission === "unsupported"}
+              onClick={
+                notificationPermission === "granted"
+                  ? onPreviewNotification
+                  : onRequestNotifications
+              }
+              disabled={
+                notificationPermission === "denied" ||
+                notificationPermission === "unsupported"
+              }
               className="h-10 w-full rounded-full glass text-sm inline-flex items-center justify-center gap-2 hover:text-primary transition-colors disabled:cursor-default disabled:text-muted-foreground"
             >
               <BellRing size={14} />
               {notificationPermission === "granted"
-                ? copy.notificationsEnabled
+                ? "Preview browser notification"
                 : notificationPermission === "denied"
                   ? copy.notificationsBlocked
                   : notificationPermission === "unsupported"

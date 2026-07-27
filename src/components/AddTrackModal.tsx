@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Upload, X } from "lucide-react";
+import { Cloud, HardDrive, Upload, X } from "lucide-react";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onAddFromFile: (file: File) => Promise<void>;
+  syncEnabled: boolean;
+  canSync: boolean;
 }
 
-export function AddTrackModal({ open, onClose, onAddFromFile }: Props) {
+export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSync }: Props) {
   const [dragging, setDragging] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [adding, setAdding] = useState(false);
@@ -116,18 +118,46 @@ export function AddTrackModal({ open, onClose, onAddFromFile }: Props) {
                 {adding ? "Adding…" : "Add"}
               </button>
             </div>
-          ) : (
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="w-full h-9 rounded-full glass border border-border text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Choose file
-            </button>
-          )}
+          ) : null}
 
-          <p className="text-center text-[11px] text-muted-foreground/50">
-            Tracks are stored locally and won't sync across devices
-          </p>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+            <div className="flex items-start gap-2.5">
+              <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white/5 text-muted-foreground">
+                {syncEnabled && canSync ? <Cloud size={14} /> : <HardDrive size={14} />}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium text-foreground/75">
+                  {syncEnabled && canSync ? "Local original, optional cloud copy" : "Stored on this device"}
+                </p>
+                <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground/60">
+                  {syncEnabled && canSync
+                    ? "Your original stays local. A compressed private copy will be created automatically."
+                    : canSync
+                      ? "Cloud Sound Library is off. You can enable it in Sound settings."
+                      : "Sign in to make private cloud copies available on your other devices."}
+                </p>
+              </div>
+              <div
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.12em] ${
+                  syncEnabled && canSync
+                    ? "border-sky-300/20 bg-sky-300/[0.08] text-sky-200"
+                    : "border-white/10 bg-white/[0.025] text-muted-foreground/50"
+                }`}
+                role="status"
+                aria-live="polite"
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    syncEnabled && canSync
+                      ? "bg-sky-200 shadow-[0_0_9px_rgba(186,230,253,0.75)]"
+                      : "bg-white/20"
+                  }`}
+                  aria-hidden="true"
+                />
+                {syncEnabled && canSync ? "Cloud on" : canSync ? "Cloud off" : "Local only"}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

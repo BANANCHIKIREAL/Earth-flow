@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Background } from "@/components/Background";
+import { AppLoadingSkeleton } from "@/components/AppLoadingSkeleton";
 import { SoundDock } from "@/components/SoundDock";
 import { Timer } from "@/components/Timer";
 import { SettingsPanel } from "@/components/SettingsPanel";
@@ -14,8 +15,10 @@ import { useFinishSound } from "@/hooks/useFinishSound";
 import { useSettings, clearLocalSettings } from "@/hooks/useSettings";
 import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { useStreak } from "@/hooks/useStreak";
+import type { TimerPhase } from "@/hooks/useTimer";
 import { useAuth } from "@/context/AuthContext";
 import { translations } from "@/lib/i18n";
+import { isBossStreak } from "@/lib/streakBoss";
 import { supabase } from "@/lib/supabase";
 import { APP_VERSION_LABEL } from "@/lib/version";
 import { STREAK_ENABLED } from "@/lib/flags";
@@ -54,11 +57,7 @@ function FocusSpace() {
   }, [loading, user, guestEntered]);
 
   if (loading || (!user && !guestEntered)) {
-    return (
-      <div className="dark min-h-screen flex items-center justify-center bg-background">
-        <div className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" />
-      </div>
-    );
+    return <AppLoadingSkeleton />;
   }
 
   return <FocusSpaceContent key={user?.id ?? "guest"} userId={user?.id} userEmail={user?.email ?? ""} />;
@@ -69,6 +68,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const isGuest = !user;
   useSessionTracker(user ?? null);
   const streak = useStreak(userId);
+  const { recordSession } = streak;
   const { show: tutorialShow, complete: tutorialComplete } = useTutorial();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -120,7 +120,13 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     addFromFile: customAddFromFile,
     addFromUrl: customAddFromUrl,
     stopAll: customStopAll,
-  } = useCustomTracks();
+    syncEnabled: customSoundSyncEnabled,
+    setSyncEnabled: setCustomSoundSyncEnabled,
+    syncTrack: syncCustomTrack,
+    cloudCount: customSoundCloudCount,
+    maxCloudTracks: customSoundMaxCloudTracks,
+    isSyncBusy: customSoundSyncBusy,
+  } = useCustomTracks(userId);
   const {
     finishSounds,
     selectedSoundId,
@@ -134,16 +140,17 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     notificationPermission,
     requestNotificationPermission,
     notifyTimerComplete,
+    previewNotification,
   } = useBrowserNotifications();
   const { tasks, doneCount, completedRecords, chartArchive, chartHiddenLevel, categories, addTask, toggleTask, removeTask, clearDone, removeFromChart, addCategory, renameCategory, removeCategory, setTaskCategory } =
     useDailyTasks(userId);
   const activeCount = tracks.filter((t) => t.enabled).length;
-  const completeTimer = useCallback(() => {
+  const completeTimer = useCallback((phase: TimerPhase) => {
     playFinishSound();
-    notifyTimerComplete();
-    streak.recordSession();
+    notifyTimerComplete(phase);
+    if (phase === "focus") recordSession();
     if (stopSoundsOnTimerEnd) { stopAll(); customStopAll(); }
-  }, [notifyTimerComplete, playFinishSound, stopAll, stopSoundsOnTimerEnd, streak.recordSession]);
+  }, [customStopAll, notifyTimerComplete, playFinishSound, recordSession, stopAll, stopSoundsOnTimerEnd]);
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined) ||
@@ -152,6 +159,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? null;
   useEffect(() => { setHeaderImgError(false); }, [avatarUrl]);
   const avatarLetter = (displayName || userEmail).charAt(0).toUpperCase();
+  const bossStreakActive = isBossStreak(userNumber, streak.currentStreak);
 
   const taskProps = {
     tasks, doneCount, completedRecords, chartArchive, chartHiddenLevel, categories,
@@ -165,7 +173,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     const { m } = STREAK_ENABLED && streak.currentStreak > 0 ? getMilestone(streak.currentStreak) : { m: null };
     return (
       <div className="flex flex-col items-center gap-0.5">
-        <div className="relative">
+        <div className={bossStreakActive ? "boss-avatar-shell relative" : "relative"}>
           <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
             {avatarUrl && !headerImgError ? (
               <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
@@ -176,13 +184,13 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
           )}
         </div>
         {m && (
-          <div className="flex items-center gap-0.5 pointer-events-none select-none leading-none">
+          <div className={bossStreakActive ? "boss-streak-mini relative top-0.5 -left-0.5 flex items-center gap-0.5 pointer-events-none select-none leading-none" : "relative top-0.5 -left-0.5 flex items-center gap-0.5 pointer-events-none select-none leading-none"}>
             <span
-              className={m.anim === "rainbow" ? "animate-flame-rainbow" : "animate-flame-badge"}
+              className={bossStreakActive ? "boss-streak-mini-flame" : m.anim === "rainbow" ? "animate-flame-rainbow" : "animate-flame-badge"}
               style={{ fontSize: 11, filter: m.anim !== "rainbow" ? m.filter : undefined }}
             >🔥</span>
             <span
-              className={m.anim === "rainbow" ? "animate-flame-rainbow text-[9px] font-bold tabular-nums" : "text-[9px] font-bold tabular-nums"}
+              className={bossStreakActive ? "boss-streak-mini-count text-[9px] font-black tabular-nums" : m.anim === "rainbow" ? "animate-flame-rainbow text-[9px] font-bold tabular-nums" : "text-[9px] font-bold tabular-nums"}
               style={{ color: m.anim !== "rainbow" ? m.color : undefined }}
             >{streak.currentStreak}</span>
           </div>
@@ -224,6 +232,8 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
       onVolumeTrack={setVolume} onStopAll={stopAll} customTracks={customTracks}
       onCustomToggle={customToggle} onCustomVolume={customSetVolume}
       onCustomRemove={customRemove} onAddFromFile={customAddFromFile} copy={copy}
+      syncEnabled={customSoundSyncEnabled} canSync={Boolean(userId)}
+      onCustomSync={syncCustomTrack}
     />
   );
 
@@ -248,7 +258,13 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
       onClearCustomFinishSound={clearCustomSound} onPreviewFinishSound={playFinishSound}
       notificationPermission={notificationPermission}
       onRequestNotifications={() => void requestNotificationPermission()}
+      onPreviewNotification={previewNotification}
       layout={layout} setLayout={setLayout}
+      customSoundSyncEnabled={customSoundSyncEnabled}
+      onSetCustomSoundSyncEnabled={setCustomSoundSyncEnabled}
+      customSoundCloudCount={customSoundCloudCount}
+      customSoundMaxCloudTracks={customSoundMaxCloudTracks}
+      customSoundSyncBusy={customSoundSyncBusy}
       copy={copy}
     />
   );
@@ -462,7 +478,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
                 title={userEmail}
                 className="panel-user-button"
               >
-                <div className="relative shrink-0">
+                <div className={bossStreakActive ? "boss-avatar-shell relative shrink-0" : "relative shrink-0"}>
                   <div className="panel-user-avatar">
                     {avatarUrl && !headerImgError ? (
                       <img
@@ -491,13 +507,13 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
                 {STREAK_ENABLED && streak.currentStreak > 0 && (() => {
                   const { m } = getMilestone(streak.currentStreak);
                   return (
-                    <span className="ml-auto flex items-center gap-0.5 shrink-0 pointer-events-none select-none">
+                    <span className={bossStreakActive ? "boss-streak-mini ml-auto flex items-center gap-0.5 shrink-0 pointer-events-none select-none" : "ml-auto flex items-center gap-0.5 shrink-0 pointer-events-none select-none"}>
                       <span
-                        className={m.anim === "rainbow" ? "animate-flame-rainbow" : "animate-flame-badge"}
+                        className={bossStreakActive ? "boss-streak-mini-flame" : m.anim === "rainbow" ? "animate-flame-rainbow" : "animate-flame-badge"}
                         style={{ fontSize: 12, filter: m.anim !== "rainbow" ? m.filter : undefined }}
                       >🔥</span>
                       <span
-                        className={m.anim === "rainbow" ? "animate-flame-rainbow text-[10px] font-bold tabular-nums" : "text-[10px] font-bold tabular-nums"}
+                        className={bossStreakActive ? "boss-streak-mini-count text-[10px] font-black tabular-nums" : m.anim === "rainbow" ? "animate-flame-rainbow text-[10px] font-bold tabular-nums" : "text-[10px] font-bold tabular-nums"}
                         style={{ color: m.anim !== "rainbow" ? m.color : undefined }}
                       >{streak.currentStreak}</span>
                     </span>

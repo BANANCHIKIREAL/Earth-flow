@@ -10,6 +10,7 @@ import {
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { AuthProvider } from "@/context/AuthContext";
+import { AppLoadingSkeleton } from "@/components/AppLoadingSkeleton";
 
 import appCss from "../styles.css?url";
 import favicon from "../assets/favicon.svg?url";
@@ -109,6 +110,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <>
       <HeadContent />
       <div id="root">{children}</div>
+      <div className="app-boot-shell">
+        <AppLoadingSkeleton />
+      </div>
       <Analytics />
       <SpeedInsights />
       <Scripts />

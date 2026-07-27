@@ -451,7 +451,7 @@ function TaskBreakdown({ tasks, archivedTasks, hiddenIds, categories }: TaskBrea
 
   return (
     <div className="space-y-2 rounded-2xl border border-border bg-foreground/5 p-4">
-      <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground mb-3">Все задачи</div>
+            <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground mb-3">All tasks</div>
       {items.map((item) => (
         <div key={item.id} className="space-y-1">
           <div className="flex items-center justify-between gap-3">
@@ -486,9 +486,9 @@ function TaskBreakdown({ tasks, archivedTasks, hiddenIds, categories }: TaskBrea
 }
 
 function fmtSeconds(sec: number): string {
-  if (sec >= 3600) return `${(sec / 3600).toFixed(1)}ч`;
-  if (sec >= 60) return `${Math.round(sec / 60)}м`;
-  return `${Math.round(sec)}с`;
+  if (sec >= 3600) return `${(sec / 3600).toFixed(1)}h`;
+  if (sec >= 60) return `${Math.round(sec / 60)}m`;
+  return `${Math.round(sec)}s`;
 }
 
 interface TaskStatsDialogProps {

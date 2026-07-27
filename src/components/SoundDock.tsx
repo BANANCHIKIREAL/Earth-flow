@@ -1,4 +1,14 @@
-import { Music, Plus, Trash2, VolumeX } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Cloud,
+  CloudUpload,
+  Loader2,
+  Music,
+  Plus,
+  Trash2,
+  VolumeX,
+} from "lucide-react";
 import { useState } from "react";
 import { SoundMixer } from "./SoundMixer";
 import { AddTrackModal } from "./AddTrackModal";
@@ -17,6 +27,9 @@ interface Props {
   onCustomVolume: (id: string, volume: number) => void;
   onCustomRemove: (id: string) => void;
   onAddFromFile: (file: File) => Promise<void>;
+  syncEnabled: boolean;
+  canSync: boolean;
+  onCustomSync: (id: string) => Promise<void>;
   copy: typeof translations.en;
 }
 
@@ -31,6 +44,9 @@ export function SoundDock({
   onCustomVolume,
   onCustomRemove,
   onAddFromFile,
+  syncEnabled,
+  canSync,
+  onCustomSync,
   copy,
 }: Props) {
   const [addOpen, setAddOpen] = useState(false);
@@ -79,6 +95,8 @@ export function SoundDock({
                 onToggle={onCustomToggle}
                 onVolume={onCustomVolume}
                 onRemove={onCustomRemove}
+                syncEnabled={syncEnabled}
+                onSync={onCustomSync}
               />
             ))}
             <AddSoundCard onClick={() => setAddOpen(true)} />
@@ -90,6 +108,8 @@ export function SoundDock({
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onAddFromFile={onAddFromFile}
+        syncEnabled={syncEnabled}
+        canSync={canSync}
       />
     </section>
   );
@@ -118,13 +138,30 @@ function CustomSoundCard({
   onToggle,
   onVolume,
   onRemove,
+  syncEnabled,
+  onSync,
 }: {
   track: CustomTrack;
   onToggle: (id: string) => void;
   onVolume: (id: string, v: number) => void;
   onRemove: (id: string) => void;
+  syncEnabled: boolean;
+  onSync: (id: string) => Promise<void>;
 }) {
   const waveDelays = [0, 120, 240];
+  const syncing = track.syncStatus === "compressing" || track.syncStatus === "uploading";
+  const canUpload = syncEnabled && track.source === "local" && (
+    track.syncStatus === "local" || track.syncStatus === "error"
+  );
+  const syncLabel = track.syncStatus === "compressing"
+    ? `Compressing ${Math.round(track.syncProgress * 100)}%`
+    : track.syncStatus === "uploading"
+      ? `Uploading ${Math.round(track.syncProgress * 100)}%`
+      : track.syncStatus === "synced"
+        ? "Cloud copy ready"
+        : track.syncStatus === "error"
+          ? "Sync needs attention"
+          : "Saved on this device";
 
   return (
     <div
@@ -179,6 +216,52 @@ function CustomSoundCard({
           </div>
         </div>
       </button>
+
+      <div className="mt-2 flex min-h-6 items-center gap-1.5">
+        <span
+          className={`inline-flex min-w-0 items-center gap-1 rounded-full border px-2 py-1 text-[9px] uppercase tracking-[0.12em] ${
+            track.syncStatus === "synced"
+              ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200"
+              : track.syncStatus === "error"
+                ? "border-rose-300/20 bg-rose-300/10 text-rose-200"
+                : syncing
+                  ? "border-sky-300/20 bg-sky-300/10 text-sky-200"
+                  : "border-white/10 bg-white/5 text-muted-foreground"
+          }`}
+          title={track.syncError ?? syncLabel}
+        >
+          {track.syncStatus === "synced" ? (
+            <Check size={10} />
+          ) : track.syncStatus === "error" ? (
+            <AlertCircle size={10} />
+          ) : syncing ? (
+            <Loader2 size={10} className="animate-spin" />
+          ) : (
+            <Cloud size={10} />
+          )}
+          <span className="truncate">{syncLabel}</span>
+        </span>
+        {canUpload && (
+          <button
+            type="button"
+            onClick={() => void onSync(track.id)}
+            className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-sky-300/20 bg-sky-300/10 text-sky-200 transition duration-300 hover:scale-105 hover:bg-sky-300/20"
+            title={track.syncStatus === "error" ? "Try cloud sync again" : "Create cloud copy"}
+            aria-label={track.syncStatus === "error" ? "Try cloud sync again" : "Create cloud copy"}
+          >
+            <CloudUpload size={12} />
+          </button>
+        )}
+      </div>
+
+      {syncing && (
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/5">
+          <span
+            className="block h-full rounded-full bg-gradient-to-r from-sky-300 via-cyan-200 to-violet-300 transition-[width] duration-500 ease-out"
+            style={{ width: `${Math.max(4, track.syncProgress * 100)}%` }}
+          />
+        </div>
+      )}
 
       <input
         type="range"

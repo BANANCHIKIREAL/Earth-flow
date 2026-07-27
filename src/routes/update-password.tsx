@@ -36,7 +36,7 @@ function UpdatePasswordPage() {
     e.preventDefault();
     if (password !== confirm) { setError("Passwords don't match"); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
-    if (/[а-яёА-ЯЁ]/.test(password)) { setError("Password cannot contain Cyrillic characters"); return; }
+    if (/[\u0400-\u04ff]/.test(password)) { setError("Password cannot contain Cyrillic characters"); return; }
     if (strength.score < 2) { setError("Password too weak — add numbers or uppercase letters"); return; }
     setSubmitting(true);
     setError(null);

@@ -176,7 +176,11 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     return (
       <div className="flex flex-col items-center gap-0.5">
         <div className="relative">
-          <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
+          <button
+            onClick={() => setProfileOpen(true)}
+            title={userEmail}
+            className={`${cls} avatar-surface`}
+          >
             {avatarUrl && !headerImgError ? (
               <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
             ) : avatarLetter}

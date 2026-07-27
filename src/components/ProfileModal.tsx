@@ -255,7 +255,21 @@ export function ProfileModal({
         year: "numeric",
       })
     : null;
-  const provider = user?.app_metadata?.provider === "google" ? "Google" : "Email";
+  const signInProviders = new Set([
+    ...(typeof user?.app_metadata?.provider === "string"
+      ? [user.app_metadata.provider]
+      : []),
+    ...((user?.app_metadata?.providers as string[] | undefined) ?? []),
+    ...(user?.identities?.map((identity) => identity.provider) ?? []),
+  ]);
+  const hasGoogleSignIn = signInProviders.has("google");
+  const hasPasswordSignIn = signInProviders.has("email");
+  const needsPassword = hasGoogleSignIn && !hasPasswordSignIn;
+  const provider = hasGoogleSignIn
+    ? hasPasswordSignIn
+      ? "Google + Email"
+      : "Google"
+    : "Email";
 
   useEffect(() => { setDraft(displayName); }, [displayName]);
   useEffect(() => { setImgError(false); }, [avatarUrl]);
@@ -279,12 +293,11 @@ export function ProfileModal({
   };
 
   const handleAvatarFile = async (file: File) => {
-    if (!file.type.startsWith("image/")) return;
     setUploadError(null);
     setUploading(true);
     const { error } = await onUploadAvatar(file);
     setUploading(false);
-    if (error) setUploadError("Failed to upload photo. Please try again.");
+    if (error) setUploadError(error.message || "Failed to upload photo. Please try again.");
   };
 
   const handleChangePassword = async () => {
@@ -388,7 +401,7 @@ export function ProfileModal({
                 {avatarUrl && !imgError ? (
                   <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setImgError(true)} />
                 ) : (
-                  <div className="w-full h-full bg-foreground/10 backdrop-blur flex items-center justify-center text-3xl font-semibold">{avatarLetter}</div>
+                  <div className="profile-avatar-fallback w-full h-full flex items-center justify-center text-3xl font-semibold">{avatarLetter}</div>
                 )}
                 {uploading && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -397,7 +410,7 @@ export function ProfileModal({
                 )}
               </div>
             </div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleAvatarFile(f); e.target.value = ""; }} />
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleAvatarFile(f); e.target.value = ""; }} />
           </div>
 
           {/* Identity */}
@@ -441,7 +454,7 @@ export function ProfileModal({
               <KeyRound size={13} className="shrink-0 text-muted-foreground" />
               <span className="flex-1 text-xs text-muted-foreground">Sign-in method</span>
               <span className="inline-flex items-center gap-1.5 text-xs text-foreground">
-                {provider === "Google" && (
+                {hasGoogleSignIn && (
                   <svg width="11" height="11" viewBox="0 0 24 24" aria-hidden>
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -628,7 +641,9 @@ export function ProfileModal({
                   <div className="text-sm text-foreground">Email address</div>
                   <div className="text-[11px] text-muted-foreground leading-relaxed">
                     {emailStatus === "sent" ? (
-                      <span className="text-green-400">Confirmation sent — check both inboxes</span>
+                      <span className="break-all text-green-400">
+                        Confirm both {email} and {emailDraft}
+                      </span>
                     ) : emailStatus === "error" ? (
                       <span className="text-red-400">Failed to send. Try again.</span>
                     ) : (
@@ -685,14 +700,18 @@ export function ProfileModal({
             </label>
             <div className="profile-settings-row flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm text-foreground">Password</div>
+                <div className="text-sm text-foreground">
+                  {needsPassword ? "No password added" : "Password"}
+                </div>
                 <div className="text-[11px] text-muted-foreground leading-relaxed">
                   {pwStatus === "sent" ? (
                     <>Link sent to <span className="text-foreground">{email}</span></>
                   ) : pwStatus === "error" ? (
                     <span className="text-red-400">Failed to send email. Try again.</span>
                   ) : (
-                    "We'll email you a confirmation link"
+                    needsPassword
+                      ? "We'll email you a secure link to add one"
+                      : "We'll email you a confirmation link"
                   )}
                 </div>
               </div>
@@ -715,7 +734,7 @@ export function ProfileModal({
                 ) : pwStatus === "error" ? (
                   "Retry"
                 ) : (
-                  "Change"
+                  needsPassword ? "Add password" : "Change password"
                 )}
               </button>
             </div>

@@ -1,6 +1,7 @@
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 function safeResolve(...p) {
   return resolve(process.cwd(), ...p);
@@ -8,6 +9,16 @@ function safeResolve(...p) {
 
 const normalizeAssetPath = (p) =>
   p ? p.replace(/^\/?assets[\\/]/, '').replace(/^assets[\\/]/, '') : p;
+
+function stripPrivateManifestFields(value) {
+  if (Array.isArray(value)) return value.map(stripPrivateManifestFields);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => key !== 'filePath')
+      .map(([key, entry]) => [key, stripPrivateManifestFields(entry)]),
+  );
+}
 
 async function findStartManifestFile(...assetDirs) {
   const fs = await import('node:fs');
@@ -76,10 +87,11 @@ async function main() {
 
   await mkdir(clientAssetsDir, { recursive: true });
 
-  const routerManifestData =
+  const rawRouterManifestData =
     (await parseStartManifest(clientAssetsDir, serverAssetsDir)) ?? {
       routes: {},
     };
+  const routerManifestData = stripPrivateManifestFields(rawRouterManifestData);
 
   const rootRoute = routerManifestData.routes?.__root__;
   const rootModuleScript = rootRoute?.scripts?.find(
@@ -104,6 +116,13 @@ async function main() {
 
   const styleFileName = await findStyleFile(clientAssetsDir);
   const routerManifestJson = JSON.stringify(routerManifestData);
+  const bootScript = `window.$_TSR=window.$_TSR||{h:()=>{},buffer:[],initialized:true,router:{matches:[],lastMatchId:null,manifest:${routerManifestJson},dehydratedData:{}}};\n`;
+  const bootScriptHash = createHash('sha256')
+    .update(bootScript)
+    .digest('hex')
+    .slice(0, 12);
+  const bootScriptName = `earth-flow-boot-${bootScriptHash}.js`;
+  await writeFile(resolve(clientAssetsDir, bootScriptName), bootScript, 'utf8');
   const bootSkeletonHtml = `
     <div class="app-boot-shell">
       <div class="dark app-loading-skeleton" role="status" aria-label="Loading Earth Flow">
@@ -189,24 +208,13 @@ async function main() {
     <meta property="og:image" content="https://earthflow.pro/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://earthflow.pro/og-image.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     ${styleFileName ? `<link rel="stylesheet" href="/assets/${styleFileName}" />` : ''}
   </head>
   <body style="margin:0;background:#090b11">
     <div id="root"></div>
     ${bootSkeletonHtml}
-    <script>
-      window.$_TSR = window.$_TSR || {
-        h: () => {},
-        buffer: [],
-        initialized: true,
-        router: {
-          matches: [],
-          lastMatchId: null,
-          manifest: ${routerManifestJson},
-          dehydratedData: {}
-        }
-      };
-    </script>
+    <script src="/assets/${bootScriptName}"></script>
     <script type="module" src="/assets/${startFileName}"></script>
   </body>
 </html>`;

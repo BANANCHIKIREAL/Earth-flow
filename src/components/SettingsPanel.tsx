@@ -37,10 +37,12 @@ import {
   type LayoutMode,
 } from "@/hooks/useSettings";
 import { toColorInputValue } from "@/lib/color";
+import {
+  MAX_SYNCED_IMAGE_BYTES,
+  validateImageFile,
+} from "@/lib/imageUpload";
 import type { translations } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
-
-const MAX_BG_BYTES = 5 * 1024 * 1024;
 
 function formatCloudBytes(bytes: number) {
   if (bytes >= 1_000_000) {
@@ -180,9 +182,13 @@ export function SettingsPanel({
   }, [open]);
 
   const handleFile = async (file: File) => {
-    if (!file.type.startsWith("image/")) return;
     setUploadError(null);
-    const isLarge = file.size > MAX_BG_BYTES;
+    const typeError = validateImageFile(file, false);
+    if (typeError) {
+      setUploadError(typeError.message);
+      return;
+    }
+    const isLarge = file.size > MAX_SYNCED_IMAGE_BYTES;
     if (userId && !isLarge) {
       setUploading(true);
       const path = `${userId}/bg`;
@@ -799,7 +805,7 @@ export function SettingsPanel({
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];

@@ -65,8 +65,12 @@ function RegisterPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    if (password.length < 8) { setError("Password must be at least 8 characters"); return; }
     if (/[\u0400-\u04ff]/.test(password)) { setError("Password cannot contain Cyrillic characters"); return; }
+    if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      setError("Password must include lowercase and uppercase letters and a number");
+      return;
+    }
     if (isBanned(password)) { setError("This password is too common — please choose something unique"); return; }
     if (strength.score < 2) { setError("Password too weak — add numbers or uppercase letters"); return; }
     if (password !== confirm) { setError("Passwords don't match"); return; }
@@ -147,7 +151,7 @@ function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password (min. 6 characters)"
+              placeholder="Password (8+ characters, A–Z, a–z, 0–9)"
               required
               autoComplete="new-password"
               className={inputCls}

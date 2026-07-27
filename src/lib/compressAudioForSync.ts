@@ -6,10 +6,11 @@ import wasmURL from "@ffmpeg/core/wasm?url";
 
 export const MAX_SYNC_AUDIO_BYTES = 4_500_000;
 const AUDIO_METADATA_TIMEOUT_MS = 6_000;
-const DEFAULT_AUDIO_BITRATE_KBPS = 48;
-const MIN_AUDIO_BITRATE_KBPS = 24;
-const MAX_AUDIO_BITRATE_KBPS = 48;
-const CONTAINER_HEADROOM = 0.9;
+const DEFAULT_AUDIO_BITRATE_KBPS = 96;
+const MIN_AUDIO_BITRATE_KBPS = 48;
+const MAX_AUDIO_BITRATE_KBPS = 128;
+const STEREO_BITRATE_THRESHOLD_KBPS = 80;
+const CONTAINER_HEADROOM = 0.93;
 
 let ffmpegPromise: Promise<FFmpeg> | null = null;
 
@@ -111,6 +112,7 @@ export async function compressAudioForSync(
         await ffmpeg.deleteFile(outputName);
       } catch {}
 
+      const useStereo = bitrate >= STEREO_BITRATE_THRESHOLD_KBPS;
       const durationArgs = detectedDurationSeconds
         ? ["-t", detectedDurationSeconds.toFixed(3)]
         : [];
@@ -120,9 +122,9 @@ export async function compressAudioForSync(
         "-vn",
         ...durationArgs,
         "-ac",
-        "1",
+        useStereo ? "2" : "1",
         "-ar",
-        "32000",
+        useStereo ? "44100" : "32000",
         "-c:a",
         "aac",
         "-b:a",

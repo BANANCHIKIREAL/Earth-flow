@@ -35,14 +35,18 @@ function UpdatePasswordPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (password !== confirm) { setError("Passwords don't match"); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    if (password.length < 8) { setError("Password must be at least 8 characters"); return; }
     if (/[\u0400-\u04ff]/.test(password)) { setError("Password cannot contain Cyrillic characters"); return; }
+    if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      setError("Password must include lowercase and uppercase letters and a number");
+      return;
+    }
     if (strength.score < 2) { setError("Password too weak — add numbers or uppercase letters"); return; }
     setSubmitting(true);
     setError(null);
     const { error } = await updatePassword(password);
     if (error) {
-      setError("Failed to update password. Please try again.");
+      setError(error.message || "Failed to update password. Please try again.");
       setSubmitting(false);
     } else {
       void navigate({ to: "/" });
@@ -65,7 +69,7 @@ function UpdatePasswordPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="New password (min. 6 characters)"
+              placeholder="New password (8+ characters, A–Z, a–z, 0–9)"
               required
               autoComplete="new-password"
               className={inputCls}

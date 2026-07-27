@@ -30,24 +30,31 @@ Deno.serve(async (req) => {
   if (userErr || !userData.user) return json({ error: "Invalid token" }, 401);
   const userId = userData.user.id;
 
-  // Remove user rows
-  for (const table of ["user_settings", "user_data", "user_streaks", "user_profiles"]) {
-    const { error } = await admin.from(table).delete().eq("user_id", userId);
-    if (error) console.error(`cleanup ${table}:`, error.message);
+  // Remove every user-owned storage object before deleting the auth identity.
+  for (const bucket of ["avatars", "user-backgrounds", "user-audio-sync"]) {
+    while (true) {
+      const { data: files, error: listError } = await admin.storage
+        .from(bucket)
+        .list(userId, { limit: 100 });
+      if (listError) return json({ error: `Could not clean up ${bucket}` }, 500);
+      if (!files?.length) break;
+      const { error: removeError } = await admin.storage
+        .from(bucket)
+        .remove(files.map((file) => `${userId}/${file.name}`));
+      if (removeError) return json({ error: `Could not clean up ${bucket}` }, 500);
+    }
   }
 
-  // Remove storage files (avatars + custom backgrounds)
-  for (const bucket of ["avatars", "user-backgrounds"]) {
-    try {
-      const { data: files } = await admin.storage.from(bucket).list(userId);
-      if (files?.length) {
-        await admin.storage
-          .from(bucket)
-          .remove(files.map((f) => `${userId}/${f.name}`));
-      }
-    } catch (e) {
-      console.error(`cleanup storage ${bucket}:`, e);
-    }
+  // Remove user rows. Abort on failure so the user can retry safely.
+  for (const table of [
+    "user_custom_tracks",
+    "user_settings",
+    "user_data",
+    "user_streaks",
+    "user_profiles",
+  ]) {
+    const { error } = await admin.from(table).delete().eq("user_id", userId);
+    if (error) return json({ error: `Could not clean up ${table}` }, 500);
   }
 
   // Delete the auth user itself

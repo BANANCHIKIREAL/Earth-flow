@@ -100,10 +100,10 @@ using (
   and (storage.foldername(name))[1] = (select auth.uid())::text
   and exists (
     select 1
-    from public.user_custom_tracks
-    where user_id = (select auth.uid())
-      and storage_path = name
-      and status = 'ready'
+    from public.user_custom_tracks as custom_track
+    where custom_track.user_id = (select auth.uid())
+      and custom_track.storage_path = storage.objects.name
+      and custom_track.status = 'ready'
   )
 );
 
@@ -116,10 +116,10 @@ with check (
   and (storage.foldername(name))[1] = (select auth.uid())::text
   and exists (
     select 1
-    from public.user_custom_tracks
-    where user_id = (select auth.uid())
-      and storage_path = name
-      and status = 'uploading'
+    from public.user_custom_tracks as custom_track
+    where custom_track.user_id = (select auth.uid())
+      and custom_track.storage_path = storage.objects.name
+      and custom_track.status = 'uploading'
   )
 );
 

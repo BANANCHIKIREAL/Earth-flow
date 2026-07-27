@@ -803,6 +803,21 @@
   isolation: isolate;
 }
 
+.avatar-surface {
+  background-color: color-mix(in oklab, var(--background) 88%, var(--foreground) 12%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  clip-path: circle(50%);
+  isolation: isolate;
+}
+
+.profile-avatar-fallback {
+  border-radius: inherit;
+  background: color-mix(in oklab, var(--background) 82%, var(--foreground) 18%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 .boss-avatar-shell::before {
   content: "";
   position: absolute;

@@ -2,7 +2,7 @@
 
 # 🌍 Earth Flow
 
-A calm focus space — ambient sound mixer, Pomodoro timer,<br/>task tracker, and time analytics in one minimal interface.
+A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>daily tasks, time analytics, cloud sync, and four distinct interfaces.
 
 [![Live](https://img.shields.io/badge/Live-earthflow.pro-3dc9b0?style=flat-square&logo=vercel&logoColor=white)](https://earthflow.pro)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white)](https://react.dev)
@@ -23,13 +23,15 @@ A calm focus space — ambient sound mixer, Pomodoro timer,<br/>task tracker, an
 
 | | Feature | Description |
 |---|---|---|
-| 🎛️ | **Ambient Sound Mixer** | 16 layered nature sounds with individual volume control. Upload your own tracks. |
+| 🎛️ | **Ambient Sound Mixer** | Mix 17 built-in nature sounds with independent volume controls and add your own audio. |
 | ⏱️ | **Focus Timer** | Configurable Pomodoro with optional lunch break, custom ring styles and fonts. |
 | ✅ | **Daily Tasks** | Task list with categories, live time tracking, and completion history. |
 | 🍩 | **Time Analytics** | Donut chart showing time spent per category — day, week, month, or year. |
-| 🌌 | **Backgrounds** | 10 gradient presets plus custom image upload synced to your account. |
-| ☁️ | **Cloud Sync** | Settings, tasks, and custom backgrounds synced across devices via Supabase. |
+| 🧭 | **Four Interfaces** | Switch between Classic, Panels, Orbit, and Horizon layouts without losing your settings. |
+| 🌌 | **Backgrounds** | Choose from 20 animated and static atmosphere presets or upload a custom image. |
+| ☁️ | **Cloud Sync** | Sync settings, tasks, backgrounds, profile data, and an optional compressed custom-audio library across devices. |
 | 🔥 | **Streak System** | Daily visit streak with flame badge, restore mechanic, and longest-streak record. |
+| 🔔 | **Notifications** | Styled focus and break notifications with phase-specific artwork and sounds. |
 | 🎓 | **Tutorial** | Spotlight-guided onboarding tour covering all key features. |
 
 ---
@@ -90,8 +92,11 @@ The app requires the following in your Supabase project:
 - Table `user_settings` — per-user settings JSON
 - Table `daily_tasks` — tasks and completion records
 - Table `user_streaks` — streak data
+- Table `user_custom_tracks` — metadata for optional cloud-synced custom audio
 - Storage bucket `user-backgrounds` *(public)* — custom background images
-- Storage bucket for avatars — user profile photos
+- Storage bucket `avatars` *(public)* — user profile photos
+- Storage bucket `user-audio-sync` *(private)* — compressed custom audio
+- Edge Function `delete-account` — authenticated account and user-data cleanup
 
 ---
 
@@ -104,6 +109,35 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.0.0 — Security, account reliability, and release polish
+- Hardened Supabase row-level security and Storage policies, restricted RPC access, and removed the unsafe admin impersonation function
+- Strengthened password requirements and account deletion cleanup, including custom audio and all user-owned Storage objects
+- Added validated image uploads, production security headers, dependency updates, and a zero-vulnerability production dependency audit
+- Improved cloud-audio quality with adaptive AAC compression while keeping the combined library within the 4.5 MB sync budget
+- Fixed stale email display after a confirmed address change and added correct password actions for Google-only accounts
+- Fixed fallback-avatar rendering artifacts and added a stable branded favicon for browsers and search results
+
+### v4.7.3 — Horizon and cloud-audio improvements
+- Added the Horizon workspace layout and refined responsive task sizing
+- Made custom-track cards fully clickable and expanded the Orbit sound grid
+- Added cloud audio usage, sync-state indicators, and total-library quota handling
+- Improved custom audio compression and upload reliability
+
+### v4.6.9 — Welcome page and theme fixes
+- Updated Welcome page feature counts and cloud/local storage descriptions to match the application
+- Fixed the missing Waves theme preview
+- Refined profile and custom-music presentation
+
+### v4.6.6 — Notifications, streaks, and custom audio sync
+- Added reliable phase-specific browser notifications and notification artwork
+- Enabled and repaired the streak system, including the personalized boss streak presentation
+- Added optional compressed cloud sync for custom audio with local-device fallback
+- Improved loading-state behavior, profile layout, and cloud sync feedback
+
+### v4.6.2 — Theme gallery
+- Replaced text-only background selection with compact visual previews
+- Added new animated atmosphere themes with slower, subtler motion
 
 ### v4.5.1
 - Made the Panels workspace rail indicators static and non-interactive

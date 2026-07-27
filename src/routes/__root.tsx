@@ -13,7 +13,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import { AppLoadingSkeleton } from "@/components/AppLoadingSkeleton";
 
 import appCss from "../styles.css?url";
-import favicon from "../assets/favicon.svg?url";
 
 function NotFoundComponent() {
   return (
@@ -95,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "icon",
         type: "image/svg+xml",
-        href: favicon,
+        href: "/favicon.svg",
       },
     ],
   }),

@@ -1,6 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import {
+  imageExtensionFor,
+  validateImageFile,
+} from "@/lib/imageUpload";
 
 interface AuthContextType {
   user: User | null;
@@ -29,21 +33,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
+
+    const refreshUserFromServer = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!active || error) return;
+      setUser(data.user);
+      setSession((current) =>
+        current ? { ...current, user: data.user } : current,
+      );
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active) return;
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session) void refreshUserFromServer();
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session) window.setTimeout(() => void refreshUserFromServer(), 0);
     });
 
-    return () => subscription.unsubscribe();
+    const refreshOnFocus = () => void refreshUserFromServer();
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") void refreshUserFromServer();
+    };
+    window.addEventListener("focus", refreshOnFocus);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+      window.removeEventListener("focus", refreshOnFocus);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -88,11 +119,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const uploadAvatar = async (file: File) => {
     if (!user) return { error: new Error("Not authenticated") };
-    const ext = file.name.split(".").pop() ?? "jpg";
+    const validationError = validateImageFile(file);
+    if (validationError) return { error: validationError };
+    const ext = imageExtensionFor(file);
     const path = `${user.id}/avatar.${ext}`;
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { upsert: true });
+      .upload(path, file, { upsert: true, contentType: file.type });
     if (uploadError) return { error: uploadError as Error };
     const { data } = supabase.storage.from("avatars").getPublicUrl(path);
     const urlWithBust = `${data.publicUrl}?t=${Date.now()}`;

@@ -205,9 +205,9 @@ async function main() {
     <meta property="og:description" content="Ambient sounds &amp; focus timer for deep work." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://earthflow.pro" />
-    <meta property="og:image" content="https://earthflow.pro/og-image.png" />
+    <meta property="og:image" content="https://earthflow.pro/og-image.png?v=5.2.2" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://earthflow.pro/og-image.png" />
+    <meta name="twitter:image" content="https://earthflow.pro/og-image.png?v=5.2.2" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     ${styleFileName ? `<link rel="stylesheet" href="/assets/${styleFileName}" />` : ''}
   </head>

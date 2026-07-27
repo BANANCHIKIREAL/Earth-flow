@@ -1,4 +1,4 @@
-drop policy if exists "Users manage their own data" on public.user_data;
+DROP POLICY IF EXISTS "Users manage their own data" ON public.user_data;
 create policy "Users manage their own data"
 on public.user_data for all
 to authenticated

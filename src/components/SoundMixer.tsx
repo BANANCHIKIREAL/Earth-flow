@@ -7,6 +7,7 @@ interface Props {
   onToggle: (id: string) => void;
   onVolume: (id: string, v: number) => void;
   compact?: boolean;
+  compactColumns?: 5 | 6;
 }
 
 const SOUND_ICONS: Record<SoundIconType, LucideIcon> = {
@@ -42,7 +43,13 @@ function SoundIcon({ icon }: { icon: SoundIconType }) {
   );
 }
 
-export function SoundMixer({ tracks, onToggle, onVolume, compact = false }: Props) {
+export function SoundMixer({
+  tracks,
+  onToggle,
+  onVolume,
+  compact = false,
+  compactColumns = 5,
+}: Props) {
   if (tracks.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border/50 bg-background/80 p-6 text-center text-sm text-muted-foreground">
@@ -55,7 +62,9 @@ export function SoundMixer({ tracks, onToggle, onVolume, compact = false }: Prop
     <div
       className={`grid gap-3 ${
         compact
-          ? "grid-cols-2 sm:grid-cols-5"
+          ? compactColumns === 6
+            ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"
+            : "grid-cols-2 sm:grid-cols-5"
           : "grid-cols-1 min-[420px]:grid-cols-2"
       }`}
     >

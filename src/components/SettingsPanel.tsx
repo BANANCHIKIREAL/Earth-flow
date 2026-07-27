@@ -41,6 +41,15 @@ import type { translations } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 
 const MAX_BG_BYTES = 5 * 1024 * 1024;
+
+function formatCloudBytes(bytes: number) {
+  if (bytes >= 1_000_000) {
+    const megabytes = (bytes / 1_000_000).toFixed(2).replace(/\.?0+$/, "");
+    return `${megabytes} MB`;
+  }
+  return `${Math.round(bytes / 1_000)} KB`;
+}
+
 type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => unknown;
 };
@@ -95,7 +104,8 @@ interface Props {
   customSoundSyncEnabled: boolean;
   onSetCustomSoundSyncEnabled: (enabled: boolean) => void;
   customSoundCloudCount: number;
-  customSoundMaxCloudTracks: number;
+  customSoundCloudBytes: number;
+  customSoundMaxCloudBytes: number;
   customSoundSyncBusy: boolean;
   copy: typeof translations.en;
 }
@@ -141,7 +151,8 @@ export function SettingsPanel({
   customSoundSyncEnabled,
   onSetCustomSoundSyncEnabled,
   customSoundCloudCount,
-  customSoundMaxCloudTracks,
+  customSoundCloudBytes,
+  customSoundMaxCloudBytes,
   customSoundSyncBusy,
   copy,
 }: Props) {
@@ -151,6 +162,10 @@ export function SettingsPanel({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [activeOrbitSetting, setActiveOrbitSetting] = useState<string | null>(null);
+  const customSoundCloudUsage = Math.min(
+    100,
+    (customSoundCloudBytes / customSoundMaxCloudBytes) * 100,
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -647,17 +662,39 @@ export function SettingsPanel({
                   }`} />
                 </button>
               </div>
-              <div className="relative mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
-                  <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/65">Cloud slots</p>
-                  <p className="mt-1 text-sm font-semibold tabular-nums">
-                    {customSoundCloudCount}<span className="text-muted-foreground">/{customSoundMaxCloudTracks}</span>
+              <div
+                className="relative mt-3 rounded-2xl border border-white/8 bg-black/10 px-3 py-3"
+                aria-label={`${formatCloudBytes(customSoundCloudBytes)} of ${formatCloudBytes(customSoundMaxCloudBytes)} cloud sound storage used`}
+              >
+                <div className="flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/65">
+                      Cloud storage
+                    </p>
+                    <p className="mt-1 text-sm font-semibold tabular-nums">
+                      {formatCloudBytes(customSoundCloudBytes)}
+                      <span className="text-muted-foreground">
+                        {" "}/ {formatCloudBytes(customSoundMaxCloudBytes)}
+                      </span>
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/70">
+                    {customSoundCloudCount} {customSoundCloudCount === 1 ? "copy" : "copies"}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/8 bg-black/10 px-3 py-2.5">
-                  <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/65">Each copy</p>
-                  <p className="mt-1 text-sm font-semibold">≤ 900 KB</p>
+                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+                  <span
+                    className="block h-full rounded-full bg-gradient-to-r from-sky-300 via-cyan-200 to-violet-300 transition-[width] duration-700 ease-out"
+                    style={{ width: `${customSoundCloudUsage}%` }}
+                  />
                 </div>
+                <div className="mt-2 flex items-center justify-between text-[9px] uppercase tracking-[0.14em] text-muted-foreground/55">
+                  <span>{Math.round(customSoundCloudUsage)}% used</span>
+                  <span>Shared across all copies</span>
+                </div>
+                <p className="mt-2 text-[9px] uppercase tracking-[0.14em] text-muted-foreground/45">
+                  AAC · 48 kbps · mono · 32 kHz
+                </p>
               </div>
               <div className="relative mt-3 flex items-center gap-2 text-[10px] text-muted-foreground/65">
                 <ShieldCheck size={12} />
@@ -821,7 +858,7 @@ export function SettingsPanel({
             className={orbitSectionClass("layout", "space-y-3")}
           >
             <SectionTitle>Layout</SectionTitle>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setLayout("classic")}
                 aria-pressed={layout === "classic"}
@@ -866,6 +903,21 @@ export function SettingsPanel({
                 <div>
                   <div className="text-xs font-medium">Orbit</div>
                   <div className="text-[8px] uppercase tracking-wider opacity-60">Experimental</div>
+                </div>
+              </button>
+              <button
+                onClick={() => setLayout("horizon")}
+                aria-pressed={layout === "horizon"}
+                className={`relative overflow-hidden rounded-2xl glass p-3 text-left transition-all space-y-2.5 ${layout === "horizon" ? "glow-ring text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                <div className="relative h-8 opacity-70">
+                  <div className="absolute inset-x-0 top-0 h-4 rounded-md border border-current opacity-55" />
+                  <div className="absolute bottom-0 left-0 h-3 w-[58%] rounded-sm bg-current opacity-70" />
+                  <div className="absolute bottom-0 right-0 h-3 w-[36%] rounded-sm bg-current opacity-40" />
+                </div>
+                <div>
+                  <div className="text-xs font-medium">Horizon</div>
+                  <div className="text-[8px] uppercase tracking-wider opacity-60">Practical</div>
                 </div>
               </button>
             </div>

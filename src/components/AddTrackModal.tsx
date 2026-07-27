@@ -10,14 +10,23 @@ interface Props {
   canSync: boolean;
 }
 
+function isSupportedAudioFile(file: File) {
+  return (
+    file.type.startsWith("audio/") ||
+    file.type === "video/mp4" ||
+    file.name.toLowerCase().endsWith(".mp4")
+  );
+}
+
 export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSync }: Props) {
   const [dragging, setDragging] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!open) { setPendingFile(null); setAdding(false); }
+    if (!open) { setPendingFile(null); setFileError(null); setAdding(false); }
   }, [open]);
 
   useEffect(() => {
@@ -31,12 +40,25 @@ export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSy
     e.preventDefault();
     setDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file?.type.startsWith("audio/")) setPendingFile(file);
+    if (!file) return;
+    if (isSupportedAudioFile(file)) {
+      setPendingFile(file);
+      setFileError(null);
+    } else {
+      setPendingFile(null);
+      setFileError("Choose an audio file or an MP4 containing an audio track.");
+    }
   }, []);
 
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setPendingFile(file);
+    if (file && isSupportedAudioFile(file)) {
+      setPendingFile(file);
+      setFileError(null);
+    } else if (file) {
+      setPendingFile(null);
+      setFileError("Choose an audio file or an MP4 containing an audio track.");
+    }
     e.target.value = "";
   }, []);
 
@@ -110,10 +132,16 @@ export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSy
           <input
             ref={fileRef}
             type="file"
-            accept="audio/*"
+            accept="audio/*,.mp4,video/mp4"
             className="hidden"
             onChange={handleFileInput}
           />
+
+          {fileError && (
+            <p className="rounded-2xl border border-rose-300/10 bg-rose-300/[0.06] px-3 py-2 text-[11px] leading-relaxed text-rose-100/75">
+              {fileError}
+            </p>
+          )}
 
           {pendingFile ? (
             <div className="flex gap-2">

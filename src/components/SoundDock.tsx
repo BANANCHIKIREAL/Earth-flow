@@ -30,6 +30,7 @@ interface Props {
   syncEnabled: boolean;
   canSync: boolean;
   onCustomSync: (id: string) => Promise<void>;
+  columns?: 5 | 6;
   copy: typeof translations.en;
 }
 
@@ -47,6 +48,7 @@ export function SoundDock({
   syncEnabled,
   canSync,
   onCustomSync,
+  columns = 5,
   copy,
 }: Props) {
   const [addOpen, setAddOpen] = useState(false);
@@ -82,12 +84,19 @@ export function SoundDock({
             onToggle={onToggleTrack}
             onVolume={onVolumeTrack}
             compact
+            compactColumns={columns}
           />
 
           <div className="border-t border-border" />
 
           {/* Custom tracks + add button row */}
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-5">
+          <div
+            className={`grid gap-3 ${
+              columns === 6
+                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"
+                : "grid-cols-2 sm:grid-cols-5"
+            }`}
+          >
             {customTracks.map((t) => (
               <CustomSoundCard
                 key={t.id}
@@ -165,12 +174,27 @@ function CustomSoundCard({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={track.enabled}
+      aria-label={`${track.enabled ? "Pause" : "Play"} ${track.name}`}
+      onClick={() => onToggle(track.id)}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onToggle(track.id);
+        }
+      }}
       className={`group relative glass rounded-3xl transition duration-300 ease-out overflow-hidden p-3 min-h-24 ${
         track.enabled ? "glow-ring shadow-xl" : "hover:shadow-lg hover:border-foreground/20"
-      }`}
+      } cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60`}
     >
       <button
-        onClick={() => onRemove(track.id)}
+        onClick={(event) => {
+          event.stopPropagation();
+          onRemove(track.id);
+        }}
         className="absolute top-2 right-2 h-5 w-5 rounded-full bg-foreground/10 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all z-10"
         title="Remove"
         type="button"
@@ -178,10 +202,8 @@ function CustomSoundCard({
         <Trash2 size={10} />
       </button>
 
-      <button
-        onClick={() => onToggle(track.id)}
+      <div
         className="flex w-full items-center gap-2 text-left transition-transform duration-200 ease-out active:scale-[0.98]"
-        type="button"
       >
         <div
           className={`relative rounded-xl flex items-center justify-center h-9 w-9 transition duration-300 ease-out flex-shrink-0 ${
@@ -215,7 +237,7 @@ function CustomSoundCard({
             )}
           </div>
         </div>
-      </button>
+      </div>
 
       <div className="mt-2 flex min-h-6 items-center gap-1.5">
         <span
@@ -244,7 +266,10 @@ function CustomSoundCard({
         {canUpload && (
           <button
             type="button"
-            onClick={() => void onSync(track.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              void onSync(track.id);
+            }}
             className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-sky-300/20 bg-sky-300/10 text-sky-200 transition duration-300 hover:scale-105 hover:bg-sky-300/20"
             title={track.syncStatus === "error" ? "Try cloud sync again" : "Create cloud copy"}
             aria-label={track.syncStatus === "error" ? "Try cloud sync again" : "Create cloud copy"}
@@ -253,6 +278,12 @@ function CustomSoundCard({
           </button>
         )}
       </div>
+
+      {track.syncStatus === "error" && track.syncError && (
+        <p className="mt-1.5 rounded-xl border border-rose-300/10 bg-rose-300/[0.06] px-2 py-1.5 text-[10px] leading-relaxed text-rose-100/75">
+          {track.syncError}
+        </p>
+      )}
 
       {syncing && (
         <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/5">
@@ -270,6 +301,8 @@ function CustomSoundCard({
         step={0.01}
         value={track.volume}
         onChange={(e) => onVolume(track.id, parseFloat(e.target.value))}
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
         className="mt-3 w-full accent-primary cursor-pointer"
         aria-label={`${track.name} volume`}
       />

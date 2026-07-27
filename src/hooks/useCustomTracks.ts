@@ -45,7 +45,7 @@ const STORE = "custom-tracks";
 const SYNC_BUCKET = "user-audio-sync";
 const SYNC_KEY_PREFIX = "ef:custom-sound-sync";
 const VOLUME_MULTIPLIER = 1.8;
-const MAX_CLOUD_TRACKS = 5;
+export const MAX_CLOUD_SOUND_BYTES = 4_500_000;
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -106,6 +106,7 @@ export function useCustomTracks(userId?: string) {
   });
   const [cloudLoading, setCloudLoading] = useState(false);
   const [cloudCount, setCloudCount] = useState(0);
+  const [cloudBytes, setCloudBytes] = useState(0);
   const dbRef = useRef<IDBDatabase | null>(null);
   const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
   const blobUrlsRef = useRef<string[]>([]);
@@ -118,19 +119,22 @@ export function useCustomTracks(userId?: string) {
     if (!userId) {
       setSyncEnabledState(false);
       setCloudCount(0);
+      setCloudBytes(0);
       return;
     }
     setSyncEnabledState(localStorage.getItem(syncKey(userId)) === "true");
     void supabase
       .from("user_custom_tracks")
-      .select("id", { count: "exact", head: true })
+      .select("size_bytes")
       .eq("user_id", userId)
-      .then(({ count, error }) => {
+      .then(({ data, error }) => {
         if (error) {
-          console.error("Failed to count cloud sounds", error);
+          console.error("Failed to read cloud sound usage", error);
           return;
         }
-        setCloudCount(count ?? 0);
+        const rows = (data ?? []) as Pick<CloudTrackRow, "size_bytes">[];
+        setCloudCount(rows.length);
+        setCloudBytes(rows.reduce((total, row) => total + row.size_bytes, 0));
       });
   }, [userId]);
 
@@ -248,6 +252,9 @@ export function useCustomTracks(userId?: string) {
         )
       ).filter(Boolean);
       setCloudCount(cloudTracks.length);
+      setCloudBytes(
+        cloudTracks.reduce((total, track) => total + (track.compressedBytes ?? 0), 0),
+      );
 
       setTracks((current) => {
         const next = new Map(current.map((track) => [track.id, track]));
@@ -282,23 +289,28 @@ export function useCustomTracks(userId?: string) {
   const syncFile = useCallback(
     async (id: string, file: File, name: string) => {
       if (!userId || !syncEnabled) return;
-      if (cloudCount >= MAX_CLOUD_TRACKS) {
-        updateTrack(id, {
-          syncStatus: "error",
-          syncProgress: 0,
-          syncError: "Cloud sound limit reached (5 files)",
-        });
-        return;
-      }
       updateTrack(id, { syncStatus: "compressing", syncProgress: 0.02, syncError: undefined });
       let metadataCreated = false;
-      const storagePath = `${userId}/${id}.webm`;
+      const storagePath = `${userId}/${id}.m4a`;
 
       try {
+        const remainingBytes = Math.max(0, MAX_CLOUD_SOUND_BYTES - cloudBytes);
+        if (remainingBytes === 0) {
+          throw new Error("Cloud Sound Library is full (4.5 MB used).");
+        }
         const { compressAudioForSync } = await import("@/lib/compressAudioForSync");
-        const compressed = await compressAudioForSync(file, (progress) => {
-          updateTrack(id, { syncStatus: "compressing", syncProgress: progress * 0.82 });
-        });
+        const compressed = await compressAudioForSync(
+          file,
+          (progress) => {
+            updateTrack(id, { syncStatus: "compressing", syncProgress: progress * 0.82 });
+          },
+          remainingBytes,
+        );
+        if (cloudBytes + compressed.blob.size > MAX_CLOUD_SOUND_BYTES) {
+          throw new Error(
+            `Not enough cloud space. ${Math.round(remainingBytes / 1000)} KB remaining.`,
+          );
+        }
         updateTrack(id, { syncStatus: "uploading", syncProgress: 0.86 });
 
         const { error: metadataError } = await supabase.from("user_custom_tracks").insert({
@@ -317,7 +329,7 @@ export function useCustomTracks(userId?: string) {
         const { error: uploadError } = await supabase.storage
           .from(SYNC_BUCKET)
           .upload(storagePath, compressed.blob, {
-            contentType: "audio/webm",
+            contentType: "audio/mp4",
             upsert: false,
             cacheControl: "3600",
           });
@@ -349,7 +361,8 @@ export function useCustomTracks(userId?: string) {
           compressedBytes: compressed.blob.size,
           syncError: undefined,
         });
-        setCloudCount((current) => Math.min(MAX_CLOUD_TRACKS, current + 1));
+        setCloudCount((current) => current + 1);
+        setCloudBytes((current) => current + compressed.blob.size);
       } catch (error) {
         if (metadataCreated) {
           await supabase.storage.from(SYNC_BUCKET).remove([storagePath]);
@@ -366,7 +379,7 @@ export function useCustomTracks(userId?: string) {
         });
       }
     },
-    [cloudCount, syncEnabled, updateTrack, userId],
+    [cloudBytes, syncEnabled, updateTrack, userId],
   );
 
   const addFromFile = useCallback(
@@ -448,6 +461,9 @@ export function useCustomTracks(userId?: string) {
           .eq("user_id", userId);
         if (!storageError && !metadataError) {
           setCloudCount((current) => Math.max(0, current - 1));
+          setCloudBytes((current) =>
+            Math.max(0, current - (track.compressedBytes ?? 0)),
+          );
         }
       }
 
@@ -508,7 +524,8 @@ export function useCustomTracks(userId?: string) {
     setSyncEnabled,
     syncTrack,
     cloudCount,
-    maxCloudTracks: MAX_CLOUD_TRACKS,
+    cloudBytes,
+    maxCloudBytes: MAX_CLOUD_SOUND_BYTES,
     isSyncBusy,
     cloudLoading,
   };

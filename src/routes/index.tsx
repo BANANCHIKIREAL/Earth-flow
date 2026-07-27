@@ -124,7 +124,8 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     setSyncEnabled: setCustomSoundSyncEnabled,
     syncTrack: syncCustomTrack,
     cloudCount: customSoundCloudCount,
-    maxCloudTracks: customSoundMaxCloudTracks,
+    cloudBytes: customSoundCloudBytes,
+    maxCloudBytes: customSoundMaxCloudBytes,
     isSyncBusy: customSoundSyncBusy,
   } = useCustomTracks(userId);
   const {
@@ -145,6 +146,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
   const { tasks, doneCount, completedRecords, chartArchive, chartHiddenLevel, categories, addTask, toggleTask, removeTask, clearDone, removeFromChart, addCategory, renameCategory, removeCategory, setTaskCategory } =
     useDailyTasks(userId);
   const activeCount = tracks.filter((t) => t.enabled).length;
+  const totalActiveSounds = activeCount + customTracks.filter((track) => track.enabled).length;
   const completeTimer = useCallback((phase: TimerPhase) => {
     playFinishSound();
     notifyTimerComplete(phase);
@@ -173,7 +175,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     const { m } = STREAK_ENABLED && streak.currentStreak > 0 ? getMilestone(streak.currentStreak) : { m: null };
     return (
       <div className="flex flex-col items-center gap-0.5">
-        <div className={bossStreakActive ? "boss-avatar-shell relative" : "relative"}>
+        <div className="relative">
           <button onClick={() => setProfileOpen(true)} title={userEmail} className={cls}>
             {avatarUrl && !headerImgError ? (
               <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setHeaderImgError(true)} />
@@ -226,7 +228,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
     />
   );
 
-  const soundDockEl = (
+  const renderSoundDock = (columns: 5 | 6 = 5) => (
     <SoundDock
       activeCount={activeCount} tracks={tracks} onToggleTrack={toggle}
       onVolumeTrack={setVolume} onStopAll={stopAll} customTracks={customTracks}
@@ -234,6 +236,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
       onCustomRemove={customRemove} onAddFromFile={customAddFromFile} copy={copy}
       syncEnabled={customSoundSyncEnabled} canSync={Boolean(userId)}
       onCustomSync={syncCustomTrack}
+      columns={columns}
     />
   );
 
@@ -263,7 +266,8 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
       customSoundSyncEnabled={customSoundSyncEnabled}
       onSetCustomSoundSyncEnabled={setCustomSoundSyncEnabled}
       customSoundCloudCount={customSoundCloudCount}
-      customSoundMaxCloudTracks={customSoundMaxCloudTracks}
+      customSoundCloudBytes={customSoundCloudBytes}
+      customSoundMaxCloudBytes={customSoundMaxCloudBytes}
       customSoundSyncBusy={customSoundSyncBusy}
       copy={copy}
     />
@@ -278,6 +282,91 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
       onSignOut={async () => { clearLocalSettings(); await signOut(); }}
     />
   );
+
+  /* ── HORIZON layout ── */
+  if (layout === "horizon") {
+    const openTasks = tasks.length - doneCount;
+
+    return (
+      <div className="horizon-shell dark relative min-h-screen w-full overflow-x-hidden text-foreground animate-app-enter">
+        <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
+        <div className="horizon-glow" aria-hidden="true" />
+
+        <header className="horizon-header">
+          <Link to="/welcome" className="horizon-brand">
+            <span className="horizon-brand-dot" aria-hidden="true" />
+            <span>
+              <strong>Earth Flow</strong>
+              <small>Horizon</small>
+            </span>
+          </Link>
+
+          <div className="horizon-live-stats" aria-label="Current workspace totals">
+            <span><strong>{openTasks}</strong> open tasks</span>
+            <span><strong>{totalActiveSounds}</strong> active sounds</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isGuest
+              ? guestAuthBtns
+              : avatarBtn(
+                  "h-9 w-9 rounded-full border border-white/15 bg-background/55 inline-flex items-center justify-center text-xs font-semibold hover:border-primary transition-colors overflow-hidden",
+                )}
+          </div>
+        </header>
+
+        <main className="horizon-main">
+          <h1 className="sr-only">Earth Flow — ambient sounds and focus timer</h1>
+
+          <div className="horizon-primary-grid">
+            <section className="horizon-focus-card">
+              <div className="horizon-card-heading">
+                <div>
+                  <span>Focus timer</span>
+                  <strong>{Math.round(durations.focus / 60)} minutes</strong>
+                </div>
+                <button type="button" onClick={() => setSettingsOpen(true)}>
+                  Adjust
+                </button>
+              </div>
+              <div className="horizon-timer-wrap">{timerEl}</div>
+            </section>
+
+            <aside className="horizon-tasks-card" data-tutorial="tasks">
+              <div className="horizon-card-heading">
+                <div>
+                  <span>Today&apos;s tasks</span>
+                  <strong>{openTasks} open</strong>
+                </div>
+              </div>
+              <div className="horizon-tasks-body">
+                <TodayTasks {...taskProps} fillHeight />
+              </div>
+            </aside>
+          </div>
+
+          <section className="horizon-sounds-card">
+            <div className="horizon-card-heading">
+              <div>
+                <span>Sounds</span>
+                <strong>{totalActiveSounds > 0 ? `${totalActiveSounds} active` : "None active"}</strong>
+              </div>
+            </div>
+            {renderSoundDock(6)}
+          </section>
+        </main>
+
+        <footer className="horizon-footer">
+          <span>Earth Flow</span>
+          <span>{APP_VERSION_LABEL}</span>
+        </footer>
+
+        {!isGuest && profileModalEl}
+        {settingsPanelEl}
+        {tutorialShow && <Tutorial onComplete={tutorialComplete} />}
+      </div>
+    );
+  }
 
   /* ── ORBIT layout ── */
   if (layout === "orbit") {
@@ -395,7 +484,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
                 <span>Ambient channels</span>
                 <span>{activeCount > 0 ? `${activeCount} live` : "Standing by"}</span>
               </div>
-              {soundDockEl}
+              {renderSoundDock(6)}
             </section>
           </div>
         </main>
@@ -478,7 +567,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
                 title={userEmail}
                 className="panel-user-button"
               >
-                <div className={bossStreakActive ? "boss-avatar-shell relative shrink-0" : "relative shrink-0"}>
+                <div className="relative shrink-0">
                   <div className="panel-user-avatar">
                     {avatarUrl && !headerImgError ? (
                       <img
@@ -607,7 +696,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
                 </div>
                 <small>{totalActive > 0 ? `${totalActive} playing` : "Ready"}</small>
               </div>
-              <div className="panel-sound-body">{soundDockEl}</div>
+              <div className="panel-sound-body">{renderSoundDock()}</div>
             </section>
           </main>
         </div>
@@ -662,7 +751,7 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
           <div className="flex justify-center panel:justify-end">{timerEl}</div>
           <div className="flex justify-center panel:justify-start" data-tutorial="tasks"><TodayTasks {...taskProps} /></div>
         </div>
-        <div className="mt-8 md:mt-10">{soundDockEl}</div>
+        <div className="mt-8 md:mt-10">{renderSoundDock()}</div>
       </main>
 
       <footer className="absolute bottom-4 right-6 text-[11px] text-muted-foreground/40 select-none pointer-events-none tabular-nums">

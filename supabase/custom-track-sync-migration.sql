@@ -3,9 +3,9 @@ create table if not exists public.user_custom_tracks (
   user_id uuid not null references auth.users(id) on delete cascade,
   name text not null check (char_length(name) between 1 and 120),
   storage_path text not null,
-  mime_type text not null check (mime_type in ('audio/webm', 'audio/ogg')),
-  size_bytes integer not null check (size_bytes between 1 and 900000),
-  duration_seconds numeric(7, 2) not null check (duration_seconds > 0 and duration_seconds <= 90),
+  mime_type text not null check (mime_type in ('audio/webm', 'audio/ogg', 'audio/mp4')),
+  size_bytes integer not null check (size_bytes between 1 and 4500000),
+  duration_seconds numeric(7, 2) not null check (duration_seconds > 0),
   status text not null default 'uploading' check (status in ('uploading', 'ready')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -42,38 +42,49 @@ on public.user_custom_tracks for delete
 to authenticated
 using ((select auth.uid()) = user_id);
 
-create or replace function public.enforce_custom_track_limit()
+drop trigger if exists enforce_custom_track_limit_before_insert on public.user_custom_tracks;
+drop trigger if exists enforce_custom_track_quota_before_write on public.user_custom_tracks;
+drop function if exists public.enforce_custom_track_limit();
+
+create or replace function public.enforce_custom_track_quota()
 returns trigger
 language plpgsql
 set search_path = ''
 as $$
+declare
+  used_bytes bigint;
 begin
-  if (
-    select count(*)
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended(new.user_id::text, 0)
+  );
+
+  select coalesce(sum(size_bytes), 0)
+  into used_bytes
     from public.user_custom_tracks
     where user_id = new.user_id
-  ) >= 5 then
-    raise exception 'Cloud sound limit reached (5 files)'
+      and id <> new.id;
+
+  if used_bytes + new.size_bytes > 4500000 then
+    raise exception 'Cloud sound storage limit reached (4.5 MB total)'
       using errcode = 'P0001';
   end if;
   return new;
 end;
 $$;
 
-revoke all on function public.enforce_custom_track_limit() from public, anon, authenticated;
+revoke all on function public.enforce_custom_track_quota() from public, anon, authenticated;
 
-drop trigger if exists enforce_custom_track_limit_before_insert on public.user_custom_tracks;
-create trigger enforce_custom_track_limit_before_insert
-before insert on public.user_custom_tracks
-for each row execute function public.enforce_custom_track_limit();
+create trigger enforce_custom_track_quota_before_write
+before insert or update of user_id, size_bytes on public.user_custom_tracks
+for each row execute function public.enforce_custom_track_quota();
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'user-audio-sync',
   'user-audio-sync',
   false,
-  900000,
-  array['audio/webm', 'audio/ogg']
+  4500000,
+  array['audio/webm', 'audio/ogg', 'audio/mp4']
 )
 on conflict (id) do update set
   public = excluded.public,

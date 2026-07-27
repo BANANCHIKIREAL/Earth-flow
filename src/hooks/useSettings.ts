@@ -16,7 +16,7 @@ const KEY_TIMER_FONT_SIZE = "focus-space:timer-font-size";
 const KEY_STOP_SOUNDS_ON_TIMER_END = "focus-space:stop-sounds-on-timer-end";
 const KEY_LAYOUT = "ef-layout";
 
-export type LayoutMode = "classic" | "sidebar" | "orbit";
+export type LayoutMode = "classic" | "sidebar" | "orbit" | "horizon";
 
 export const MIN_BLUR = 0;
 export const MAX_BLUR = 40;
@@ -118,7 +118,7 @@ function readJSON<T>(key: string, fallback: T): T {
 }
 
 function isLayoutMode(value: unknown): value is LayoutMode {
-  return value === "classic" || value === "sidebar" || value === "orbit";
+  return value === "classic" || value === "sidebar" || value === "orbit" || value === "horizon";
 }
 
 export function clearLocalSettings() {

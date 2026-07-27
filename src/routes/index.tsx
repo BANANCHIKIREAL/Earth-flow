@@ -325,14 +325,11 @@ function FocusSpaceContent({ userId, userEmail }: { userId?: string; userEmail: 
           <div className="horizon-primary-grid">
             <section className="horizon-focus-card">
               <div className="horizon-card-heading">
-                <div>
-                  <span>Focus timer</span>
-                  <strong>{Math.round(durations.focus / 60)} minutes</strong>
-                </div>
-                <button type="button" onClick={() => setSettingsOpen(true)}>
-                  Adjust
-                </button>
+              <div>
+                <span>Focus timer</span>
+                <strong>{Math.round(durations.focus / 60)} minutes</strong>
               </div>
+            </div>
               <div className="horizon-timer-wrap">{timerEl}</div>
             </section>
 

@@ -107,6 +107,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updatePassword = async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password });
+    if (!error && user) {
+      await supabase
+        .from("user_profiles")
+        .update({ has_password: true })
+        .eq("user_id", user.id);
+    }
     return { error: error as Error | null };
   };
 

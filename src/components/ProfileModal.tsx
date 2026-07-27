@@ -1,10 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import { Camera, CalendarDays, Check, Hash, KeyRound, LogOut, Mail, RotateCcw, Settings, Trash2, User, X, Zap } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { Camera, CalendarDays, Check, Hash, KeyRound, LogOut, Mail, Palette, RotateCcw, Settings, Trash2, User, X, Zap } from "lucide-react";
 import type { StreakStats } from "@/hooks/useStreak";
+import { useProfileCustomization } from "@/hooks/useProfileCustomization";
 import { STREAK_ENABLED } from "@/lib/flags";
 import { isBossStreak } from "@/lib/streakBoss";
+import { PROFILE_MOODS } from "@/lib/profileCustomization";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { ProfileCustomizationPanel } from "@/components/ProfileCustomizationPanel";
+import { ProfileMoodIcon } from "@/components/ProfileMoodIcon";
 
 interface Props {
   open: boolean;
@@ -227,7 +231,7 @@ export function ProfileModal({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
   const [pwStatus, setPwStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [tab, setTab] = useState<"profile" | "settings">("profile");
+  const [tab, setTab] = useState<"profile" | "customize" | "settings">("profile");
   const [removingAvatar, setRemovingAvatar] = useState(false);
   const [avatarRemoveConfirm, setAvatarRemoveConfirm] = useState(false);
   const [emailStatus, setEmailStatus] = useState<"idle" | "editing" | "sending" | "sent" | "error">("idle");
@@ -237,6 +241,11 @@ export function ProfileModal({
   const [deleteCodeError, setDeleteCodeError] = useState<string | null>(null);
   const [hasAccountPassword, setHasAccountPassword] = useState<boolean | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const {
+    customization,
+    updateCustomization,
+    resetCustomization,
+  } = useProfileCustomization(user?.id, Boolean(user));
 
   useEffect(() => {
     if (!open) return;
@@ -267,7 +276,8 @@ export function ProfileModal({
   const hasGoogleSignIn = signInProviders.has("google");
   const hasPasswordSignIn =
     hasAccountPassword ?? signInProviders.has("email");
-  const needsPassword = hasAccountPassword === false;
+  const needsPassword =
+    hasAccountPassword === false && !signInProviders.has("email");
   const provider = hasGoogleSignIn
     ? hasPasswordSignIn
       ? "Google + Email"
@@ -285,10 +295,17 @@ export function ProfileModal({
 
     let cancelled = false;
     setHasAccountPassword(null);
-    void supabase.rpc("has_account_password").then(({ data, error }) => {
-      if (cancelled || error) return;
-      setHasAccountPassword(typeof data === "boolean" ? data : null);
-    });
+    void supabase
+      .from("user_profiles")
+      .select("has_password")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled || error) return;
+        setHasAccountPassword(
+          typeof data?.has_password === "boolean" ? data.has_password : null,
+        );
+      });
 
     return () => {
       cancelled = true;
@@ -372,6 +389,29 @@ export function ProfileModal({
   const { currentStreak, longestStreak, totalDays, isStreakBroken, canRestore, monthlyRestoresUsed } = streak;
   const restoresLeft = 3 - monthlyRestoresUsed;
   const bossStreak = isBossStreak(userNumber, currentStreak);
+  const selectedMood = PROFILE_MOODS[customization.mood];
+  const tabIndex = tab === "profile" ? 0 : tab === "customize" ? 1 : 2;
+  const profileStyle = {
+    "--profile-accent": customization.accent,
+    "--profile-glow": customization.glow,
+    "--profile-scene-depth": customization.sceneDepth,
+    "--profile-border-strength": customization.borderStrength,
+  } as CSSProperties;
+  const profileModalClass = [
+    bossStreak
+      ? "boss-profile-modal glass"
+      : "glass border border-border",
+    "profile-customized-modal",
+    `profile-scene-${customization.scene}`,
+    `profile-surface-${customization.surface}`,
+    `profile-header-${customization.headerSize}`,
+    `profile-avatar-size-${customization.avatarSize}`,
+    `profile-avatar-shape-${customization.avatarShape}`,
+    `profile-width-${customization.profileWidth}`,
+    `profile-text-${customization.textAlign}`,
+    customization.motion ? "" : "profile-motion-off",
+    "ef-pm-in rounded-3xl w-full max-w-sm pointer-events-auto overflow-hidden max-h-[90vh] flex flex-col",
+  ].filter(Boolean).join(" ");
 
   return (
     <>
@@ -392,20 +432,17 @@ export function ProfileModal({
       `}</style>
       <div onClick={onClose} className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className={bossStreak ? "ef-pm-in boss-profile-modal glass rounded-3xl w-full max-w-sm pointer-events-auto overflow-hidden max-h-[90vh] flex flex-col" : "ef-pm-in glass border border-border rounded-3xl w-full max-w-sm pointer-events-auto overflow-hidden max-h-[90vh] flex flex-col"}>
+        <div className={profileModalClass} style={profileStyle}>
 
           {/* Banner */}
-          <div
-            className={bossStreak ? "boss-profile-banner relative h-24 shrink-0" : "relative h-24 shrink-0"}
-            style={{
-              background:
-                bossStreak
-                  ? "radial-gradient(ellipse 75% 160% at 50% -38%, rgba(253,224,71,0.2), transparent 55%), radial-gradient(ellipse 100% 150% at 15% -35%, rgba(56,189,248,0.22), transparent 68%), radial-gradient(ellipse 90% 140% at 88% -30%, rgba(192,132,252,0.2), transparent 65%), linear-gradient(180deg, rgba(255,255,255,0.05), transparent)"
-                  : "radial-gradient(ellipse 90% 130% at 50% -30%, oklch(0.82 0.12 200 / 0.28), transparent 70%), linear-gradient(180deg, oklch(1 0 0 / 0.05), transparent)",
-            }}
-          >
+          <div className={`${bossStreak ? "boss-profile-banner " : ""}profile-custom-banner profile-banner-${customization.banner} relative h-24 shrink-0`}>
+            {customization.particles && (
+              <span className="profile-custom-particles" aria-hidden="true">
+                <i /><i /><i /><i /><i /><i />
+              </span>
+            )}
             <div className="absolute left-5 top-5 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-              {tab === "profile" ? "Profile" : "Profile settings"}
+              {tab === "profile" ? "Profile" : tab === "customize" ? "Profile studio" : "Profile settings"}
             </div>
             <button
               onClick={onClose}
@@ -416,8 +453,8 @@ export function ProfileModal({
           </div>
 
           {/* Avatar — overlaps banner, persists across tabs (photo changes via Settings) */}
-          <div className="relative z-10 -mt-11 flex justify-center">
-            <div className={bossStreak ? "boss-profile-avatar-shell relative h-[88px] w-[88px] rounded-full" : "relative h-[88px] w-[88px] rounded-full"}>
+          <div className="profile-custom-avatar-row relative z-10 -mt-11 flex justify-center">
+            <div className={`profile-custom-avatar-shell profile-frame-${customization.frame} relative h-[88px] w-[88px] rounded-full`}>
               <div className="relative h-full w-full rounded-full overflow-hidden border-2 border-border shadow-[0_0_30px_oklch(0.82_0.12_200_/_0.2)]">
                 {avatarUrl && !imgError ? (
                   <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover" onError={() => setImgError(true)} />
@@ -435,15 +472,31 @@ export function ProfileModal({
           </div>
 
           {/* Identity */}
-          <div className="px-6 pt-3 pb-1 text-center shrink-0">
+          <div className="profile-custom-identity px-6 pt-3 pb-1 text-center shrink-0">
             <div className="font-display text-xl text-foreground">{displayName || "Anonymous"}</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">{email}</div>
-            {userNumber != null && (
+            {customization.title && (
+              <div className="profile-custom-identity-title">{customization.title}</div>
+            )}
+            {customization.showEmail && (
+              <div className="mt-0.5 text-xs text-muted-foreground">{email}</div>
+            )}
+            {customization.bio && (
+              <div className="profile-custom-bio">{customization.bio}</div>
+            )}
+            <div className="profile-custom-identity-meta">
+              {customization.mood !== "none" && (
+                <span className="profile-custom-mood">
+                  <b><ProfileMoodIcon mood={customization.mood} size={12} /></b>
+                  {selectedMood.label}
+                </span>
+              )}
+            {customization.showMemberId && userNumber != null && (
               <span className={bossStreak ? "boss-profile-id mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[9px] font-mono" : "mt-2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-muted-foreground"}>
                 {bossStreak && <span aria-hidden="true">♛</span>}
                 <Hash size={9} /> {bossStreak ? "0005 · BOSS CLASS" : userNumber}
               </span>
             )}
+            </div>
             {uploadError && <div className="text-[11px] text-red-400 mt-1.5">{uploadError}</div>}
           </div>
 
@@ -454,17 +507,17 @@ export function ProfileModal({
 
           {/* Account info */}
           <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] divide-y divide-white/[0.06]">
-            <div className="flex items-center gap-3 px-4 py-3">
+            {customization.showEmail && <div className="flex items-center gap-3 px-4 py-3">
               <Mail size={13} className="shrink-0 text-muted-foreground" />
               <span className="flex-1 text-xs text-muted-foreground">Email</span>
               <span className="max-w-[170px] truncate text-xs text-foreground">{email}</span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-3">
+            </div>}
+            {customization.showMemberId && <div className="flex items-center gap-3 px-4 py-3">
               <User size={13} className="shrink-0 text-muted-foreground" />
               <span className="flex-1 text-xs text-muted-foreground">Member</span>
               <span className="text-xs font-mono text-foreground">{userNumber != null ? `#${userNumber}` : "—"}</span>
-            </div>
-            {memberSince && (
+            </div>}
+            {customization.showMemberSince && memberSince && (
               <div className="flex items-center gap-3 px-4 py-3">
                 <CalendarDays size={13} className="shrink-0 text-muted-foreground" />
                 <span className="flex-1 text-xs text-muted-foreground">Member since</span>
@@ -555,6 +608,14 @@ export function ProfileModal({
           </div>}
 
               </div>
+            )}
+
+            {tab === "customize" && (
+              <ProfileCustomizationPanel
+                value={customization}
+                onChange={updateCustomization}
+                onReset={resetCustomization}
+              />
             )}
 
             {tab === "settings" && (
@@ -888,25 +949,29 @@ export function ProfileModal({
 
           {/* Bottom tabs — sliding segmented control */}
           <div className="shrink-0 p-4 pt-2">
-            <div className="relative flex rounded-full glass border border-border p-1">
+            <div className="profile-custom-tabs relative flex rounded-full p-1">
               <span
-                className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-foreground/10 transition-transform duration-300 ease-out ${
-                  tab === "settings" ? "translate-x-full" : ""
-                }`}
+                className="profile-custom-tab-indicator absolute top-1 bottom-1 left-1 rounded-full transition-transform duration-300 ease-out"
+                style={{
+                  width: "calc((100% - 8px) / 3)",
+                  transform: `translateX(${tabIndex * 100}%)`,
+                }}
               />
               <button
                 onClick={() => setTab("profile")}
-                className={`relative z-10 h-8 flex-1 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 transition-colors ${
-                  tab === "profile" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`profile-custom-tab relative z-10 h-8 flex-1 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 ${tab === "profile" ? "is-active" : ""}`}
               >
                 <User size={13} /> Profile
               </button>
               <button
+                onClick={() => setTab("customize")}
+                className={`profile-custom-tab relative z-10 h-8 flex-1 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 ${tab === "customize" ? "is-active" : ""}`}
+              >
+                <Palette size={13} /> Customize
+              </button>
+              <button
                 onClick={() => setTab("settings")}
-                className={`relative z-10 h-8 flex-1 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 transition-colors ${
-                  tab === "settings" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`profile-custom-tab relative z-10 h-8 flex-1 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 ${tab === "settings" ? "is-active" : ""}`}
               >
                 <Settings size={13} /> Settings
               </button>

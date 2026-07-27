@@ -32,6 +32,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 | ☁️ | **Cloud Sync** | Sync settings, tasks, backgrounds, profile data, and an optional compressed custom-audio library across devices. |
 | 🔥 | **Streak System** | Daily visit streak with flame badge, restore mechanic, and longest-streak record. |
 | 🔔 | **Notifications** | Styled focus and break notifications with phase-specific artwork and sounds. |
+| 🪄 | **Profile Studio** | Customize profile atmosphere, banner, surface, avatar treatment, composition, identity details, motion and privacy with cloud sync. |
 | 🎓 | **Tutorial** | Spotlight-guided onboarding tour covering all key features. |
 
 ---
@@ -109,6 +110,23 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.2.1 — Profile palette fix
+- Fixed the Profile / Customize / Settings navigation so it follows the selected profile atmosphere instead of retaining the global blue palette
+- Added a dedicated monochrome navigation treatment for Noir profiles
+- Removed the redundant `Adjust` action from the Horizon focus card
+
+### v5.2.0 — Expanded Profile Studio
+- Added profile composition controls for header height, avatar size and shape, profile width, and identity alignment
+- Added fine controls for atmosphere depth and border definition, including valid zero-value settings
+- Made the Profile / Customize / Settings navigation adapt to the selected profile atmosphere and accent
+- Added a dedicated monochrome navigation treatment for Noir profiles
+
+### v5.1.0 — Profile Studio
+- Added a dedicated profile customization workspace with live preview
+- Added six profile atmospheres, six banners, five avatar frames, four surface materials, custom accent colors and adjustable glow
+- Added custom profile titles, short notes, mood symbols, ambient effects and visibility controls
+- Profile customization is validated and synchronized through Supabase across devices
 
 ### v5.0.2 — Account method detection
 - Fixed Google accounts with an added password incorrectly showing `Add password`

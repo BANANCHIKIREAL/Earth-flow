@@ -150,12 +150,19 @@ function FlameDisplay({ streak, boss = false }: { streak: number; boss?: boolean
   if (boss) {
     return (
       <div className="boss-streak-showcase" aria-label={`Boss streak: ${streak} days`}>
+        <span className="boss-streak-royal-aura" aria-hidden="true" />
         <div className="boss-streak-stars" aria-hidden="true">
+          <span>✦</span><span>✧</span><span>✦</span><span>✧</span>
           <span>✦</span><span>✧</span><span>✦</span><span>✧</span>
         </div>
         <div className="boss-streak-emblem" aria-hidden="true">
+          <span className="boss-streak-radiance" />
           <span className="boss-streak-orbit boss-streak-orbit-a"><i /></span>
           <span className="boss-streak-orbit boss-streak-orbit-b"><i /></span>
+          <span className="boss-streak-orbit boss-streak-orbit-c"><i /></span>
+          <span className="boss-streak-jewels">
+            <i /><i /><i /><i />
+          </span>
           <span className="boss-streak-crown">♛</span>
           <span className="boss-streak-flame">🔥</span>
           <span className="boss-streak-core" />
@@ -473,7 +480,7 @@ export function ProfileModal({
             )}
 
             {/* Stats row */}
-            <div className="grid grid-cols-2 gap-px bg-white/[0.06] rounded-xl overflow-hidden">
+            <div className={bossStreak ? "boss-streak-stats grid grid-cols-2 gap-px rounded-xl overflow-hidden" : "grid grid-cols-2 gap-px bg-white/[0.06] rounded-xl overflow-hidden"}>
               <div className="bg-background/40 px-3 py-2.5 text-center">
                 <div className="text-lg font-bold tabular-nums">{currentStreak}</div>
                 <div className="text-[10px] text-muted-foreground">current</div>

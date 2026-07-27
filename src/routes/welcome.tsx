@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
+  BellRing,
   Bird,
   BookOpen,
   Bug,
@@ -11,6 +12,7 @@ import {
   Image,
   Leaf,
   ListTodo,
+  Mountain,
   Moon,
   Music,
   PieChart,
@@ -23,8 +25,9 @@ import {
   Waves,
   Wind,
 } from "lucide-react";
-import { Background, type BackgroundVariant } from "@/components/Background";
+import { BACKGROUNDS, Background, type BackgroundVariant } from "@/components/Background";
 import { useAuth } from "@/context/AuthContext";
+import { AMBIENT_SOUNDS, type SoundIconType } from "@/hooks/useAudioMixer";
 import { APP_VERSION_LABEL } from "@/lib/version";
 
 const KEY_BG_VARIANT = "focus-space:bg-variant";
@@ -34,16 +37,48 @@ export const Route = createFileRoute("/welcome")({
   component: WelcomePage,
 });
 
+const SOUND_ICONS: Record<SoundIconType, typeof Music> = {
+  rain: CloudRain,
+  thunder: CloudRain,
+  cloudLightning: CloudRain,
+  forest: TreeDeciduous,
+  waves: Waves,
+  fire: Flame,
+  birds: Bird,
+  night: Moon,
+  stream: Waves,
+  cafe: Music,
+  wind: Wind,
+  book: BookOpen,
+  bug: Bug,
+  sun: Sun,
+  savannah: Leaf,
+  plane: Plane,
+  mountain: Mountain,
+  bell: BellRing,
+  leaf: Leaf,
+  default: Music,
+};
+
+const SOUNDS = AMBIENT_SOUNDS.map(({ icon, name }) => ({
+  icon: SOUND_ICONS[icon],
+  name,
+}));
+
+const PRESET_SWATCHES: BackgroundVariant[] = BACKGROUNDS.map(({ id }) => id);
+
+const SOUND_COUNT = SOUNDS.length;
+const BACKGROUND_COUNT = PRESET_SWATCHES.length;
+
 const FEATURES: {
   icon: typeof Music;
   title: string;
   text: string;
-  badge?: string;
 }[] = [
   {
     icon: Music,
     title: "Ambient Sound Mixer",
-    text: "16 layered nature sounds with individual volume control. Upload your own tracks.",
+    text: `${SOUND_COUNT} layered ambient sounds with individual volume controls, plus your own locally saved tracks.`,
   },
   {
     icon: Timer,
@@ -63,60 +98,23 @@ const FEATURES: {
   {
     icon: Image,
     title: "Backgrounds",
-    text: "12 gradient presets plus custom image upload synced to your account.",
+    text: `${BACKGROUND_COUNT} atmosphere presets, plus custom image upload, adjustable blur, and account sync.`,
   },
   {
     icon: Cloud,
     title: "Cloud Sync",
-    text: "Settings, tasks, and custom backgrounds synced across devices.",
+    text: "Settings, tasks, and custom backgrounds sync across devices. Your music stays local unless you enable private compressed cloud copies.",
   },
   {
     icon: Flame,
     title: "Streak System",
     text: "Daily visit streak with a flame badge that grows the longer you keep it.",
-    badge: "Temporarily disabled",
   },
   {
     icon: Sparkles,
     title: "Interactive Tutorial",
     text: "Spotlight-guided onboarding tour covering all key features.",
   },
-];
-
-const SOUNDS: { icon: typeof Music; name: string }[] = [
-  { icon: CloudRain, name: "Rain & Thunder" },
-  { icon: Waves, name: "Ocean Waves" },
-  { icon: Wind, name: "Mountain Wind" },
-  { icon: TreeDeciduous, name: "Forest" },
-  { icon: Bird, name: "Morning Birds" },
-  { icon: Moon, name: "Night Field" },
-  { icon: Bug, name: "Crickets" },
-  { icon: Sun, name: "Dawn" },
-  { icon: Leaf, name: "Savannah" },
-  { icon: Plane, name: "Airplane Cabin" },
-  { icon: BookOpen, name: "Book Pages" },
-];
-
-const PRESET_SWATCHES: BackgroundVariant[] = [
-  "galaxy",
-  "aurora",
-  "dusk",
-  "forest",
-  "ember",
-  "sakura",
-  "arctic",
-  "mist",
-  "stone",
-  "mahogany",
-  "wine",
-  "iridescent",
-  "nebula",
-  "lagoon",
-  "ultraviolet",
-  "sunset",
-  "opal",
-  "moonbow",
-  "peacock",
 ];
 
 /* ── Starfield overlay ── */
@@ -496,11 +494,11 @@ function WelcomePage() {
             </div>
             <div className="ef-in ef-in-5 mt-10 flex gap-8 text-center">
               <div>
-                <div className="font-display text-2xl">16</div>
+                <div className="font-display text-2xl">{SOUND_COUNT}</div>
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Sounds</div>
               </div>
               <div>
-                <div className="font-display text-2xl">12</div>
+                <div className="font-display text-2xl">{BACKGROUND_COUNT}</div>
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Atmospheres</div>
               </div>
               <div>
@@ -564,13 +562,8 @@ function WelcomePage() {
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-foreground transition-all duration-300 group-hover:bg-primary/20 group-hover:text-primary group-hover:scale-110">
                     <f.icon size={18} />
                   </span>
-                  <div className="mt-4 flex flex-wrap items-center gap-1">
+                  <div className="mt-4">
                     <h3 className="text-sm font-semibold">{f.title}</h3>
-                    {f.badge && (
-                      <span className="-ml-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[9px] uppercase tracking-wider text-amber-300/90">
-                        {f.badge}
-                      </span>
-                    )}
                   </div>
                   <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
                     {f.text}

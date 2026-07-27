@@ -31,7 +31,7 @@ export interface SoundTrack {
   enabled: boolean;
 }
 
-const INITIAL_SOUNDS: SoundTrack[] = [
+export const AMBIENT_SOUNDS: SoundTrack[] = [
   {
     id: "strong-wave",
     name: "Strong Wave",
@@ -174,7 +174,7 @@ const INITIAL_SOUNDS: SoundTrack[] = [
 const VOLUME_MULTIPLIER = 1.8;
 
 export function useAudioMixer() {
-  const [tracks, setTracks] = useState<SoundTrack[]>(INITIAL_SOUNDS);
+  const [tracks, setTracks] = useState<SoundTrack[]>(AMBIENT_SOUNDS);
   const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
 
   useEffect(() => {

@@ -217,6 +217,12 @@
   .bg-aurora { background: var(--gradient-aurora); }
   .bg-dusk { background: var(--gradient-dusk); }
   .bg-forest { background: var(--gradient-forest); }
+  .bg-waves {
+    background:
+      radial-gradient(ellipse 60% 45% at 52% 72%, oklch(0.6 0.15 200 / 0.42), transparent 68%),
+      radial-gradient(ellipse at 30% 30%, oklch(0.4 0.1 220 / 0.7), transparent 60%),
+      linear-gradient(180deg, oklch(0.15 0.04 240), oklch(0.2 0.06 220));
+  }
   .bg-ember { background: var(--gradient-ember); }
   .bg-sakura { background: var(--gradient-sakura); }
   .bg-galaxy { background: var(--gradient-galaxy); }
@@ -370,59 +376,110 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border: 1px solid rgba(147, 197, 253, 0.2);
+  border: 1px solid rgba(253, 224, 71, 0.24);
   border-radius: 1rem;
   background:
-    radial-gradient(circle at 50% -15%, rgba(125, 211, 252, 0.16), transparent 48%),
-    radial-gradient(circle at 8% 80%, rgba(192, 132, 252, 0.1), transparent 42%),
-    linear-gradient(145deg, rgba(5, 12, 26, 0.96), rgba(10, 8, 23, 0.92));
+    radial-gradient(circle at 50% -12%, rgba(253, 224, 71, 0.14), transparent 38%),
+    radial-gradient(circle at 86% 22%, rgba(125, 211, 252, 0.15), transparent 42%),
+    radial-gradient(circle at 8% 80%, rgba(192, 132, 252, 0.14), transparent 44%),
+    linear-gradient(145deg, rgba(4, 10, 23, 0.98), rgba(12, 7, 25, 0.96));
   box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 0 52px rgba(56, 189, 248, 0.05),
-    0 22px 60px -38px rgba(96, 165, 250, 0.7);
+    inset 0 1px rgba(255, 255, 255, 0.11),
+    inset 0 0 70px rgba(56, 189, 248, 0.065),
+    inset 0 -28px 60px rgba(76, 29, 149, 0.08),
+    0 24px 70px -38px rgba(96, 165, 250, 0.76),
+    0 0 38px -28px rgba(250, 204, 21, 0.75);
 }
 
 .boss-streak-panel::before {
   content: "";
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   inset: -45%;
   background: conic-gradient(
     from 0deg,
-    transparent 0 23%,
-    rgba(56, 189, 248, 0.13) 31%,
-    transparent 39% 66%,
-    rgba(192, 132, 252, 0.11) 75%,
+    transparent 0 20%,
+    rgba(253, 224, 71, 0.09) 26%,
+    rgba(56, 189, 248, 0.16) 32%,
+    transparent 41% 64%,
+    rgba(192, 132, 252, 0.15) 73%,
     transparent 84%
   );
-  animation: boss-streak-ambient 22s linear infinite;
+  pointer-events: none;
+  animation: boss-streak-ambient 28s linear infinite;
+}
+
+.boss-streak-panel::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 5px;
+  border: 1px solid rgba(253, 224, 71, 0.07);
+  border-radius: 0.72rem;
+  box-shadow:
+    inset 0 0 28px rgba(125, 211, 252, 0.04),
+    0 0 18px rgba(216, 180, 254, 0.04);
+  pointer-events: none;
+}
+
+.boss-streak-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .boss-streak-showcase {
   position: relative;
-  min-height: 188px;
+  min-height: 238px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  padding: 12px 0 2px;
+  padding: 24px 0 3px;
+}
+
+.boss-streak-royal-aura {
+  position: absolute;
+  z-index: 0;
+  top: 2px;
+  left: 50%;
+  width: 236px;
+  height: 196px;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(253, 224, 71, 0.13) 0deg 2deg,
+      transparent 2deg 15deg
+    ),
+    radial-gradient(circle, rgba(125, 211, 252, 0.11), transparent 66%);
+  filter: blur(0.2px) drop-shadow(0 0 22px rgba(125, 211, 252, 0.11));
+  opacity: 0.8;
+  transform: translateX(-50%);
+  -webkit-mask-image: radial-gradient(circle, transparent 0 34%, #000 58%, transparent 76%);
+  mask-image: radial-gradient(circle, transparent 0 34%, #000 58%, transparent 76%);
+  pointer-events: none;
+  animation: boss-streak-sovereign 38s linear infinite;
 }
 
 .boss-streak-emblem {
   position: relative;
-  width: 108px;
-  height: 108px;
+  z-index: 2;
+  width: 132px;
+  height: 132px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(186, 230, 253, 0.28);
+  border: 1px solid rgba(253, 224, 71, 0.36);
   border-radius: 50%;
   background:
-    radial-gradient(circle at 50% 55%, rgba(255, 255, 255, 0.16), transparent 16%),
-    radial-gradient(circle, rgba(56, 189, 248, 0.17), rgba(30, 64, 175, 0.07) 46%, transparent 68%);
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2), transparent 14%),
+    radial-gradient(circle at 52% 54%, rgba(253, 224, 71, 0.11), transparent 28%),
+    radial-gradient(circle, rgba(56, 189, 248, 0.2), rgba(30, 64, 175, 0.08) 48%, rgba(88, 28, 135, 0.05) 66%, transparent 72%);
   box-shadow:
-    inset 0 0 25px rgba(125, 211, 252, 0.14),
-    0 0 22px rgba(56, 189, 248, 0.18),
-    0 0 58px rgba(139, 92, 246, 0.13);
+    inset 0 0 32px rgba(125, 211, 252, 0.2),
+    inset 0 -18px 36px rgba(192, 132, 252, 0.08),
+    0 0 24px rgba(253, 224, 71, 0.16),
+    0 0 42px rgba(56, 189, 248, 0.2),
+    0 0 78px rgba(139, 92, 246, 0.16);
   animation: boss-streak-breathe 4.8s ease-in-out infinite;
 }
 
@@ -435,15 +492,36 @@
 }
 
 .boss-streak-emblem::before {
-  inset: -9px;
-  border: 1px dashed rgba(186, 230, 253, 0.22);
-  animation: boss-streak-spin 18s linear infinite;
+  inset: -11px;
+  border: 1px dashed rgba(253, 224, 71, 0.28);
+  box-shadow: 0 0 18px rgba(253, 224, 71, 0.08);
+  animation: boss-streak-spin 24s linear infinite;
 }
 
 .boss-streak-emblem::after {
-  inset: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 0 18px rgba(192, 132, 252, 0.13);
+  inset: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    inset 0 0 22px rgba(192, 132, 252, 0.15),
+    0 0 12px rgba(125, 211, 252, 0.08);
+}
+
+.boss-streak-radiance {
+  position: absolute;
+  z-index: 0;
+  inset: -34px;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(
+      from 12deg,
+      rgba(253, 224, 71, 0.2) 0deg 1deg,
+      transparent 1deg 18deg
+    );
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(circle, transparent 0 46%, #000 61%, transparent 73%);
+  mask-image: radial-gradient(circle, transparent 0 46%, #000 61%, transparent 73%);
+  pointer-events: none;
+  animation: boss-streak-radiance 32s linear infinite reverse;
 }
 
 .boss-streak-orbit {
@@ -451,9 +529,9 @@
   z-index: 4;
   top: 50%;
   left: 50%;
-  width: 142px;
-  height: 45px;
-  border: 1px solid rgba(125, 211, 252, 0.28);
+  width: 170px;
+  height: 54px;
+  border: 1px solid rgba(125, 211, 252, 0.33);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -475,9 +553,9 @@
 }
 
 .boss-streak-orbit-b {
-  width: 128px;
-  height: 38px;
-  border-color: rgba(216, 180, 254, 0.2);
+  width: 154px;
+  height: 46px;
+  border-color: rgba(216, 180, 254, 0.28);
   transform: translate(-50%, -50%) rotate(24deg);
   animation: boss-streak-orbit-b 11s linear infinite reverse;
 }
@@ -491,43 +569,90 @@
   box-shadow: 0 0 8px #d8b4fe, 0 0 16px rgba(56, 189, 248, 0.75);
 }
 
+.boss-streak-orbit-c {
+  width: 146px;
+  height: 64px;
+  border-color: rgba(253, 224, 71, 0.24);
+  transform: translate(-50%, -50%) rotate(62deg);
+  animation: boss-streak-orbit-c 15s linear infinite;
+}
+
+.boss-streak-orbit-c i {
+  top: auto;
+  bottom: -3px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: #fde68a;
+  box-shadow: 0 0 9px #fde68a, 0 0 18px rgba(251, 191, 36, 0.7);
+}
+
+.boss-streak-jewels {
+  position: absolute;
+  z-index: 5;
+  inset: -5px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: boss-streak-jewel-wheel 20s linear infinite reverse;
+}
+
+.boss-streak-jewels i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: #fde68a;
+  box-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+  transform: rotate(45deg);
+  animation: boss-streak-jewel 3.2s ease-in-out infinite;
+}
+
+.boss-streak-jewels i:nth-child(1) { top: 5px; left: 50%; color: #fde68a; }
+.boss-streak-jewels i:nth-child(2) { top: 50%; right: 5px; color: #7dd3fc; animation-delay: -0.8s; }
+.boss-streak-jewels i:nth-child(3) { bottom: 5px; left: 50%; color: #d8b4fe; animation-delay: -1.6s; }
+.boss-streak-jewels i:nth-child(4) { top: 50%; left: 5px; color: #6ee7b7; animation-delay: -2.4s; }
+
 .boss-streak-crown {
   position: absolute;
-  z-index: 3;
-  top: -25px;
+  z-index: 7;
+  top: -31px;
   left: 50%;
   transform: translateX(-50%) rotate(-2deg);
   color: #fef3c7;
-  font-size: 33px;
+  font-size: 43px;
   line-height: 1;
   text-shadow:
-    0 0 8px rgba(253, 224, 71, 0.9),
-    0 0 22px rgba(251, 191, 36, 0.55);
+    0 1px rgba(255, 255, 255, 0.85),
+    0 0 9px rgba(253, 224, 71, 1),
+    0 0 24px rgba(251, 191, 36, 0.7),
+    0 0 46px rgba(251, 191, 36, 0.32);
   animation: boss-streak-crown 4.8s ease-in-out infinite;
 }
 
 .boss-streak-flame {
   position: relative;
-  z-index: 2;
-  font-size: 70px;
+  z-index: 3;
+  font-size: 82px;
   line-height: 1;
   filter:
-    saturate(1.45)
-    drop-shadow(0 0 8px rgba(255, 255, 255, 0.75))
-    drop-shadow(0 0 22px rgba(56, 189, 248, 0.75))
-    drop-shadow(0 0 48px rgba(139, 92, 246, 0.5));
+    saturate(1.62)
+    brightness(1.08)
+    drop-shadow(0 0 9px rgba(255, 255, 255, 0.82))
+    drop-shadow(0 0 24px rgba(56, 189, 248, 0.82))
+    drop-shadow(0 0 52px rgba(139, 92, 246, 0.56))
+    drop-shadow(0 10px 34px rgba(253, 224, 71, 0.2));
   animation: boss-streak-flame 3.8s ease-in-out infinite;
 }
 
 .boss-streak-core {
   position: absolute;
-  z-index: 1;
-  width: 32px;
-  height: 32px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: #e0f2fe;
-  filter: blur(13px);
-  opacity: 0.55;
+  background: radial-gradient(circle, #fff 0 12%, #e0f2fe 30%, #7dd3fc 56%, rgba(192, 132, 252, 0.44) 74%, transparent 76%);
+  filter: blur(11px);
+  opacity: 0.68;
   animation: boss-streak-core 3.8s ease-in-out infinite;
 }
 
@@ -548,20 +673,26 @@
 .boss-streak-stars span:nth-child(2) { top: 13%; right: 20%; font-size: 10px; animation-delay: -3.4s; }
 .boss-streak-stars span:nth-child(3) { top: 54%; right: 12%; font-size: 8px; animation-delay: -2.1s; }
 .boss-streak-stars span:nth-child(4) { top: 61%; left: 13%; font-size: 7px; animation-delay: -4.2s; }
+.boss-streak-stars span:nth-child(5) { top: 34%; left: 8%; color: #fde68a; font-size: 6px; animation-delay: -2.8s; }
+.boss-streak-stars span:nth-child(6) { top: 35%; right: 7%; color: #d8b4fe; font-size: 12px; animation-delay: -0.7s; }
+.boss-streak-stars span:nth-child(7) { top: 8%; left: 31%; color: #fde68a; font-size: 7px; animation-delay: -3.7s; }
+.boss-streak-stars span:nth-child(8) { top: 68%; right: 25%; color: #7dd3fc; font-size: 6px; animation-delay: -1.7s; }
 
 .boss-streak-title {
-  margin-top: 18px;
-  font-size: 15px;
+  margin-top: 24px;
+  font-size: 17px;
   font-weight: 900;
   line-height: 1;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.27em;
   color: transparent;
-  background: linear-gradient(90deg, #fef3c7, #7dd3fc 34%, #e9d5ff 66%, #fef3c7);
-  background-size: 220% 100%;
+  background: linear-gradient(90deg, #fff7d6, #fde68a 20%, #7dd3fc 42%, #e9d5ff 64%, #fde68a 82%, #fff7d6);
+  background-size: 260% 100%;
   background-clip: text;
   -webkit-background-clip: text;
-  filter: drop-shadow(0 0 9px rgba(125, 211, 252, 0.32));
-  animation: boss-streak-title 9s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 9px rgba(125, 211, 252, 0.38))
+    drop-shadow(0 0 18px rgba(253, 224, 71, 0.16));
+  animation: boss-streak-title 12s ease-in-out infinite;
 }
 
 .boss-streak-subtitle {
@@ -584,29 +715,42 @@
 }
 
 .boss-streak-max {
-  margin-top: 7px;
-  color: rgba(250, 204, 21, 0.72);
+  margin-top: 10px;
+  padding: 4px 9px 4px 11px;
+  border: 1px solid rgba(253, 224, 71, 0.18);
+  border-radius: 999px;
+  color: rgba(254, 240, 138, 0.78);
+  background: linear-gradient(110deg, rgba(120, 53, 15, 0.18), rgba(30, 64, 175, 0.12), rgba(88, 28, 135, 0.16));
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.05), 0 0 18px rgba(253, 224, 71, 0.06);
   font-size: 7px;
   font-weight: 800;
   letter-spacing: 0.3em;
 }
 
 .boss-streak-mini {
-  padding: 2px 5px 2px 4px;
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 3px 7px 3px 6px;
+  border: 1px solid rgba(253, 224, 71, 0.25);
   border-radius: 999px;
-  background: linear-gradient(110deg, rgba(8, 47, 73, 0.5), rgba(59, 7, 100, 0.38));
+  background:
+    radial-gradient(circle at 15% 50%, rgba(253, 224, 71, 0.11), transparent 38%),
+    linear-gradient(110deg, rgba(8, 47, 73, 0.62), rgba(59, 7, 100, 0.48));
   box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.09),
-    0 0 12px rgba(56, 189, 248, 0.15);
+    inset 0 1px rgba(255, 255, 255, 0.12),
+    0 0 11px rgba(56, 189, 248, 0.19),
+    0 0 18px rgba(253, 224, 71, 0.07);
 }
 
-.boss-streak-mini::before {
-  content: "♛";
-  color: #fde68a;
-  font-size: 8px;
-  line-height: 1;
-  text-shadow: 0 0 5px rgba(253, 224, 71, 0.8);
+.boss-streak-mini::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -100% -45%;
+  background: linear-gradient(100deg, transparent 42%, rgba(255, 255, 255, 0.14) 50%, transparent 58%);
+  transform: translateX(-55%);
+  animation: boss-streak-mini-sheen 8s ease-in-out infinite;
 }
 
 .boss-streak-mini-flame {
@@ -619,14 +763,43 @@
 
 .boss-streak-mini-count {
   color: transparent !important;
-  background: linear-gradient(90deg, #fde68a, #7dd3fc, #e9d5ff, #fde68a);
-  background-size: 220% 100%;
+  background: linear-gradient(90deg, #fff7d6, #fde68a, #7dd3fc, #e9d5ff, #fde68a);
+  background-size: 260% 100%;
   background-clip: text;
   -webkit-background-clip: text;
-  animation: boss-streak-title 9s ease-in-out infinite;
+  text-shadow: 0 0 9px rgba(125, 211, 252, 0.16);
+  animation: boss-streak-title 12s ease-in-out infinite;
+}
+
+.boss-streak-stats {
+  border: 1px solid rgba(253, 224, 71, 0.13);
+  background:
+    linear-gradient(90deg, rgba(253, 224, 71, 0.08), rgba(125, 211, 252, 0.11), rgba(216, 180, 254, 0.08));
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.05),
+    0 12px 32px -24px rgba(56, 189, 248, 0.55);
+}
+
+.boss-streak-stats > div {
+  background: linear-gradient(145deg, rgba(2, 8, 23, 0.72), rgba(15, 23, 42, 0.58));
+}
+
+.boss-streak-stats > div > div:first-child {
+  color: transparent;
+  background: linear-gradient(90deg, #fde68a, #7dd3fc, #e9d5ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(125, 211, 252, 0.18));
+}
+
+.boss-streak-stats > div > div:last-child {
+  color: rgba(224, 242, 254, 0.48);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .boss-avatar-shell {
+  overflow: visible;
   isolation: isolate;
 }
 
@@ -635,6 +808,7 @@
   position: absolute;
   z-index: 2;
   inset: -4px;
+  box-sizing: border-box;
   border: 1px solid transparent;
   border-top-color: rgba(253, 224, 71, 0.85);
   border-right-color: rgba(125, 211, 252, 0.72);
@@ -642,6 +816,9 @@
   border-radius: 50%;
   pointer-events: none;
   filter: drop-shadow(0 0 5px rgba(125, 211, 252, 0.45));
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  will-change: transform;
   animation: boss-avatar-ring 8s linear infinite;
 }
 
@@ -734,9 +911,47 @@
   to { transform: translate(-50%, -50%) rotate(384deg); }
 }
 
+@keyframes boss-streak-orbit-c {
+  to { transform: translate(-50%, -50%) rotate(422deg); }
+}
+
+@keyframes boss-streak-sovereign {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
+}
+
+@keyframes boss-streak-radiance {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes boss-streak-jewel-wheel {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes boss-streak-jewel {
+  0%, 100% { opacity: 0.52; transform: rotate(45deg) scale(0.78); }
+  50% { opacity: 1; transform: rotate(45deg) scale(1.18); }
+}
+
 @keyframes boss-streak-breathe {
-  0%, 100% { transform: scale(1); box-shadow: inset 0 0 25px rgba(125, 211, 252, 0.14), 0 0 22px rgba(56, 189, 248, 0.18), 0 0 58px rgba(139, 92, 246, 0.13); }
-  50% { transform: scale(1.025); box-shadow: inset 0 0 30px rgba(125, 211, 252, 0.18), 0 0 28px rgba(56, 189, 248, 0.24), 0 0 66px rgba(139, 92, 246, 0.17); }
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 0 32px rgba(125, 211, 252, 0.2),
+      inset 0 -18px 36px rgba(192, 132, 252, 0.08),
+      0 0 24px rgba(253, 224, 71, 0.16),
+      0 0 42px rgba(56, 189, 248, 0.2),
+      0 0 78px rgba(139, 92, 246, 0.16);
+  }
+  50% {
+    transform: scale(1.035);
+    box-shadow:
+      inset 0 0 38px rgba(125, 211, 252, 0.26),
+      inset 0 -20px 42px rgba(192, 132, 252, 0.11),
+      0 0 32px rgba(253, 224, 71, 0.22),
+      0 0 52px rgba(56, 189, 248, 0.28),
+      0 0 92px rgba(139, 92, 246, 0.2);
+  }
 }
 
 @keyframes boss-streak-crown {
@@ -769,6 +984,12 @@
   50% { transform: translateY(-1px) scale(1.025); }
 }
 
+@keyframes boss-streak-mini-sheen {
+  0%, 30% { transform: translateX(-60%); opacity: 0; }
+  46% { opacity: 0.9; }
+  62%, 100% { transform: translateX(60%); opacity: 0; }
+}
+
 @keyframes boss-avatar-ring {
   to { transform: rotate(360deg); }
 }
@@ -778,6 +999,33 @@
   50% { transform: translateX(-50%) translateY(-1px) rotate(2deg); }
 }
 
+/* Custom music dialog lives in a body portal so fixed positioning and blur
+   cannot be trapped by animated/glass layout ancestors. */
+.custom-track-modal-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.custom-track-modal-layer {
+  position: fixed;
+  z-index: 101;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.custom-track-modal-surface {
+  position: relative;
+  background: color-mix(in oklab, var(--card) 70%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+
 @keyframes boss-profile-banner {
   0%, 100% { background-position: 130% 50%, 0 0; opacity: 0.18; }
   50% { background-position: -30% 50%, 0 0; opacity: 0.4; }
@@ -785,14 +1033,19 @@
 
 @media (prefers-reduced-motion: reduce) {
   .boss-streak-panel::before,
+  .boss-streak-royal-aura,
   .boss-streak-emblem,
   .boss-streak-emblem::before,
+  .boss-streak-radiance,
   .boss-streak-orbit,
+  .boss-streak-jewels,
+  .boss-streak-jewels i,
   .boss-streak-crown,
   .boss-streak-flame,
   .boss-streak-core,
   .boss-streak-stars span,
   .boss-streak-title,
+  .boss-streak-mini::after,
   .boss-streak-mini-flame,
   .boss-streak-mini-count,
   .boss-avatar-shell::before,

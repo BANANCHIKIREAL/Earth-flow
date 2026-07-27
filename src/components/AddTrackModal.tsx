@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Cloud, HardDrive, Upload, X } from "lucide-react";
 
 interface Props {
@@ -47,19 +48,32 @@ export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSy
     onClose();
   };
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <>
-      <div onClick={!adding ? onClose : undefined} className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className="glass border border-border rounded-3xl p-6 w-full max-w-sm space-y-5 pointer-events-auto">
+      <div
+        aria-hidden="true"
+        onClick={!adding ? onClose : undefined}
+        className="custom-track-modal-backdrop"
+      />
+      <div className="custom-track-modal-layer">
+        <div
+          aria-labelledby="custom-track-modal-title"
+          aria-modal="true"
+          className="custom-track-modal-surface glass border border-border rounded-3xl p-6 w-full max-w-sm space-y-5 pointer-events-auto"
+          role="dialog"
+        >
 
           <div className="flex items-center justify-between">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            <div
+              id="custom-track-modal-title"
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
+            >
               Your music
             </div>
             <button
+              type="button"
               onClick={onClose}
               disabled={adding}
               className="h-8 w-8 rounded-full glass flex items-center justify-center hover:text-primary transition-colors disabled:opacity-40"
@@ -104,6 +118,7 @@ export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSy
           {pendingFile ? (
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setPendingFile(null)}
                 disabled={adding}
                 className="flex-1 h-9 rounded-full glass border border-border text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
@@ -111,6 +126,7 @@ export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSy
                 Remove
               </button>
               <button
+                type="button"
                 onClick={() => void handleAdd()}
                 disabled={adding}
                 className="flex-1 h-9 rounded-full bg-foreground text-background text-xs font-medium hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50 disabled:scale-100"
@@ -160,6 +176,7 @@ export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSy
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

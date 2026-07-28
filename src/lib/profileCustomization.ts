@@ -47,7 +47,7 @@ export const DEFAULT_PROFILE_CUSTOMIZATION: ProfileCustomization = {
   avatarSize: "medium",
   avatarShape: "circle",
   profileWidth: "standard",
-  textAlign: "center",
+  textAlign: "left",
   motion: true,
   particles: true,
   showEmail: true,

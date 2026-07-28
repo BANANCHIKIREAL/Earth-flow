@@ -4,7 +4,6 @@ import {
   Layers3,
   Palette,
   RotateCcw,
-  SlidersHorizontal,
   Sparkles,
   WandSparkles,
 } from "lucide-react";
@@ -147,10 +146,6 @@ export function ProfileCustomizationPanel({ value, onChange, onReset }: Props) {
       </section>
 
       <section className="profile-custom-section">
-        <div className="profile-custom-section-head">
-          <span><SlidersHorizontal size={13} /></span>
-          <div><b>Composition</b><small>Shape and balance the profile layout</small></div>
-        </div>
         <div className="profile-custom-label">Header height</div>
         <div className="profile-custom-segmented">
           {COMPOSITION_OPTIONS.headerSize.map((option) => (

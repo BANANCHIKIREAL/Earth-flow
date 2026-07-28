@@ -341,7 +341,10 @@ export function ProfileModal({
   const handleChangePassword = async () => {
     if (pwStatus === "sending" || pwStatus === "sent") return;
     setPwStatus("sending");
-    const { error } = await resetPassword(email);
+    const { error } = await resetPassword(
+      email,
+      needsPassword ? "add" : "change",
+    );
     setPwStatus(error ? "error" : "sent");
   };
 

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { AuthLayout, GoogleIcon, Divider, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
+import { AuthLayout, GoogleIcon, Divider, PasswordInput, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign In — Earth Flow" }] }),
@@ -52,8 +52,7 @@ function LoginPage() {
               autoComplete="email"
               className={inputCls}
             />
-            <input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"

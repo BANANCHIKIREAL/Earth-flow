@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useEffect, useState } from "react";
+import { Check, ShieldCheck, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { AuthLayout, GoogleIcon, Divider, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
+import { AuthLayout, GoogleIcon, Divider, PasswordInput, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Sign Up — Earth Flow" }] }),
@@ -58,6 +59,17 @@ function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const strength = getStrength(password);
+  const passwordChecks = [
+    { label: "8 or more characters", passed: password.length >= 8 },
+    { label: "Uppercase letter", passed: /[A-Z]/.test(password) },
+    { label: "Lowercase letter", passed: /[a-z]/.test(password) },
+    { label: "Number", passed: /[0-9]/.test(password) },
+    { label: "No Cyrillic letters", passed: !/[\u0400-\u04ff]/.test(password) },
+    { label: "Not a common password", passed: password.length > 0 && !isBanned(password) },
+  ];
+  const passedChecks = passwordChecks.filter((check) => check.passed).length;
+  const passwordReady = passedChecks === passwordChecks.length && strength.score >= 2;
+  const confirmMatches = confirm.length > 0 && password === confirm;
 
   useEffect(() => {
     if (!loading && user) void navigate({ to: "/" });
@@ -147,39 +159,38 @@ function RegisterPage() {
               autoComplete="email"
               className={inputCls}
             />
-            <input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password (8+ characters, A–Z, a–z, 0–9)"
+              placeholder="Create a password"
               required
               autoComplete="new-password"
               className={inputCls}
             />
             {password && (
-              <div className="px-1 space-y-1.5">
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className={`h-0.5 flex-1 rounded-full transition-all duration-300 ${
-                        i <= strength.score ? strength.color : "bg-foreground/10"
-                      }`}
-                    />
-                  ))}
+              <div className={`auth-password-checker ${passwordReady ? "is-ready" : ""}`}>
+                <div className="auth-password-checker-head">
+                  <span className="auth-password-checker-icon"><ShieldCheck size={15} /></span>
+                  <span>
+                    <b>Password security</b>
+                    <small>{passedChecks} of {passwordChecks.length} requirements met</small>
+                  </span>
+                  <em className={`auth-password-strength strength-${strength.score}`}>{strength.label}</em>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[11px] text-muted-foreground/60">Password strength</span>
-                  <span className={`text-[11px] font-medium transition-colors ${
-                    strength.score <= 1 ? "text-red-400" :
-                    strength.score === 2 ? "text-orange-400" :
-                    strength.score === 3 ? "text-yellow-400" : "text-green-400"
-                  }`}>{strength.label}</span>
+                <div className="auth-password-meter" aria-hidden="true">
+                  <i style={{ width: `${Math.max(8, (passedChecks / passwordChecks.length) * 100)}%` }} />
+                </div>
+                <div className="auth-password-requirements">
+                  {passwordChecks.map((check) => (
+                    <span key={check.label} className={check.passed ? "is-passed" : ""}>
+                      <i>{check.passed ? <Check size={10} /> : <X size={10} />}</i>
+                      {check.label}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
-            <input
-              type="password"
+            <PasswordInput
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Confirm password"
@@ -187,7 +198,13 @@ function RegisterPage() {
               autoComplete="new-password"
               className={inputCls}
             />
-            <button type="submit" disabled={submitting} className={btnCls}>
+            {confirm && (
+              <div className={`auth-password-match ${confirmMatches ? "is-matched" : "is-mismatched"}`}>
+                {confirmMatches ? <Check size={12} /> : <X size={12} />}
+                {confirmMatches ? "Passwords match" : "Passwords do not match yet"}
+              </div>
+            )}
+            <button type="submit" disabled={submitting || !passwordReady || !confirmMatches} className={btnCls}>
               {submitting ? "Creating…" : "Create account"}
             </button>
           </form>

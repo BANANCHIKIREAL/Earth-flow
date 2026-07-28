@@ -14,7 +14,10 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  resetPassword: (
+    email: string,
+    mode?: "add" | "change",
+  ) => Promise<{ error: Error | null }>;
   updatePassword: (password: string) => Promise<{ error: Error | null }>;
   updateDisplayName: (name: string) => Promise<{ error: Error | null }>;
   uploadAvatar: (file: File) => Promise<{ error: Error | null }>;
@@ -98,7 +101,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (
+    email: string,
+    mode: "add" | "change" = "change",
+  ) => {
+    if (user) {
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: { password_email_mode: mode },
+      });
+      if (metadataError) return { error: metadataError as Error };
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/update-password`,
     });
@@ -108,10 +120,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updatePassword = async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password });
     if (!error && user) {
-      await supabase
-        .from("user_profiles")
-        .update({ has_password: true })
-        .eq("user_id", user.id);
+      await Promise.all([
+        supabase
+          .from("user_profiles")
+          .update({ has_password: true })
+          .eq("user_id", user.id),
+        supabase.auth.updateUser({
+          data: { password_email_mode: null },
+        }),
+      ]);
     }
     return { error: error as Error | null };
   };

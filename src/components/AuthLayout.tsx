@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
+import { Eye, EyeOff } from "lucide-react";
 
 function EarthGraphic({ className = "w-64 h-64" }: { className?: string }) {
   return (
@@ -120,6 +121,33 @@ export function GoogleIcon() {
 
 export const inputCls =
   "w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/40 focus:border-primary/50 focus:bg-white/[0.06]";
+
+export function PasswordInput({
+  className = inputCls,
+  ...props
+}: Omit<InputHTMLAttributes<HTMLInputElement>, "type">) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="auth-password-field">
+      <input
+        {...props}
+        type={visible ? "text" : "password"}
+        className={`${className} auth-password-input`}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((current) => !current)}
+        className="auth-password-reveal"
+        aria-label={visible ? "Hide password" : "Show password"}
+        aria-pressed={visible}
+        title={visible ? "Hide password" : "Show password"}
+      >
+        {visible ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  );
+}
 
 export const btnCls =
   "w-full h-11 rounded-lg bg-foreground text-background text-sm font-semibold tracking-wide hover:bg-foreground/90 active:scale-[0.99] transition-all disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed";

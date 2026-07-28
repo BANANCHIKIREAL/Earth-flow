@@ -10,6 +10,8 @@
     "postbuild": "node ./scripts/generate-static-index.js",
     "vercel-build": "npm run build",
     "build:dev": "vite build --mode development",
+    "emails:generate": "node ./scripts/generate-auth-email-templates.mjs",
+    "emails:deploy": "node ./scripts/deploy-auth-email-templates.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."

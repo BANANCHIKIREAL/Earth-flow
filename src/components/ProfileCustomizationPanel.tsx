@@ -57,33 +57,6 @@ const SURFACES: { id: ProfileSurface; label: string }[] = [
   { id: "frost", label: "Frost" },
 ];
 
-const COMPOSITION_OPTIONS = {
-  headerSize: [
-    { id: "compact", label: "Compact" },
-    { id: "balanced", label: "Balanced" },
-    { id: "cinematic", label: "Cinematic" },
-  ],
-  avatarSize: [
-    { id: "small", label: "Small" },
-    { id: "medium", label: "Medium" },
-    { id: "large", label: "Large" },
-  ],
-  avatarShape: [
-    { id: "circle", label: "Circle" },
-    { id: "soft", label: "Soft" },
-    { id: "rounded", label: "Rounded" },
-  ],
-  profileWidth: [
-    { id: "compact", label: "Compact" },
-    { id: "standard", label: "Standard" },
-    { id: "wide", label: "Wide" },
-  ],
-  textAlign: [
-    { id: "left", label: "Left" },
-    { id: "center", label: "Center" },
-  ],
-} as const;
-
 function Toggle({
   checked,
   label,
@@ -140,49 +113,6 @@ export function ProfileCustomizationPanel({ value, onChange, onReset }: Props) {
               <i />
               <span><b>{scene.label}</b><small>{scene.note}</small></span>
               {value.scene === scene.id && <Check size={11} />}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="profile-custom-section">
-        <div className="profile-custom-label">Header height</div>
-        <div className="profile-custom-segmented">
-          {COMPOSITION_OPTIONS.headerSize.map((option) => (
-            <button key={option.id} type="button" onClick={() => onChange({ headerSize: option.id })} className={value.headerSize === option.id ? "is-active" : ""}>
-              {option.label}
-            </button>
-          ))}
-        </div>
-        <div className="profile-custom-label">Avatar size</div>
-        <div className="profile-custom-segmented">
-          {COMPOSITION_OPTIONS.avatarSize.map((option) => (
-            <button key={option.id} type="button" onClick={() => onChange({ avatarSize: option.id })} className={value.avatarSize === option.id ? "is-active" : ""}>
-              {option.label}
-            </button>
-          ))}
-        </div>
-        <div className="profile-custom-label">Avatar shape</div>
-        <div className="profile-custom-segmented">
-          {COMPOSITION_OPTIONS.avatarShape.map((option) => (
-            <button key={option.id} type="button" onClick={() => onChange({ avatarShape: option.id })} className={value.avatarShape === option.id ? "is-active" : ""}>
-              {option.label}
-            </button>
-          ))}
-        </div>
-        <div className="profile-custom-label">Profile width</div>
-        <div className="profile-custom-segmented">
-          {COMPOSITION_OPTIONS.profileWidth.map((option) => (
-            <button key={option.id} type="button" onClick={() => onChange({ profileWidth: option.id })} className={value.profileWidth === option.id ? "is-active" : ""}>
-              {option.label}
-            </button>
-          ))}
-        </div>
-        <div className="profile-custom-label">Identity alignment</div>
-        <div className="profile-custom-segmented profile-custom-segmented-two">
-          {COMPOSITION_OPTIONS.textAlign.map((option) => (
-            <button key={option.id} type="button" onClick={() => onChange({ textAlign: option.id })} className={value.textAlign === option.id ? "is-active" : ""}>
-              {option.label}
             </button>
           ))}
         </div>

@@ -3,12 +3,6 @@ export type ProfileBanner = "nebula" | "aurora" | "sunrise" | "waves" | "eclipse
 export type ProfileFrame = "clean" | "halo" | "orbit" | "double" | "prism";
 export type ProfileSurface = "glass" | "midnight" | "velvet" | "frost";
 export type ProfileMood = "none" | "focus" | "calm" | "night" | "flow" | "spark";
-export type ProfileHeaderSize = "compact" | "balanced" | "cinematic";
-export type ProfileAvatarSize = "small" | "medium" | "large";
-export type ProfileAvatarShape = "circle" | "soft" | "rounded";
-export type ProfileWidth = "compact" | "standard" | "wide";
-export type ProfileTextAlign = "left" | "center";
-
 export interface ProfileCustomization {
   scene: ProfileScene;
   banner: ProfileBanner;
@@ -19,11 +13,6 @@ export interface ProfileCustomization {
   glow: number;
   sceneDepth: number;
   borderStrength: number;
-  headerSize: ProfileHeaderSize;
-  avatarSize: ProfileAvatarSize;
-  avatarShape: ProfileAvatarShape;
-  profileWidth: ProfileWidth;
-  textAlign: ProfileTextAlign;
   motion: boolean;
   particles: boolean;
   showEmail: boolean;
@@ -43,11 +32,6 @@ export const DEFAULT_PROFILE_CUSTOMIZATION: ProfileCustomization = {
   glow: 48,
   sceneDepth: 70,
   borderStrength: 42,
-  headerSize: "balanced",
-  avatarSize: "medium",
-  avatarShape: "circle",
-  profileWidth: "standard",
-  textAlign: "left",
   motion: true,
   particles: true,
   showEmail: true,
@@ -77,12 +61,6 @@ const BANNERS: ProfileBanner[] = ["nebula", "aurora", "sunrise", "waves", "eclip
 const FRAMES: ProfileFrame[] = ["clean", "halo", "orbit", "double", "prism"];
 const SURFACES: ProfileSurface[] = ["glass", "midnight", "velvet", "frost"];
 const MOODS: ProfileMood[] = ["none", "focus", "calm", "night", "flow", "spark"];
-const HEADER_SIZES: ProfileHeaderSize[] = ["compact", "balanced", "cinematic"];
-const AVATAR_SIZES: ProfileAvatarSize[] = ["small", "medium", "large"];
-const AVATAR_SHAPES: ProfileAvatarShape[] = ["circle", "soft", "rounded"];
-const PROFILE_WIDTHS: ProfileWidth[] = ["compact", "standard", "wide"];
-const TEXT_ALIGNS: ProfileTextAlign[] = ["left", "center"];
-
 const pick = <T extends string>(value: unknown, allowed: T[], fallback: T): T =>
   typeof value === "string" && allowed.includes(value as T) ? (value as T) : fallback;
 
@@ -111,11 +89,6 @@ export function sanitizeProfileCustomization(value: unknown): ProfileCustomizati
     glow: percentage(source.glow, fallback.glow),
     sceneDepth: percentage(source.sceneDepth, fallback.sceneDepth),
     borderStrength: percentage(source.borderStrength, fallback.borderStrength),
-    headerSize: pick(source.headerSize, HEADER_SIZES, fallback.headerSize),
-    avatarSize: pick(source.avatarSize, AVATAR_SIZES, fallback.avatarSize),
-    avatarShape: pick(source.avatarShape, AVATAR_SHAPES, fallback.avatarShape),
-    profileWidth: pick(source.profileWidth, PROFILE_WIDTHS, fallback.profileWidth),
-    textAlign: pick(source.textAlign, TEXT_ALIGNS, fallback.textAlign),
     motion: typeof source.motion === "boolean" ? source.motion : fallback.motion,
     particles: typeof source.particles === "boolean" ? source.particles : fallback.particles,
     showEmail: typeof source.showEmail === "boolean" ? source.showEmail : fallback.showEmail,

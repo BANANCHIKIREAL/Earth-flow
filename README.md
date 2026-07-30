@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.2" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.4" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -110,6 +110,10 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.2.4 — Fixed profile composition
+- Removed all profile composition controls from Profile Studio
+- Standardized the profile layout and permanently aligned identity content to the left
 
 ### v5.2.2 — Updated social preview
 - Replaced the Open Graph preview with the current Earth Flow workspace design

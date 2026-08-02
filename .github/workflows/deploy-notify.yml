@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@v4
+
       - name: Send Discord notification
         env:
           DISCORD_DEPLOY_WEBHOOK_URL: ${{ secrets.DISCORD_DEPLOY_WEBHOOK_URL }}
@@ -28,6 +30,7 @@ jobs:
           fi
 
           SHORT_SHA="${COMMIT_SHA:0:7}"
+          VERSION=$(jq -r .version package.json)
 
           if [ -n "$COMMITS_JSON" ] && [ "$COMMITS_JSON" != "null" ] && [ "$COMMITS_JSON" != "[]" ]; then
             WHATS_NEW=$(echo "$COMMITS_JSON" | jq -r '[.[] | "• " + (.message | split("\n")[0])] | join("\n")')
@@ -51,6 +54,7 @@ jobs:
             --arg whatsnew "$WHATS_NEW" \
             --arg author "$COMMIT_AUTHOR" \
             --arg sha "$SHORT_SHA" \
+            --arg version "$VERSION" \
             --arg stats "$STATS" \
             --arg commitUrl "$COMMIT_URL" \
             --arg site "https://earthflow.pro" \
@@ -62,6 +66,7 @@ jobs:
                 color: 4049328,
                 fields: ([
                   { name: "Что нового", value: $whatsnew, inline: false },
+                  { name: "Версия", value: ("v" + $version), inline: true },
                   { name: "Автор", value: $author, inline: true },
                   { name: "Коммит", value: $sha, inline: true }
                 ] + (if $stats != "" then [{ name: "Изменения", value: $stats, inline: true }] else [] end) + [

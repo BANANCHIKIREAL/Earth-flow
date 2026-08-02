@@ -233,21 +233,21 @@ otp_expiry = 3600
 
 [auth.email.template.recovery]
 subject = "Set your Earth Flow password"
-content_path = "./supabase/email-templates/reset-password.html"
+content_path = "./email-templates/reset-password.html"
 
 [auth.email.template.email_change]
 subject = "Confirm your new Earth Flow email"
-content_path = "./supabase/email-templates/email-change.html"
+content_path = "./email-templates/email-change.html"
 
 [auth.email.notification.password_changed]
 enabled = true
 subject = "Your Earth Flow password was changed"
-content_path = "./supabase/email-templates/password-changed.html"
+content_path = "./email-templates/password-changed.html"
 
 [auth.email.notification.email_changed]
 enabled = true
 subject = "Your Earth Flow email was changed"
-content_path = "./supabase/email-templates/email-changed.html"
+content_path = "./email-templates/email-changed.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.

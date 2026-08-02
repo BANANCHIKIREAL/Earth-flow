@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.5" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.6" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -116,6 +116,10 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.2.6 — Deploy notification polish & Supabase config fix
+- Deploy Discord embed now shows the app version instead of a files-changed/±lines stat
+- Fixed Supabase Preview failing on auth email templates: `content_path` resolves relative to the repo root under `auth.email.template.*` but relative to `supabase/` under `auth.email.notification.*`
 
 ### v5.2.5 — Discord notifications
 - Live visit pings posted to Discord via a `@vercel/node` function, triggered client-side once per page load

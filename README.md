@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.4" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.5" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -83,6 +83,7 @@ Create a `.env.local` file in the project root:
 |---|---|
 | `VITE_SUPABASE_URL` | Your Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon / public key |
+| `DISCORD_WEBHOOK_URL` | *(optional)* Discord webhook for live visit pings — set as a server-side Vercel env var, never `VITE_`-prefixed |
 
 ---
 
@@ -107,9 +108,18 @@ Deployed as a static SPA on Vercel via `@vercel/static-build`. The `vercel.json`
 
 OG meta tags are injected at build time into the static HTML so social crawlers (Telegram, Twitter, etc.) see them without JavaScript.
 
+### Discord notifications
+
+- **Visits** — a tiny `@vercel/node` function at `api/visit-ping.js` posts an embed to Discord on real page loads (triggered client-side from the root route, 10s dedupe). Requires `DISCORD_WEBHOOK_URL` as a Vercel env var.
+- **Deploys** — `.github/workflows/deploy-notify.yml` posts a richer embed (commit list, author, diff stats) on every push to `main`. Requires the `DISCORD_DEPLOY_WEBHOOK_URL` GitHub Actions secret.
+
 ---
 
 ## 📋 Version History
+
+### v5.2.5 — Discord notifications
+- Live visit pings posted to Discord via a `@vercel/node` function, triggered client-side once per page load
+- Deploy notifications on every push to `main`, with commit list, author, and diff stats
 
 ### v5.2.4 — Fixed profile composition
 - Removed all profile composition controls from Profile Studio

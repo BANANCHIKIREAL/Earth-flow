@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -81,10 +82,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Earth Flow" },
       { property: "og:description", content: "Ambient sounds & focus timer" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://earthflow.pro/og-image.png?v=5.2.4" },
+      { property: "og:image", content: "https://earthflow.pro/og-image.png?v=5.2.5" },
       { property: "og:url", content: "https://earthflow.pro" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://earthflow.pro/og-image.png?v=5.2.4" },
+      { name: "twitter:image", content: "https://earthflow.pro/og-image.png?v=5.2.5" },
     ],
     links: [
       {
@@ -123,6 +124,10 @@ function RootComponent() {
   // Create a fallback QueryClient for client-only rendering
   const contextData = Route.useRouteContext();
   const queryClient = contextData?.queryClient || new QueryClient();
+
+  useEffect(() => {
+    fetch("/api/visit-ping", { method: "POST" }).catch(() => {});
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -8,6 +8,10 @@
       "config": {
         "distDir": "dist/client"
       }
+    },
+    {
+      "src": "api/visit-ping.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [

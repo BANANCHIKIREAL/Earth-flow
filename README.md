@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.6" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.7" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -116,6 +116,9 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.2.7 — Fixed visit pings never firing in production
+- `vercel.json`'s custom `routes` array silently prevented the `api/visit-ping.js` function from being reached — `handle: filesystem` doesn't auto-route to serverless functions once a custom routes array is present, so requests fell through to the SPA fallback (405 on every real visit). Added an explicit route so it resolves correctly
 
 ### v5.2.6 — Deploy notification polish & Supabase config fix
 - Deploy Discord embed now shows the app version instead of a files-changed/±lines stat

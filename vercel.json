@@ -27,6 +27,10 @@
       "continue": true
     },
     {
+      "src": "/api/visit-ping",
+      "dest": "/api/visit-ping.js"
+    },
+    {
       "handle": "filesystem"
     },
     {

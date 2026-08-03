@@ -43,7 +43,7 @@ jobs:
             --arg version "$VERSION" \
             --arg commitUrl "$COMMIT_URL" \
             --arg site "https://earthflow.pro" \
-            --arg thumb "https://earthflow.pro/og-image.png" \
+            --arg thumb "https://earthflow.pro/og-image.png?v=5.2.8" \
             '{
               embeds: [{
                 title: $title,

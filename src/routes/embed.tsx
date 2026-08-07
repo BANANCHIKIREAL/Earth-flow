@@ -1,22 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Background } from "@/components/Background";
 import { SoundDock } from "@/components/SoundDock";
 import { Timer } from "@/components/Timer";
-import { SettingsPanel } from "@/components/SettingsPanel";
 import { useAudioMixer } from "@/hooks/useAudioMixer";
-import { useCustomTracks } from "@/hooks/useCustomTracks";
 import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
 import { useFinishSound } from "@/hooks/useFinishSound";
 import { useSettings } from "@/hooks/useSettings";
 import type { TimerPhase } from "@/hooks/useTimer";
 import { translations } from "@/lib/i18n";
 
+const SITE_URL = "https://earthflow.pro";
+
 // Minimal, chrome-free version of the focus space meant to be embedded as an
-// iframe widget (e.g. in Notion). No nav/header/footer/auth/tasks — just the
-// timer, sound mixer, timer settings, and background. Deliberately overrides
-// the root route's OG meta so hosts that sniff og:* (like Notion) render an
-// actual iframe instead of a bookmark card.
+// iframe widget (e.g. in Notion). No nav/header/footer/auth/tasks/custom
+// tracks/settings panel — just the timer, a curated half of the built-in
+// sounds, and the background. "Settings" opens the real site in a new tab
+// instead of a local panel. Deliberately overrides the root route's OG meta
+// so hosts that sniff og:* (like Notion) render an actual iframe instead of
+// a bookmark card.
 export const Route = createFileRoute("/embed")({
   component: EmbedWidget,
   head: () => ({
@@ -36,122 +38,67 @@ export const Route = createFileRoute("/embed")({
 });
 
 function EmbedWidget() {
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const copy = translations.en;
 
   const {
-    durations, setDurations,
-    lunchEnabled, setLunchEnabled,
-    bgVariant, setBgVariant,
-    bgImage, setBgImage,
-    bgBlur, setBgBlur,
-    timerRingStyle, setTimerRingStyle,
-    customTimerRingColor, setCustomTimerRingColor,
-    timerRingWidth, setTimerRingWidth,
-    timerFontStyle, setTimerFontStyle,
-    timerFontSize, setTimerFontSize,
-    stopSoundsOnTimerEnd, setStopSoundsOnTimerEnd,
-    layout, setLayout,
+    durations,
+    lunchEnabled,
+    bgVariant,
+    bgImage,
+    bgBlur,
+    timerRingStyle,
+    timerRingWidth,
+    timerFontStyle,
+    timerFontSize,
+    stopSoundsOnTimerEnd,
   } = useSettings(undefined);
 
   const { tracks, toggle, setVolume, stopAll } = useAudioMixer();
-  const {
-    tracks: customTracks,
-    toggle: customToggle,
-    setVolume: customSetVolume,
-    removeTrack: customRemove,
-    addFromFile: customAddFromFile,
-    stopAll: customStopAll,
-    syncEnabled: customSoundSyncEnabled,
-    setSyncEnabled: setCustomSoundSyncEnabled,
-    syncTrack: syncCustomTrack,
-    cloudCount: customSoundCloudCount,
-    cloudBytes: customSoundCloudBytes,
-    maxCloudBytes: customSoundMaxCloudBytes,
-    isSyncBusy: customSoundSyncBusy,
-  } = useCustomTracks(undefined);
+  const { playFinishSound } = useFinishSound();
+  const { notifyTimerComplete } = useBrowserNotifications();
 
-  const {
-    finishSounds,
-    selectedSoundId,
-    customSound,
-    setSelectedSoundId,
-    uploadCustomSound,
-    clearCustomSound,
-    playFinishSound,
-  } = useFinishSound();
-  const {
-    notificationPermission,
-    requestNotificationPermission,
-    notifyTimerComplete,
-    previewNotification,
-  } = useBrowserNotifications();
-
-  const activeCount = tracks.filter((t) => t.enabled).length;
+  // Widget is compact — show half the built-in sounds so cards have room to
+  // breathe instead of cramming all of them into a narrow iframe.
+  const visibleTracks = useMemo(
+    () => tracks.slice(0, Math.ceil(tracks.length / 2)),
+    [tracks],
+  );
+  const activeCount = visibleTracks.filter((t) => t.enabled).length;
 
   const completeTimer = useCallback(
     (phase: TimerPhase) => {
       playFinishSound();
       notifyTimerComplete(phase);
-      if (stopSoundsOnTimerEnd) {
-        stopAll();
-        customStopAll();
-      }
+      if (stopSoundsOnTimerEnd) stopAll();
     },
-    [customStopAll, notifyTimerComplete, playFinishSound, stopAll, stopSoundsOnTimerEnd],
+    [notifyTimerComplete, playFinishSound, stopAll, stopSoundsOnTimerEnd],
   );
+
+  const openFullSite = useCallback(() => {
+    window.open(SITE_URL, "_blank", "noopener,noreferrer");
+  }, []);
 
   return (
     <div className="dark relative min-h-screen w-full flex flex-col items-center justify-center text-foreground overflow-hidden">
       <Background variant={bgVariant} image={bgImage} blur={bgBlur} />
 
-      <main className="flex flex-col items-center gap-8 px-4 py-8 w-full max-w-md">
-        <Timer
-          durations={durations} lunchEnabled={lunchEnabled} onComplete={completeTimer}
-          ringStyle={timerRingStyle} ringWidth={timerRingWidth}
-          fontStyle={timerFontStyle} fontSize={timerFontSize}
-          onOpenSettings={() => setSettingsOpen(true)} copy={copy}
-        />
+      <main className="flex flex-col items-center gap-8 px-4 py-8 w-full max-w-2xl">
+        <div className="w-full max-w-md mx-auto flex justify-center">
+          <Timer
+            durations={durations} lunchEnabled={lunchEnabled} onComplete={completeTimer}
+            ringStyle={timerRingStyle} ringWidth={timerRingWidth}
+            fontStyle={timerFontStyle} fontSize={timerFontSize}
+            onOpenSettings={openFullSite} copy={copy}
+          />
+        </div>
         <SoundDock
-          activeCount={activeCount} tracks={tracks} onToggleTrack={toggle}
-          onVolumeTrack={setVolume} onStopAll={stopAll} customTracks={customTracks}
-          onCustomToggle={customToggle} onCustomVolume={customSetVolume}
-          onCustomRemove={customRemove} onAddFromFile={customAddFromFile} copy={copy}
-          syncEnabled={customSoundSyncEnabled} canSync={false}
-          onCustomSync={syncCustomTrack}
+          activeCount={activeCount} tracks={visibleTracks} onToggleTrack={toggle}
+          onVolumeTrack={setVolume} onStopAll={stopAll} showCustom={false}
+          showTrackStatus={false}
+          copy={copy}
           columns={5}
         />
       </main>
-
-      <SettingsPanel
-        open={settingsOpen} onClose={() => setSettingsOpen(false)}
-        durations={durations} setDurations={setDurations}
-        lunchEnabled={lunchEnabled} setLunchEnabled={setLunchEnabled}
-        stopSoundsOnTimerEnd={stopSoundsOnTimerEnd} setStopSoundsOnTimerEnd={setStopSoundsOnTimerEnd}
-        bgVariant={bgVariant} setBgVariant={setBgVariant}
-        bgImage={bgImage} setBgImage={setBgImage}
-        bgBlur={bgBlur} setBgBlur={setBgBlur}
-        timerRingStyleId={timerRingStyle.id} customTimerRingColor={customTimerRingColor}
-        setCustomTimerRingColor={setCustomTimerRingColor} timerRingWidth={timerRingWidth}
-        setTimerRingStyle={setTimerRingStyle} setTimerRingWidth={setTimerRingWidth}
-        timerFontStyleId={timerFontStyle.id} setTimerFontStyle={setTimerFontStyle}
-        timerFontSize={timerFontSize} setTimerFontSize={setTimerFontSize}
-        finishSounds={finishSounds} selectedFinishSoundId={selectedSoundId}
-        customFinishSoundName={customSound?.name ?? null}
-        onSelectFinishSound={setSelectedSoundId} onUploadFinishSound={uploadCustomSound}
-        onClearCustomFinishSound={clearCustomSound} onPreviewFinishSound={playFinishSound}
-        notificationPermission={notificationPermission}
-        onRequestNotifications={() => void requestNotificationPermission()}
-        onPreviewNotification={previewNotification}
-        layout={layout} setLayout={setLayout}
-        customSoundSyncEnabled={customSoundSyncEnabled}
-        onSetCustomSoundSyncEnabled={setCustomSoundSyncEnabled}
-        customSoundCloudCount={customSoundCloudCount}
-        customSoundCloudBytes={customSoundCloudBytes}
-        customSoundMaxCloudBytes={customSoundMaxCloudBytes}
-        customSoundSyncBusy={customSoundSyncBusy}
-        copy={copy}
-      />
     </div>
   );
 }

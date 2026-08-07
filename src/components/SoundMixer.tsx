@@ -8,6 +8,7 @@ interface Props {
   onVolume: (id: string, v: number) => void;
   compact?: boolean;
   compactColumns?: 5 | 6;
+  showStatusLabel?: boolean;
 }
 
 const SOUND_ICONS: Record<SoundIconType, LucideIcon> = {
@@ -49,6 +50,7 @@ export function SoundMixer({
   onVolume,
   compact = false,
   compactColumns = 5,
+  showStatusLabel = true,
 }: Props) {
   if (tracks.length === 0) {
     return (
@@ -75,6 +77,7 @@ export function SoundMixer({
           onToggle={onToggle}
           onVolume={onVolume}
           compact={compact}
+          showStatusLabel={showStatusLabel}
         />
       ))}
     </div>
@@ -86,11 +89,13 @@ function SoundCard({
   onToggle,
   onVolume,
   compact,
+  showStatusLabel,
 }: {
   track: SoundTrack;
   onToggle: (id: string) => void;
   onVolume: (id: string, v: number) => void;
   compact: boolean;
+  showStatusLabel: boolean;
 }) {
   const waveDelays = [0, 120, 240];
 
@@ -125,7 +130,7 @@ function SoundCard({
           </div>
           <div className="mt-1 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-              <span>{track.enabled ? "Playing" : "Idle"}</span>
+              {showStatusLabel && <span>{track.enabled ? "Playing" : "Idle"}</span>}
               <span className="rounded-full bg-white/10 px-2 py-0.5">{Math.round(track.volume * 100)}%</span>
             </div>
             {track.enabled && (

@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.9" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.10" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -120,6 +120,13 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.2.10 — Embed widget fixes
+- Fixed sound cards collapsing to an unreadable "ID" fragment at 5 columns in the embed's narrow width — the fixed-size icon left ~0px for the name/status text, which then overflowed and got clipped at the card edge. Widened the embed's sound section container so names truncate gracefully instead
+- Removed the custom-track ("Your music") feature from the embed — `SoundDock` now takes an optional `showCustom` prop
+- Removed the "Playing"/"Idle" status label from embed sound cards via a new `showStatusLabel`/`showTrackStatus` prop (main site unaffected, defaults to shown)
+- Embed now shows half as many built-in sounds (9 instead of 17) to stay compact
+- The settings gear now opens earthflow.pro in a new tab instead of a local settings panel (there's no room for it in a small embedded widget)
 
 ### v5.2.9 — Notion embed widget
 - New `/embed` route: a chrome-free timer + sound mixer + settings + background, meant for embedding as an iframe widget (e.g. via Notion's `/embed` command)

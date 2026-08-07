@@ -22,15 +22,17 @@ interface Props {
   onToggleTrack: (id: string) => void;
   onVolumeTrack: (id: string, volume: number) => void;
   onStopAll: () => void;
-  customTracks: CustomTrack[];
-  onCustomToggle: (id: string) => void;
-  onCustomVolume: (id: string, volume: number) => void;
-  onCustomRemove: (id: string) => void;
-  onAddFromFile: (file: File) => Promise<void>;
-  syncEnabled: boolean;
-  canSync: boolean;
-  onCustomSync: (id: string) => Promise<void>;
+  showCustom?: boolean;
+  customTracks?: CustomTrack[];
+  onCustomToggle?: (id: string) => void;
+  onCustomVolume?: (id: string, volume: number) => void;
+  onCustomRemove?: (id: string) => void;
+  onAddFromFile?: (file: File) => Promise<void>;
+  syncEnabled?: boolean;
+  canSync?: boolean;
+  onCustomSync?: (id: string) => Promise<void>;
   columns?: 5 | 6;
+  showTrackStatus?: boolean;
   copy: typeof translations.en;
 }
 
@@ -40,15 +42,17 @@ export function SoundDock({
   onToggleTrack,
   onVolumeTrack,
   onStopAll,
-  customTracks,
-  onCustomToggle,
-  onCustomVolume,
-  onCustomRemove,
-  onAddFromFile,
-  syncEnabled,
-  canSync,
-  onCustomSync,
+  showCustom = true,
+  customTracks = [],
+  onCustomToggle = () => {},
+  onCustomVolume = () => {},
+  onCustomRemove = () => {},
+  onAddFromFile = async () => {},
+  syncEnabled = false,
+  canSync = false,
+  onCustomSync = async () => {},
   columns = 5,
+  showTrackStatus = true,
   copy,
 }: Props) {
   const [addOpen, setAddOpen] = useState(false);
@@ -85,41 +89,48 @@ export function SoundDock({
             onVolume={onVolumeTrack}
             compact
             compactColumns={columns}
+            showStatusLabel={showTrackStatus}
           />
 
-          <div className="border-t border-border" />
+          {showCustom && (
+            <>
+              <div className="border-t border-border" />
 
-          {/* Custom tracks + add button row */}
-          <div
-            className={`grid gap-3 ${
-              columns === 6
-                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"
-                : "grid-cols-2 sm:grid-cols-5"
-            }`}
-          >
-            {customTracks.map((t) => (
-              <CustomSoundCard
-                key={t.id}
-                track={t}
-                onToggle={onCustomToggle}
-                onVolume={onCustomVolume}
-                onRemove={onCustomRemove}
-                syncEnabled={syncEnabled}
-                onSync={onCustomSync}
-              />
-            ))}
-            <AddSoundCard onClick={() => setAddOpen(true)} />
-          </div>
+              {/* Custom tracks + add button row */}
+              <div
+                className={`grid gap-3 ${
+                  columns === 6
+                    ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"
+                    : "grid-cols-2 sm:grid-cols-5"
+                }`}
+              >
+                {customTracks.map((t) => (
+                  <CustomSoundCard
+                    key={t.id}
+                    track={t}
+                    onToggle={onCustomToggle}
+                    onVolume={onCustomVolume}
+                    onRemove={onCustomRemove}
+                    syncEnabled={syncEnabled}
+                    onSync={onCustomSync}
+                  />
+                ))}
+                <AddSoundCard onClick={() => setAddOpen(true)} />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      <AddTrackModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        onAddFromFile={onAddFromFile}
-        syncEnabled={syncEnabled}
-        canSync={canSync}
-      />
+      {showCustom && (
+        <AddTrackModal
+          open={addOpen}
+          onClose={() => setAddOpen(false)}
+          onAddFromFile={onAddFromFile}
+          syncEnabled={syncEnabled}
+          canSync={canSync}
+        />
+      )}
     </section>
   );
 }

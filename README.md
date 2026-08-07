@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.10" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.11" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -115,11 +115,16 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 
 ### Embed widget
 
-`/embed` is a chrome-free version of the timer meant for embedding elsewhere (e.g. Notion via its `/embed` command). Paste `https://earthflow.pro/embed` — it renders as an interactive iframe rather than a bookmark card, since it ships its own OG-tag-free static shell and `vercel.json` allows framing from `notion.so`/`*.notion.site` specifically for that route.
+`/embed` is a chrome-free version of the timer meant for embedding elsewhere (e.g. Notion via its `/embed` command). Paste `https://earthflow.pro/embed` — it renders as an interactive iframe rather than a bookmark card, since it ships its own OG-tag-free static shell. The dedicated Vercel route permits framing through nested embed providers while the rest of Earth Flow continues to block framing.
 
 ---
 
 ## 📋 Version History
+
+### v5.2.11 — Fixed Notion iframe loading
+- Fixed the embed route being blocked when Notion loaded it through a nested Iframely container
+- Made `/embed` terminate before the site's global anti-framing rule, removed the invalid `ALLOWALL` header, and allowed framing for this public widget only
+- Kept `frame-ancestors 'none'` and `X-Frame-Options: DENY` on every regular Earth Flow page
 
 ### v5.2.10 — Embed widget fixes
 - Fixed sound cards collapsing to an unreadable "ID" fragment at 5 columns in the embed's narrow width — the fixed-size icon left ~0px for the name/status text, which then overflowed and got clipped at the card edge. Widened the embed's sound section container so names truncate gracefully instead

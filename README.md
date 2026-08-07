@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.8" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.9" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -111,11 +111,20 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ### Discord notifications
 
 - **Visits** — a tiny `@vercel/node` function at `api/visit-ping.js` posts an embed to Discord on real page loads (triggered client-side from the root route, 10s dedupe). Requires `DISCORD_WEBHOOK_URL` as a Vercel env var.
-- **Deploys** — `.github/workflows/deploy-notify.yml` posts a richer embed (commit list, author, diff stats) on every push to `main`. Requires the `DISCORD_DEPLOY_WEBHOOK_URL` GitHub Actions secret.
+- **Deploys** — `.github/workflows/deploy-notify.yml` posts a richer embed (commit list, author, version) on every push to `main`. Requires the `DISCORD_DEPLOY_WEBHOOK_URL` GitHub Actions secret.
+
+### Embed widget
+
+`/embed` is a chrome-free version of the timer meant for embedding elsewhere (e.g. Notion via its `/embed` command). Paste `https://earthflow.pro/embed` — it renders as an interactive iframe rather than a bookmark card, since it ships its own OG-tag-free static shell and `vercel.json` allows framing from `notion.so`/`*.notion.site` specifically for that route.
 
 ---
 
 ## 📋 Version History
+
+### v5.2.9 — Notion embed widget
+- New `/embed` route: a chrome-free timer + sound mixer + settings + background, meant for embedding as an iframe widget (e.g. via Notion's `/embed` command)
+- Ships its own static HTML shell with no OG tags and `robots: noindex` — this is a static SPA, so every route shares one pre-built HTML file, and a link-preview scraper never runs client JS that would otherwise override the head. Without a dedicated shell, `/embed` would still serve the landing page's og:image and get rendered as a bookmark card instead of an iframe
+- `vercel.json` now allows framing from `notion.so`/`*.notion.site` specifically for `/embed`, while every other route still blocks framing entirely
 
 ### v5.2.8 — Updated social preview
 - Replaced the Open Graph preview with the latest Earth Flow welcome-page design

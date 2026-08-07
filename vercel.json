@@ -27,8 +27,20 @@
       "continue": true
     },
     {
+      "src": "/embed",
+      "headers": {
+        "Content-Security-Policy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self' https://www.notion.so https://*.notion.site; form-action 'self'; script-src 'self' 'wasm-unsafe-eval' https://apis.google.com https://accounts.google.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https://carmobwantbhvquzjuhw.supabase.co https://www.googleapis.com; connect-src 'self' https://carmobwantbhvquzjuhw.supabase.co wss://carmobwantbhvquzjuhw.supabase.co https://www.googleapis.com https://accounts.google.com https://vitals.vercel-insights.com; frame-src https://accounts.google.com https://docs.google.com https://drive.google.com; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests",
+        "X-Frame-Options": "ALLOWALL"
+      },
+      "continue": true
+    },
+    {
       "src": "/api/visit-ping",
       "dest": "/api/visit-ping.js"
+    },
+    {
+      "src": "/embed",
+      "dest": "/embed.html"
     },
     {
       "handle": "filesystem"

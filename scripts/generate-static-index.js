@@ -194,20 +194,12 @@ async function main() {
       </div>
     </div>`;
 
-  const indexHtml = `<!doctype html>
+  const shell = (headHtml) => `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Earth Flow — Ambient sounds &amp; focus timer</title>
-    <meta name="description" content="A calm focus space with ambient sound mixer and Pomodoro timer." />
-    <meta property="og:title" content="Earth Flow" />
-    <meta property="og:description" content="Ambient sounds &amp; focus timer for deep work." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://earthflow.pro" />
-    <meta property="og:image" content="https://earthflow.pro/og-image.png?v=5.2.8" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://earthflow.pro/og-image.png?v=5.2.8" />
+    ${headHtml}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     ${styleFileName ? `<link rel="stylesheet" href="/assets/${styleFileName}" />` : ''}
   </head>
@@ -219,9 +211,33 @@ async function main() {
   </body>
 </html>`;
 
+  const indexHtml = shell(`
+    <title>Earth Flow — Ambient sounds &amp; focus timer</title>
+    <meta name="description" content="A calm focus space with ambient sound mixer and Pomodoro timer." />
+    <meta property="og:title" content="Earth Flow" />
+    <meta property="og:description" content="Ambient sounds &amp; focus timer for deep work." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://earthflow.pro" />
+    <meta property="og:image" content="https://earthflow.pro/og-image.png?v=5.2.9" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://earthflow.pro/og-image.png?v=5.2.9" />`);
+
   const outPath = safeResolve('dist', 'client', 'index.html');
   await writeFile(outPath, indexHtml, 'utf8');
   console.log('Generated', outPath, 'with client entry', startFileName);
+
+  // /embed is a chrome-free widget meant for iframe embedding (e.g. Notion).
+  // It gets its own static shell — deliberately no OG tags — because this is
+  // a static SPA: every route is served the same pre-built HTML file via the
+  // Vercel rewrite, and link-preview scrapers never run the client JS that
+  // would otherwise override the route's <head> at runtime.
+  const embedHtml = shell(`
+    <title>Earth Flow</title>
+    <meta name="robots" content="noindex, nofollow" />`);
+
+  const embedOutPath = safeResolve('dist', 'client', 'embed.html');
+  await writeFile(embedOutPath, embedHtml, 'utf8');
+  console.log('Generated', embedOutPath, 'with client entry', startFileName);
 }
 
 main().catch((err) => {

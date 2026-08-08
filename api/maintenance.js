@@ -14,6 +14,7 @@ export default function handler(req, res) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
+
   <title>Service unavailable</title>
 
   <style>
@@ -30,9 +31,11 @@ export default function handler(req, res) {
     body {
       margin: 0;
       min-height: 100vh;
+
       display: flex;
       align-items: center;
       justify-content: center;
+
       padding: 24px;
 
       background: #fafafa;
@@ -52,6 +55,7 @@ export default function handler(req, res) {
     .container {
       width: 100%;
       max-width: 520px;
+
       text-align: center;
     }
 
@@ -91,8 +95,8 @@ export default function handler(req, res) {
 
       font-size: 36px;
       line-height: 1.15;
-      letter-spacing: -0.03em;
 
+      letter-spacing: -0.03em;
       font-weight: 650;
     }
 
@@ -109,6 +113,7 @@ export default function handler(req, res) {
 
     .timer-box {
       margin: 26px auto 0;
+
       padding: 16px 20px;
 
       max-width: 260px;
@@ -125,6 +130,7 @@ export default function handler(req, res) {
       color: #9ca3af;
 
       font-size: 12px;
+
       text-transform: uppercase;
       letter-spacing: 0.1em;
     }
@@ -186,14 +192,21 @@ export default function handler(req, res) {
       .description {
         font-size: 14px;
       }
+
+      #timer {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
 
 <body>
+
   <main class="container">
 
-    <div class="icon">!</div>
+    <div class="icon">
+      !
+    </div>
 
     <p class="code">
       Error 503
@@ -209,6 +222,7 @@ export default function handler(req, res) {
     </p>
 
     <div class="timer-box">
+
       <p class="timer-label">
         Service unavailable for
       </p>
@@ -216,6 +230,7 @@ export default function handler(req, res) {
       <p id="timer">
         15:00
       </p>
+
     </div>
 
     <button onclick="window.location.reload()">
@@ -229,30 +244,41 @@ export default function handler(req, res) {
   </main>
 
   <script>
-    const STORAGE_KEY = "earthflow_maintenance_started";
+    const START_TIME =
+      new Date("2026-08-08T20:48:00+03:00").getTime();
 
-    let startTime = Number(localStorage.getItem(STORAGE_KEY));
-
-    if (!startTime) {
-      startTime = Date.now();
-      localStorage.setItem(STORAGE_KEY, String(startTime));
-    }
-
-    const timer = document.getElementById("timer");
-
-    const START_OFFSET_SECONDS = 15 * 60;
+    const timer =
+      document.getElementById("timer");
 
     function updateTimer() {
-      const elapsedMilliseconds = Date.now() - startTime;
-      const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
+      const elapsed =
+        Math.max(0, Date.now() - START_TIME);
 
-      const totalSeconds = START_OFFSET_SECONDS + elapsedSeconds;
+      const totalSeconds =
+        Math.floor(elapsed / 1000);
 
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
+      const days =
+        Math.floor(totalSeconds / 86400);
 
-      if (hours > 0) {
+      const hours =
+        Math.floor((totalSeconds % 86400) / 3600);
+
+      const minutes =
+        Math.floor((totalSeconds % 3600) / 60);
+
+      const seconds =
+        totalSeconds % 60;
+
+      if (days > 0) {
+        timer.textContent =
+          String(days) +
+          "d " +
+          String(hours).padStart(2, "0") +
+          ":" +
+          String(minutes).padStart(2, "0") +
+          ":" +
+          String(seconds).padStart(2, "0");
+      } else if (hours > 0) {
         timer.textContent =
           String(hours).padStart(2, "0") +
           ":" +

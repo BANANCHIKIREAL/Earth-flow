@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.12" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.13" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -120,6 +120,9 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.2.13 — GitHub status endpoint
+- Added `api/github-status.js`, a serverless function proxying public repo metadata (stars, forks, open issues, default branch, last update) from the GitHub REST API for `BANANCHIKIREAL/Earth-flow`. No token, no secrets, 60s in-memory cache. Not called from the app and not linked anywhere in the UI — reachable only by requesting `/api/github-status` directly
 
 ### v5.2.12 — Fixed black screen on mobile embed
 - Mobile Safari blocks `localStorage` for cross-origin iframes (ITP); reading or writing it there throws `SecurityError` instead of returning `null`. Several hooks touched it unguarded during initial render, so the app crashed into its error boundary before the timer ever painted — invisible on desktop Notion (not blocked there), but a black screen on mobile

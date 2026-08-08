@@ -6,7 +6,7 @@ export default function handler(req, res) {
     "Cache-Control",
     "no-store, no-cache, must-revalidate, proxy-revalidate"
   );
-  res.setHeader("Retry-After", "300");
+  res.setHeader("Retry-After", "900");
 
   res.end(`<!doctype html>
 <html lang="en">
@@ -107,8 +107,40 @@ export default function handler(req, res) {
       line-height: 1.65;
     }
 
+    .timer-box {
+      margin: 26px auto 0;
+      padding: 16px 20px;
+
+      max-width: 260px;
+
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+
+      background: #ffffff;
+    }
+
+    .timer-label {
+      margin: 0 0 6px;
+
+      color: #9ca3af;
+
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    #timer {
+      margin: 0;
+
+      font-size: 30px;
+      font-weight: 650;
+
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+
     button {
-      margin-top: 30px;
+      margin-top: 26px;
 
       padding: 10px 18px;
 
@@ -160,6 +192,7 @@ export default function handler(req, res) {
 
 <body>
   <main class="container">
+
     <div class="icon">!</div>
 
     <p class="code">
@@ -172,8 +205,18 @@ export default function handler(req, res) {
 
     <p class="description">
       Earth Flow is currently unable to process this request.
-      Please try again in a few minutes.
+      Please try again later.
     </p>
+
+    <div class="timer-box">
+      <p class="timer-label">
+        Service unavailable for
+      </p>
+
+      <p id="timer">
+        15:00
+      </p>
+    </div>
 
     <button onclick="window.location.reload()">
       Try again
@@ -182,7 +225,53 @@ export default function handler(req, res) {
     <p class="footer">
       Request failed · Service unavailable
     </p>
+
   </main>
+
+  <script>
+    const STORAGE_KEY = "earthflow_maintenance_started";
+
+    let startTime = Number(localStorage.getItem(STORAGE_KEY));
+
+    if (!startTime) {
+      startTime = Date.now();
+      localStorage.setItem(STORAGE_KEY, String(startTime));
+    }
+
+    const timer = document.getElementById("timer");
+
+    const START_OFFSET_SECONDS = 15 * 60;
+
+    function updateTimer() {
+      const elapsedMilliseconds = Date.now() - startTime;
+      const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
+
+      const totalSeconds = START_OFFSET_SECONDS + elapsedSeconds;
+
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours > 0) {
+        timer.textContent =
+          String(hours).padStart(2, "0") +
+          ":" +
+          String(minutes).padStart(2, "0") +
+          ":" +
+          String(seconds).padStart(2, "0");
+      } else {
+        timer.textContent =
+          String(minutes).padStart(2, "0") +
+          ":" +
+          String(seconds).padStart(2, "0");
+      }
+    }
+
+    updateTimer();
+
+    setInterval(updateTimer, 1000);
+  </script>
+
 </body>
 </html>`);
 }

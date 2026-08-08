@@ -12,6 +12,10 @@
     {
       "src": "api/visit-ping.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/github-status.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -39,6 +43,10 @@
     {
       "src": "/api/visit-ping",
       "dest": "/api/visit-ping.js"
+    },
+    {
+      "src": "/api/github-status",
+      "dest": "/api/github-status.js"
     },
     {
       "handle": "filesystem"

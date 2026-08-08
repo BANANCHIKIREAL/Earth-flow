@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Camera, CalendarDays, Check, Hash, KeyRound, LogOut, Mail, Palette, RotateCcw, Settings, Trash2, User, X, Zap } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { Camera, CalendarDays, Check, Hash, KeyRound, LogOut, Mail, Palette, Plus, RotateCcw, Settings, Trash2, User, Users, X, Zap } from "lucide-react";
 import type { StreakStats } from "@/hooks/useStreak";
 import { useProfileCustomization } from "@/hooks/useProfileCustomization";
 import { STREAK_ENABLED } from "@/lib/flags";
@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { ProfileCustomizationPanel } from "@/components/ProfileCustomizationPanel";
 import { ProfileMoodIcon } from "@/components/ProfileMoodIcon";
+import { GoogleIcon } from "@/components/AuthLayout";
 
 interface Props {
   open: boolean;
@@ -223,10 +224,18 @@ export function ProfileModal({
   open, onClose, userNumber, email, displayName, avatarUrl, streak,
   onUpdateDisplayName, onUploadAvatar, onSignOut,
 }: Props) {
-  const { resetPassword, removeAvatar, updateEmail, requestDeleteCode, verifyDeleteCode, deleteAccount, user } = useAuth();
+  const {
+    resetPassword, removeAvatar, updateEmail, requestDeleteCode, verifyDeleteCode, deleteAccount, user,
+    savedAccounts, switchAccount, forgetSavedAccount, signIn, signInWithGoogle,
+  } = useAuth();
   const [draft, setDraft] = useState(displayName);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [addAccountOpen, setAddAccountOpen] = useState(false);
+  const [switchEmail, setSwitchEmail] = useState("");
+  const [switchPassword, setSwitchPassword] = useState("");
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  const [switchBusy, setSwitchBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
@@ -361,6 +370,31 @@ export function ProfileModal({
     setEmailStatus("sending");
     const { error } = await updateEmail(next);
     setEmailStatus(error ? "error" : "sent");
+  };
+
+  const handleSwitchTo = async (id: string) => {
+    if (switchBusy) return;
+    setSwitchBusy(true);
+    setSwitchError(null);
+    const { error } = await switchAccount(id);
+    setSwitchBusy(false);
+    if (error) setSwitchError("Couldn't switch accounts — try signing in again.");
+  };
+
+  const handleAddAccountSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (switchBusy) return;
+    setSwitchBusy(true);
+    setSwitchError(null);
+    const { error } = await signIn(switchEmail, switchPassword);
+    setSwitchBusy(false);
+    if (error) {
+      setSwitchError("Invalid email or password");
+      return;
+    }
+    setAddAccountOpen(false);
+    setSwitchEmail("");
+    setSwitchPassword("");
   };
 
   const handleSendDeleteCode = async () => {
@@ -824,6 +858,123 @@ export function ProfileModal({
               </button>
             </div>
           </div>
+          </section>
+
+          {/* Switch account */}
+          <section className="profile-settings-card">
+            <div className="profile-settings-card-header">
+              <span className="profile-settings-card-icon"><Users size={13} /></span>
+              <div>
+                <div className="profile-settings-card-title">Switch account</div>
+                <div className="profile-settings-card-copy">Move between accounts on this device.</div>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+            {switchError && <div className="text-[11px] text-red-400">{switchError}</div>}
+
+            {savedAccounts.length > 0 && (
+              <div className="space-y-1.5">
+                {savedAccounts.map((acc) => (
+                  <div
+                    key={acc.id}
+                    className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2"
+                  >
+                    <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-medium text-foreground/70">
+                      {acc.avatarUrl ? (
+                        <img src={acc.avatarUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        (acc.displayName?.[0] ?? acc.email[0] ?? "?").toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-xs text-foreground">{acc.displayName || acc.email}</div>
+                      {acc.displayName && (
+                        <div className="truncate text-[10px] text-muted-foreground">{acc.email}</div>
+                      )}
+                    </div>
+                    {acc.id === user?.id ? (
+                      <span className="shrink-0 inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                        <Check size={10} /> Current
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => void handleSwitchTo(acc.id)}
+                          disabled={switchBusy}
+                          className="shrink-0 h-7 rounded-full glass border border-border px-3 text-[11px] font-medium text-foreground hover:border-primary hover:text-primary transition-all disabled:opacity-50"
+                        >
+                          Switch
+                        </button>
+                        <button
+                          onClick={() => forgetSavedAccount(acc.id)}
+                          title="Forget this account"
+                          className="shrink-0 h-7 w-7 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-red-400 transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {addAccountOpen ? (
+              <form onSubmit={(e) => void handleAddAccountSubmit(e)} className="space-y-2">
+                <input
+                  type="email"
+                  value={switchEmail}
+                  onChange={(e) => setSwitchEmail(e.target.value)}
+                  placeholder="Email"
+                  required
+                  autoComplete="email"
+                  autoFocus
+                  className="w-full rounded-xl border border-border bg-foreground/5 px-3 py-2 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+                />
+                <input
+                  type="password"
+                  value={switchPassword}
+                  onChange={(e) => setSwitchPassword(e.target.value)}
+                  placeholder="Password"
+                  required
+                  autoComplete="current-password"
+                  className="w-full rounded-xl border border-border bg-foreground/5 px-3 py-2 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={switchBusy}
+                    className="flex-1 h-8 rounded-full bg-foreground text-xs font-medium text-background transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:scale-100"
+                  >
+                    {switchBusy ? "Signing in…" : "Sign in"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAddAccountOpen(false); setSwitchError(null); }}
+                    className="h-8 w-8 shrink-0 rounded-full glass border border-border inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void signInWithGoogle()}
+                  className="w-full h-8 rounded-full glass border border-border text-[11px] font-medium text-foreground hover:border-primary transition-all inline-flex items-center justify-center gap-2"
+                >
+                  <GoogleIcon />
+                  Continue with Google
+                </button>
+              </form>
+            ) : (
+              <button
+                onClick={() => setAddAccountOpen(true)}
+                className="w-full h-8 rounded-full glass border border-dashed border-border text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary transition-all inline-flex items-center justify-center gap-1.5"
+              >
+                <Plus size={13} /> Add another account
+              </button>
+            )}
+            </div>
           </section>
 
           {/* Sign out */}

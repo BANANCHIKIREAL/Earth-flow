@@ -5,6 +5,12 @@ import {
   imageExtensionFor,
   validateImageFile,
 } from "@/lib/imageUpload";
+import {
+  forgetAccount,
+  listSavedAccounts,
+  saveAccount,
+  type SavedAccount,
+} from "@/lib/savedAccounts";
 
 interface AuthContextType {
   user: User | null;
@@ -26,6 +32,9 @@ interface AuthContextType {
   requestDeleteCode: () => Promise<{ error: Error | null }>;
   verifyDeleteCode: (code: string) => Promise<{ error: Error | null }>;
   deleteAccount: () => Promise<{ error: Error | null }>;
+  savedAccounts: SavedAccount[];
+  switchAccount: (id: string) => Promise<{ error: Error | null }>;
+  forgetSavedAccount: (id: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -34,6 +43,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>(() =>
+    listSavedAccounts(),
+  );
+
+  // Remember every session we see so it shows up in the account switcher —
+  // covers sign-in, sign-up, OAuth, and switching back to an account already
+  // in the list.
+  useEffect(() => {
+    if (!session || !user) return;
+    saveAccount({
+      id: user.id,
+      email: user.email ?? "",
+      displayName: (user.user_metadata?.display_name as string | undefined) ?? null,
+      avatarUrl: (user.user_metadata?.avatar_url as string | undefined) ?? null,
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+    });
+    setSavedAccounts(listSavedAccounts());
+  }, [session, user]);
 
   useEffect(() => {
     let active = true;
@@ -233,6 +261,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: null };
   };
 
+  const switchAccount = async (id: string) => {
+    const target = listSavedAccounts().find((a) => a.id === id);
+    if (!target) return { error: new Error("Account not found") };
+    const { error } = await supabase.auth.setSession({
+      access_token: target.accessToken,
+      refresh_token: target.refreshToken,
+    });
+    return { error: error as Error | null };
+  };
+
+  const forgetSavedAccount = (id: string) => {
+    forgetAccount(id);
+    setSavedAccounts(listSavedAccounts());
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -252,6 +295,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         requestDeleteCode,
         verifyDeleteCode,
         deleteAccount,
+        savedAccounts,
+        switchAccount,
+        forgetSavedAccount,
       }}
     >
       {children}

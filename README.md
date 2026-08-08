@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.13" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.3.2" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -120,6 +120,11 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.3.2 — Account switcher
+- Added a "Switch account" section to Profile → Settings: remembers every account signed into on this device and lets you swap the active session without re-entering credentials, plus an inline "Add another account" form
+- Since Supabase's client only holds one active session at a time, switching persists the session you're leaving (`src/lib/savedAccounts.ts`, localStorage-backed) and calls `setSession()` with the one you're moving to
+- Added spacing between the saved-accounts list and the "Add another account" button, and a Google icon on "Continue with Google"
 
 ### v5.2.13 — GitHub status endpoint
 - Added `api/github-status.js`, a serverless function proxying public repo metadata (stars, forks, open issues, default branch, last update) from the GitHub REST API for `BANANCHIKIREAL/Earth-flow`. No token, no secrets, 60s in-memory cache. Not called from the app and not linked anywhere in the UI — reachable only by requesting `/api/github-status` directly

@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.2.11" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.2.12" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -120,6 +120,11 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.2.12 — Fixed black screen on mobile embed
+- Mobile Safari blocks `localStorage` for cross-origin iframes (ITP); reading or writing it there throws `SecurityError` instead of returning `null`. Several hooks touched it unguarded during initial render, so the app crashed into its error boundary before the timer ever painted — invisible on desktop Notion (not blocked there), but a black screen on mobile
+- Added `src/lib/safe-storage.ts`, a storage wrapper that catches any read/write failure and falls back to an in-memory store for the session instead of throwing. Routed all `localStorage` access through it — including the Supabase client, which persists its auth session there by default
+- Verified by emulating a mobile browser with `localStorage` forced to throw: crashed before the fix, renders normally after
 
 ### v5.2.11 — Fixed Notion iframe loading
 - Fixed the embed route being blocked when Notion loaded it through a nested Iframely container

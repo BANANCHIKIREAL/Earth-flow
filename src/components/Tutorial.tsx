@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { safeStorage } from "@/lib/safe-storage";
 
 const STORAGE_KEY = "ef:tutorial_v1";
 const PAD = 16;
@@ -58,16 +59,16 @@ export function useTutorial() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!localStorage.getItem(STORAGE_KEY)) setShow(true);
+    if (!safeStorage.getItem(STORAGE_KEY)) setShow(true);
   }, []);
 
   const complete = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, "1");
+    safeStorage.setItem(STORAGE_KEY, "1");
     setShow(false);
   }, []);
 
   const restart = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    safeStorage.removeItem(STORAGE_KEY);
     setShow(true);
   }, []);
 

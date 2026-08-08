@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_DURATIONS, type TimerDurations, MIN_SECONDS, MAX_SECONDS } from "./useTimer";
 import type { BackgroundVariant } from "@/components/Background";
+import { safeStorage } from "@/lib/safe-storage";
 import { supabase } from "@/lib/supabase";
 
 const KEY_DURATIONS = "focus-space:durations";
@@ -110,7 +111,7 @@ function getTimerFontStyle(id: string | null) {
 function readJSON<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
-    const raw = localStorage.getItem(key);
+    const raw = safeStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
     return fallback;
@@ -126,7 +127,7 @@ export function clearLocalSettings() {
     KEY_DURATIONS, KEY_LUNCH_ENABLED, KEY_BG_VARIANT, KEY_BG_IMAGE, KEY_BG_BLUR,
     KEY_TIMER_RING_STYLE, KEY_TIMER_RING_COLOR, KEY_TIMER_RING_WIDTH,
     KEY_TIMER_FONT, KEY_TIMER_FONT_SIZE, KEY_STOP_SOUNDS_ON_TIMER_END, KEY_LAYOUT,
-  ].forEach((k) => { try { localStorage.removeItem(k); } catch {} });
+  ].forEach((k) => { try { safeStorage.removeItem(k); } catch {} });
 }
 
 export function useSettings(userId?: string) {
@@ -151,28 +152,28 @@ export function useSettings(userId?: string) {
       focus: clamp(d.focus),
       lunch: clamp(d.lunch ?? DEFAULT_DURATIONS.lunch),
     });
-    const lunchRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_LUNCH_ENABLED) : null;
+    const lunchRaw = typeof window !== "undefined" ? safeStorage.getItem(KEY_LUNCH_ENABLED) : null;
     setLunchEnabledState(lunchRaw === "true");
-    const v = (typeof window !== "undefined" && localStorage.getItem(KEY_BG_VARIANT)) as BackgroundVariant | null;
+    const v = (typeof window !== "undefined" && safeStorage.getItem(KEY_BG_VARIANT)) as BackgroundVariant | null;
     if (v) setBgVariantState(v);
-    const img = typeof window !== "undefined" ? localStorage.getItem(KEY_BG_IMAGE) : null;
+    const img = typeof window !== "undefined" ? safeStorage.getItem(KEY_BG_IMAGE) : null;
     if (img) setBgImageState(img);
-    const blurRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_BG_BLUR) : null;
+    const blurRaw = typeof window !== "undefined" ? safeStorage.getItem(KEY_BG_BLUR) : null;
     if (blurRaw != null) setBgBlurState(clampBlur(parseInt(blurRaw, 10)));
-    const ringColorRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_TIMER_RING_COLOR) : null;
+    const ringColorRaw = typeof window !== "undefined" ? safeStorage.getItem(KEY_TIMER_RING_COLOR) : null;
     const ringColor = ringColorRaw ?? TIMER_RING_STYLES[0].color;
     setCustomTimerRingColorState(ringColor);
-    const ringStyleId = typeof window !== "undefined" ? localStorage.getItem(KEY_TIMER_RING_STYLE) : null;
+    const ringStyleId = typeof window !== "undefined" ? safeStorage.getItem(KEY_TIMER_RING_STYLE) : null;
     setTimerRingStyleState(getTimerRingStyle(ringStyleId, ringColor));
-    const ringWidthRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_TIMER_RING_WIDTH) : null;
+    const ringWidthRaw = typeof window !== "undefined" ? safeStorage.getItem(KEY_TIMER_RING_WIDTH) : null;
     if (ringWidthRaw != null) setTimerRingWidthState(clampTimerRingWidth(parseInt(ringWidthRaw, 10)));
-    const fontStyleId = typeof window !== "undefined" ? localStorage.getItem(KEY_TIMER_FONT) : null;
+    const fontStyleId = typeof window !== "undefined" ? safeStorage.getItem(KEY_TIMER_FONT) : null;
     setTimerFontStyleState(getTimerFontStyle(fontStyleId));
-    const fontSizeRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_TIMER_FONT_SIZE) : null;
+    const fontSizeRaw = typeof window !== "undefined" ? safeStorage.getItem(KEY_TIMER_FONT_SIZE) : null;
     if (fontSizeRaw != null) setTimerFontSizeState(clampTimerFontSize(parseInt(fontSizeRaw, 10)));
-    const stopSoundsRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_STOP_SOUNDS_ON_TIMER_END) : null;
+    const stopSoundsRaw = typeof window !== "undefined" ? safeStorage.getItem(KEY_STOP_SOUNDS_ON_TIMER_END) : null;
     setStopSoundsOnTimerEndState(stopSoundsRaw === "true");
-    const layoutRaw = typeof window !== "undefined" ? localStorage.getItem(KEY_LAYOUT) : null;
+    const layoutRaw = typeof window !== "undefined" ? safeStorage.getItem(KEY_LAYOUT) : null;
     if (isLayoutMode(layoutRaw)) setLayoutState(layoutRaw);
     setHydrated(true);
   }, []);
@@ -224,39 +225,39 @@ export function useSettings(userId?: string) {
         focus: clamp(next.focus ?? prev.focus),
         lunch: clamp(next.lunch ?? prev.lunch),
       };
-      try { localStorage.setItem(KEY_DURATIONS, JSON.stringify(merged)); } catch {}
+      try { safeStorage.setItem(KEY_DURATIONS, JSON.stringify(merged)); } catch {}
       return merged;
     });
   }, []);
 
   const setLunchEnabled = useCallback((enabled: boolean) => {
     setLunchEnabledState(enabled);
-    try { localStorage.setItem(KEY_LUNCH_ENABLED, String(enabled)); } catch {}
+    try { safeStorage.setItem(KEY_LUNCH_ENABLED, String(enabled)); } catch {}
   }, []);
 
   const setBgVariant = useCallback((v: BackgroundVariant) => {
     setBgVariantState(v);
-    try { localStorage.setItem(KEY_BG_VARIANT, v); } catch {}
+    try { safeStorage.setItem(KEY_BG_VARIANT, v); } catch {}
   }, []);
 
   const setBgImage = useCallback((dataUrl: string | null) => {
     setBgImageState(dataUrl);
     try {
-      if (dataUrl) localStorage.setItem(KEY_BG_IMAGE, dataUrl);
-      else localStorage.removeItem(KEY_BG_IMAGE);
+      if (dataUrl) safeStorage.setItem(KEY_BG_IMAGE, dataUrl);
+      else safeStorage.removeItem(KEY_BG_IMAGE);
     } catch {}
   }, []);
 
   const setBgBlur = useCallback((n: number) => {
     const c = clampBlur(n);
     setBgBlurState(c);
-    try { localStorage.setItem(KEY_BG_BLUR, String(c)); } catch {}
+    try { safeStorage.setItem(KEY_BG_BLUR, String(c)); } catch {}
   }, []);
 
   const setCustomTimerRingColor = useCallback((color: string) => {
     const nextColor = color || TIMER_RING_STYLES[0].color;
     setCustomTimerRingColorState(nextColor);
-    try { localStorage.setItem(KEY_TIMER_RING_COLOR, nextColor); } catch {}
+    try { safeStorage.setItem(KEY_TIMER_RING_COLOR, nextColor); } catch {}
 
     if (timerRingStyle.id === "custom") {
       setTimerRingStyleState({ id: "custom", name: "Custom", color: nextColor, glow: nextColor });
@@ -266,35 +267,35 @@ export function useSettings(userId?: string) {
   const setTimerRingStyle = useCallback((id: string) => {
     const nextStyle = getTimerRingStyle(id, customTimerRingColor);
     setTimerRingStyleState(nextStyle);
-    try { localStorage.setItem(KEY_TIMER_RING_STYLE, nextStyle.id); } catch {}
+    try { safeStorage.setItem(KEY_TIMER_RING_STYLE, nextStyle.id); } catch {}
   }, [customTimerRingColor]);
 
   const setTimerRingWidth = useCallback((n: number) => {
     const c = clampTimerRingWidth(n);
     setTimerRingWidthState(c);
-    try { localStorage.setItem(KEY_TIMER_RING_WIDTH, String(c)); } catch {}
+    try { safeStorage.setItem(KEY_TIMER_RING_WIDTH, String(c)); } catch {}
   }, []);
 
   const setTimerFontStyle = useCallback((id: string) => {
     const nextStyle = getTimerFontStyle(id);
     setTimerFontStyleState(nextStyle);
-    try { localStorage.setItem(KEY_TIMER_FONT, nextStyle.id); } catch {}
+    try { safeStorage.setItem(KEY_TIMER_FONT, nextStyle.id); } catch {}
   }, []);
 
   const setTimerFontSize = useCallback((n: number) => {
     const c = clampTimerFontSize(n);
     setTimerFontSizeState(c);
-    try { localStorage.setItem(KEY_TIMER_FONT_SIZE, String(c)); } catch {}
+    try { safeStorage.setItem(KEY_TIMER_FONT_SIZE, String(c)); } catch {}
   }, []);
 
   const setStopSoundsOnTimerEnd = useCallback((enabled: boolean) => {
     setStopSoundsOnTimerEndState(enabled);
-    try { localStorage.setItem(KEY_STOP_SOUNDS_ON_TIMER_END, String(enabled)); } catch {}
+    try { safeStorage.setItem(KEY_STOP_SOUNDS_ON_TIMER_END, String(enabled)); } catch {}
   }, []);
 
   const setLayout = useCallback((l: LayoutMode) => {
     setLayoutState(l);
-    try { localStorage.setItem(KEY_LAYOUT, l); } catch {}
+    try { safeStorage.setItem(KEY_LAYOUT, l); } catch {}
   }, []);
 
   // Debounced save — only runs after cloud data is loaded to prevent overwrite

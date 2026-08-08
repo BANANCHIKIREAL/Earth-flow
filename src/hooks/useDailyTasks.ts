@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { safeStorage } from "@/lib/safe-storage";
 import { supabase } from "@/lib/supabase";
 
 export type StatsPeriod = "day" | "week" | "month" | "year";
@@ -50,7 +51,7 @@ function makeKeys(userId?: string) {
 function readJSON<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
-    const raw = localStorage.getItem(key);
+    const raw = safeStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
     return fallback;
@@ -116,19 +117,19 @@ export function useDailyTasks(userId?: string) {
 
   // Write to localStorage
   useEffect(() => {
-    try { localStorage.setItem(keys.DAILY, JSON.stringify(tasks)); } catch {}
+    try { safeStorage.setItem(keys.DAILY, JSON.stringify(tasks)); } catch {}
   }, [tasks, keys.DAILY]);
   useEffect(() => {
-    try { localStorage.setItem(keys.COMPLETED, JSON.stringify(completedRecords)); } catch {}
+    try { safeStorage.setItem(keys.COMPLETED, JSON.stringify(completedRecords)); } catch {}
   }, [completedRecords, keys.COMPLETED]);
   useEffect(() => {
-    try { localStorage.setItem(keys.ARCHIVE, JSON.stringify(chartArchive)); } catch {}
+    try { safeStorage.setItem(keys.ARCHIVE, JSON.stringify(chartArchive)); } catch {}
   }, [chartArchive, keys.ARCHIVE]);
   useEffect(() => {
-    try { localStorage.setItem(keys.HIDDEN, JSON.stringify(chartHiddenLevel)); } catch {}
+    try { safeStorage.setItem(keys.HIDDEN, JSON.stringify(chartHiddenLevel)); } catch {}
   }, [chartHiddenLevel, keys.HIDDEN]);
   useEffect(() => {
-    try { localStorage.setItem(keys.CATEGORIES, JSON.stringify(categories)); } catch {}
+    try { safeStorage.setItem(keys.CATEGORIES, JSON.stringify(categories)); } catch {}
   }, [categories, keys.CATEGORIES]);
 
   // Debounced save — only runs after cloud data has been loaded to prevent overwrite

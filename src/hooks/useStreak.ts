@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { safeStorage } from "@/lib/safe-storage";
 import { supabase } from "@/lib/supabase";
 
 export interface StreakDays {
@@ -30,7 +31,7 @@ const dayGap = (a: string, b: string) =>
 
 function load(storageKey: string): Store {
   try {
-    const raw = localStorage.getItem(storageKey);
+    const raw = safeStorage.getItem(storageKey);
     if (raw) {
       const p = JSON.parse(raw) as Partial<Store>;
       return { days: p.days ?? {}, restored: p.restored ?? [], restores: p.restores ?? {}, v: p.v };
@@ -40,7 +41,7 @@ function load(storageKey: string): Store {
 }
 
 function persist(storageKey: string, store: Store) {
-  try { localStorage.setItem(storageKey, JSON.stringify(store)); } catch {}
+  try { safeStorage.setItem(storageKey, JSON.stringify(store)); } catch {}
 }
 
 function normalize(raw: unknown): Store {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { safeStorage } from "@/lib/safe-storage";
 import { supabase } from "@/lib/supabase";
 
 export type CustomTrackSyncStatus =
@@ -102,7 +103,7 @@ export function useCustomTracks(userId?: string) {
   const [tracks, setTracks] = useState<CustomTrack[]>([]);
   const [syncEnabled, setSyncEnabledState] = useState(() => {
     if (!userId || typeof window === "undefined") return false;
-    return localStorage.getItem(syncKey(userId)) === "true";
+    return safeStorage.getItem(syncKey(userId)) === "true";
   });
   const [cloudLoading, setCloudLoading] = useState(false);
   const [cloudCount, setCloudCount] = useState(0);
@@ -122,7 +123,7 @@ export function useCustomTracks(userId?: string) {
       setCloudBytes(0);
       return;
     }
-    setSyncEnabledState(localStorage.getItem(syncKey(userId)) === "true");
+    setSyncEnabledState(safeStorage.getItem(syncKey(userId)) === "true");
     void supabase
       .from("user_custom_tracks")
       .select("size_bytes")
@@ -502,7 +503,7 @@ export function useCustomTracks(userId?: string) {
   const setSyncEnabled = useCallback(
     (enabled: boolean) => {
       if (!userId) return;
-      localStorage.setItem(syncKey(userId), String(enabled));
+      safeStorage.setItem(syncKey(userId), String(enabled));
       setSyncEnabledState(enabled);
     },
     [userId],

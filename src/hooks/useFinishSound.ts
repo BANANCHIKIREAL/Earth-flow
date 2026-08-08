@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { safeStorage } from "@/lib/safe-storage";
 
 export interface FinishSound {
   id: string;
@@ -25,7 +26,7 @@ const DEFAULT_FINISH_SOUND = FINISH_SOUNDS[0].id;
 function readCustomSound(): CustomFinishSound | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(KEY_CUSTOM_FINISH_SOUND);
+    const raw = safeStorage.getItem(KEY_CUSTOM_FINISH_SOUND);
     return raw ? (JSON.parse(raw) as CustomFinishSound) : null;
   } catch {
     return null;
@@ -88,7 +89,7 @@ export function useFinishSound() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = localStorage.getItem(KEY_FINISH_SOUND);
+    const stored = safeStorage.getItem(KEY_FINISH_SOUND);
     if (stored && (stored === "custom" || FINISH_SOUNDS.some((sound) => sound.id === stored))) {
       setSelectedSoundIdState(stored);
     }
@@ -111,15 +112,15 @@ export function useFinishSound() {
   const setSelectedSoundId = useCallback((id: string) => {
     setSelectedSoundIdState(id);
     try {
-      localStorage.setItem(KEY_FINISH_SOUND, id);
+      safeStorage.setItem(KEY_FINISH_SOUND, id);
     } catch {}
   }, []);
 
   const setCustomSound = useCallback((sound: CustomFinishSound | null) => {
     setCustomSoundState(sound);
     try {
-      if (sound) localStorage.setItem(KEY_CUSTOM_FINISH_SOUND, JSON.stringify(sound));
-      else localStorage.removeItem(KEY_CUSTOM_FINISH_SOUND);
+      if (sound) safeStorage.setItem(KEY_CUSTOM_FINISH_SOUND, JSON.stringify(sound));
+      else safeStorage.removeItem(KEY_CUSTOM_FINISH_SOUND);
     } catch {}
   }, []);
 

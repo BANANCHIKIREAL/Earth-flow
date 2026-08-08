@@ -28,6 +28,7 @@ import {
 import { BACKGROUNDS, Background, type BackgroundVariant } from "@/components/Background";
 import { useAuth } from "@/context/AuthContext";
 import { AMBIENT_SOUNDS, type SoundIconType } from "@/hooks/useAudioMixer";
+import { safeStorage } from "@/lib/safe-storage";
 import { APP_VERSION_LABEL } from "@/lib/version";
 
 const KEY_BG_VARIANT = "focus-space:bg-variant";
@@ -309,7 +310,7 @@ function WelcomePage() {
 
   const [bg, setBg] = useState<BackgroundVariant>(() => {
     if (typeof window === "undefined") return "galaxy";
-    const saved = localStorage.getItem(KEY_BG_VARIANT) as BackgroundVariant | null;
+    const saved = safeStorage.getItem(KEY_BG_VARIANT) as BackgroundVariant | null;
     return saved && PRESET_SWATCHES.includes(saved) ? saved : "galaxy";
   });
 
@@ -321,7 +322,7 @@ function WelcomePage() {
 
   const applyBg = (v: BackgroundVariant) => {
     setBg(v);
-    try { localStorage.setItem(KEY_BG_VARIANT, v); } catch {}
+    try { safeStorage.setItem(KEY_BG_VARIANT, v); } catch {}
     setVanished((prev) => new Set(prev).add(v));
     setTimeout(() => {
       setVanished((prev) => {

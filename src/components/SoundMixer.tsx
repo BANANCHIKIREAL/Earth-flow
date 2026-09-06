@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
-import { Bell, BookOpen, Bug, Bird, CloudLightning, CloudRain, Coffee, Droplet, Flame, Moon, Mountain, Plane, Leaf, Speaker, Sun, TreeDeciduous, Waves, Wind, Zap } from "lucide-react";
+import type { LucideIcon } from "@/components/MorphIcon";
+import { Bell, BookOpen, Bug, Bird, CloudLightning, CloudRain, Coffee, Droplet, Flame, Moon, Mountain, Plane, Leaf, Speaker, Sun, TreeDeciduous, Waves, Wind, Zap } from "@/components/MorphIcon";
 import type { SoundTrack, SoundIconType } from "@/hooks/useAudioMixer";
 
 interface Props {

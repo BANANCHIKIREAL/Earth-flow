@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Cloud, HardDrive, Upload, X } from "lucide-react";
+import { Cloud, HardDrive, Upload, X } from "@/components/MorphIcon";
+import { CLOUD_SOUND_LIBRARY_SETTINGS_VISIBLE } from "@/lib/flags";
 
 interface Props {
   open: boolean;
@@ -164,7 +165,7 @@ export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSy
             </div>
           ) : null}
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+          {CLOUD_SOUND_LIBRARY_SETTINGS_VISIBLE && <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
             <div className="flex items-start gap-2.5">
               <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white/5 text-muted-foreground">
                 {syncEnabled && canSync ? <Cloud size={14} /> : <HardDrive size={14} />}
@@ -201,7 +202,7 @@ export function AddTrackModal({ open, onClose, onAddFromFile, syncEnabled, canSy
                 {syncEnabled && canSync ? "Cloud on" : canSync ? "Cloud off" : "Local only"}
               </div>
             </div>
-          </div>
+          </div>}
         </div>
       </div>
     </>,

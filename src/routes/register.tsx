@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useEffect, useState } from "react";
-import { Check, ShieldCheck, X } from "lucide-react";
+import { Check, ShieldCheck, X } from "@/components/MorphIcon";
 import { useAuth } from "@/context/AuthContext";
 import { AuthLayout, GoogleIcon, Divider, PasswordInput, inputCls, btnCls, ghostBtnCls, errorCls } from "@/components/AuthLayout";
 

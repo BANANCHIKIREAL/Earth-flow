@@ -8,7 +8,7 @@ import {
   Plus,
   Trash2,
   VolumeX,
-} from "lucide-react";
+} from "@/components/MorphIcon";
 import { useState } from "react";
 import { SoundMixer } from "./SoundMixer";
 import { AddTrackModal } from "./AddTrackModal";

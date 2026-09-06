@@ -6,7 +6,7 @@ import {
   RotateCcw,
   Sparkles,
   WandSparkles,
-} from "lucide-react";
+} from "@/components/MorphIcon";
 import {
   PROFILE_ACCENTS,
   PROFILE_MOODS,

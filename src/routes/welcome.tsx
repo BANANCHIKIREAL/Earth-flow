@@ -24,7 +24,7 @@ import {
   TreeDeciduous,
   Waves,
   Wind,
-} from "lucide-react";
+} from "@/components/MorphIcon";
 import { BACKGROUNDS, Background, type BackgroundVariant } from "@/components/Background";
 import { useAuth } from "@/context/AuthContext";
 import { AMBIENT_SOUNDS, type SoundIconType } from "@/hooks/useAudioMixer";

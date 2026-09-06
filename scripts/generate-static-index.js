@@ -218,9 +218,9 @@ async function main() {
     <meta property="og:description" content="Ambient sounds &amp; focus timer for deep work." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://earthflow.pro" />
-    <meta property="og:image" content="https://earthflow.pro/og-image.png?v=5.3.2" />
+    <meta property="og:image" content="https://earthflow.pro/og-image.png?v=5.5.3" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://earthflow.pro/og-image.png?v=5.3.2" />`);
+    <meta name="twitter:image" content="https://earthflow.pro/og-image.png?v=5.5.3" />`);
 
   const outPath = safeResolve('dist', 'client', 'index.html');
   await writeFile(outPath, indexHtml, 'utf8');

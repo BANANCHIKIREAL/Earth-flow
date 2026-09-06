@@ -16,7 +16,7 @@ import {
   CloudOff,
   ShieldCheck,
   Sparkles,
-} from "lucide-react";
+} from "@/components/MorphIcon";
 import { BACKGROUNDS, type BackgroundVariant } from "./Background";
 import type { FinishSound } from "@/hooks/useFinishSound";
 import {
@@ -42,6 +42,7 @@ import {
   validateImageFile,
 } from "@/lib/imageUpload";
 import type { translations } from "@/lib/i18n";
+import { CLOUD_SOUND_LIBRARY_SETTINGS_VISIBLE } from "@/lib/flags";
 import { supabase } from "@/lib/supabase";
 
 function formatCloudBytes(bytes: number) {
@@ -610,7 +611,7 @@ export function SettingsPanel({
                 </button>
               )}
             </div>
-            <div className={`relative overflow-hidden rounded-[1.65rem] border p-4 transition-all duration-700 ${
+            {CLOUD_SOUND_LIBRARY_SETTINGS_VISIBLE && <div className={`relative overflow-hidden rounded-[1.65rem] border p-4 transition-all duration-700 ${
               customSoundSyncEnabled
                 ? "border-sky-300/25 bg-sky-300/[0.07] shadow-[0_18px_70px_-34px_rgba(125,211,252,0.8)]"
                 : "border-white/10 bg-white/[0.035]"
@@ -706,7 +707,7 @@ export function SettingsPanel({
                 <ShieldCheck size={12} />
                 <span>Private access · up to 90 seconds · optimized WebM audio</span>
               </div>
-            </div>
+            </div>}
             <button
               onClick={
                 notificationPermission === "granted"

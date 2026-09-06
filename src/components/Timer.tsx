@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Pause, Play, RotateCcw, Settings } from "lucide-react";
+import { Pause, Play, RotateCcw, Settings } from "@/components/MorphIcon";
 import type { TimerFontStyle, TimerRingStyle } from "@/hooks/useSettings";
 import { useTimer, type TimerDurations, type TimerPhase } from "@/hooks/useTimer";
 import type { translations } from "@/lib/i18n";

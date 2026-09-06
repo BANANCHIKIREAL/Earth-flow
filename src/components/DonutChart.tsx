@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2 } from "@/components/MorphIcon";
 import type { Category, DailyTask } from "@/hooks/useDailyTasks";
 
 const PALETTE = [

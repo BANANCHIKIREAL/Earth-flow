@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.3.2" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.5.3" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -50,7 +50,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 </div>
 
-TanStack Start · TanStack Router · TanStack Query · Lucide Icons
+TanStack Start · TanStack Router · TanStack Query · Morphicons · Lucide icon data
 
 ---
 
@@ -120,6 +120,13 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.5.3 — Animated interactive icons
+- Replaced clickable Lucide React components across the workspace, authentication pages, profile, settings, sound controls, task tools, and shared UI primitives with a centralized Morphicons system
+- Added smooth, accessible hover, press, and keyboard-focus morphs with related action states, including Play ↔ Pause, pie chart → trend graph, Crickets → audio waveform, and remove → close
+- Preserved static decorative artwork and the multicolor Google brand mark while honoring the user's reduced-motion preference
+- Temporarily hid the Cloud Sound Library controls in Sound settings and the local-track upload dialog without removing their underlying sync implementation
+- Increased the spacing before the destructive Delete account action and retained the v5.3.2 saved-account switcher while integrating the new icon system
 
 ### v5.3.2 — Account switcher
 - Added a "Switch account" section to Profile → Settings: remembers every account signed into on this device and lets you swap the active session without re-entering credentials, plus an inline "Add another account" form

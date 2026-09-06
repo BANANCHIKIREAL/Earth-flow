@@ -1,6 +1,6 @@
 import { useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "@/components/MorphIcon";
 
 function EarthGraphic({ className = "w-64 h-64" }: { className?: string }) {
   return (

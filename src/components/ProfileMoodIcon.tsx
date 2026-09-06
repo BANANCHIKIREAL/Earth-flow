@@ -5,7 +5,7 @@ import {
   MoonStar,
   Sparkles,
   Waves,
-} from "lucide-react";
+} from "@/components/MorphIcon";
 import type { ProfileMood } from "@/lib/profileCustomization";
 
 interface Props {

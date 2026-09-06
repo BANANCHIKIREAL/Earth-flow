@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
-import { Camera, CalendarDays, Check, Hash, KeyRound, LogOut, Mail, Palette, Plus, RotateCcw, Settings, Trash2, User, Users, X, Zap } from "lucide-react";
+import { Camera, CalendarDays, Check, Hash, KeyRound, LogOut, Mail, Palette, Plus, RotateCcw, Settings, Trash2, User, Users, X, Zap } from "@/components/MorphIcon";
 import type { StreakStats } from "@/hooks/useStreak";
 import { useProfileCustomization } from "@/hooks/useProfileCustomization";
 import { STREAK_ENABLED } from "@/lib/flags";
@@ -1007,7 +1007,7 @@ export function ProfileModal({
             {deleteState === "idle" && (
               <button
                 onClick={() => setDeleteState("confirm")}
-                className="w-full h-8 rounded-lg border border-red-400/20 bg-red-400/[0.06] text-xs font-medium text-red-400/90 hover:bg-red-400/10 hover:border-red-400/40 transition-colors"
+                className="mt-5 w-full h-8 rounded-lg border border-red-400/20 bg-red-400/[0.06] text-xs font-medium text-red-400/90 hover:bg-red-400/10 hover:border-red-400/40 transition-colors"
               >
                 Delete account
               </button>

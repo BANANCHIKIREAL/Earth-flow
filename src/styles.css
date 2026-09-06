@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @source "./**/*.{tsx,ts,jsx,js,html}";
 @import "tw-animate-css";
+@import "./components/NotFoundPage.css";
 
 @custom-variant dark (&:is(.dark *));
 

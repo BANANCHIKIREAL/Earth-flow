@@ -13,7 +13,7 @@ A customizable focus workspace with ambient sound mixing, a Pomodoro timer,<br/>
 
 <br/>
 
-<img src="https://earthflow.pro/og-image.png?v=5.5.3" alt="Earth Flow preview" width="720" />
+<img src="https://earthflow.pro/og-image.png?v=5.5.4" alt="Earth Flow preview" width="720" />
 
 </div>
 
@@ -120,6 +120,12 @@ OG meta tags are injected at build time into the static HTML so social crawlers 
 ---
 
 ## 📋 Version History
+
+### v5.5.4 — A little off orbit
+- Rebuilt the 404 page as an original deep-space scene with a black-hole centerpiece, detailed illustrated planets, layered orbital paths, and a focused route back to Earth Flow
+- Added recognizable Ursa Major, Cassiopeia, and Orion star patterns alongside a denser full-screen star field
+- Made a small group of stars drift toward the orbit on a slow cycle while keeping most stars fixed, so the edges of the scene never become empty
+- Added responsive layouts and reduced-motion behavior for desktop and mobile visitors
 
 ### v5.5.3 — Animated interactive icons
 - Replaced clickable Lucide React components across the workspace, authentication pages, profile, settings, sound controls, task tools, and shared UI primitives with a centralized Morphicons system

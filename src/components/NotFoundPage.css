@@ -1,0 +1,86 @@
+.ef-lost {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #000;
+  color: #e6eeeb;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+.ef-lost-header, .ef-lost-footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 30px 46px; }
+.ef-lost-header { position: relative; z-index: 2; }
+.ef-lost-brand { display: inline-flex; align-items: center; gap: 12px; font: 23px Georgia, serif; letter-spacing: -.8px; color: #e6eeeb; text-decoration: none; }
+.ef-lost-brand > span { width: 9px; height: 9px; border-radius: 50%; background: #b9dbd0; box-shadow: 0 0 18px #b9dbd040; }
+.ef-lost-label, .ef-lost-caption, .ef-lost-footer, .ef-lost-scene-note { font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: .2em; color: #839b96; }
+.ef-lost-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px 48px; }
+.ef-lost-caption { display: flex; align-items: center; gap: 10px; font-size: 9px; letter-spacing: .25em; }
+.ef-lost-caption > span { width: 5px; height: 5px; border-radius: 50%; background: #b6d8c8; box-shadow: 0 0 12px #a5dfc6; }
+.ef-lost-scene { width: min(780px, 95vw); height: clamp(240px, 29vw, 360px); position: relative; display: flex; align-items: center; justify-content: center; margin: 12px 0 22px; }
+.ef-lost-digit { position: absolute; top: 50%; transform: translateY(-54%); font: clamp(150px, 20vw, 260px)/1 Georgia, serif; letter-spacing: -.08em; color: #d6e2dc; text-shadow: 0 0 70px #9fc8b810; z-index: 2; }
+.ef-lost-digit--left { left: 15%; }
+.ef-lost-digit--right { right: 18%; }
+.ef-lost-hole { position: absolute; width: 32%; aspect-ratio: 1; border-radius: 50%; z-index: 3; }
+.ef-lost-halo { position: absolute; inset: -8%; border-radius: 50%; background: conic-gradient(from 30deg, #a4d9c840, #d6e5c6, #718c8830, #69899d15, #c5decc); filter: blur(13px); opacity: .75; animation: ef-lost-turn 55s linear infinite; }
+.ef-lost-core { position: absolute; inset: 2%; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #091215, #020507 70%); box-shadow: inset 0 1px 5px #cceac150, 0 0 0 1px #bddecb66, 0 0 36px #8cbda92b; }
+.ef-lost-ring { position: absolute; width: 182%; height: 35%; left: -41%; top: 32%; border-radius: 50%; border: 1px solid #b4dbcb77; transform: rotate(-27deg); box-shadow: 0 1px 0 #e1f5d794, 0 5px 15px #b6d8c820; background: linear-gradient(180deg, transparent 40%, #adc7b617, transparent 75%); }
+.ef-lost-satellite { position: absolute; inset: -22%; animation: ef-lost-turn 34s linear infinite; }
+.ef-lost-satellite > i { position: absolute; top: 50%; left: 0; width: 8px; height: 8px; border-radius: 50%; background: #cbdab5; box-shadow: 0 0 12px #d0e8b5a0; }
+.ef-lost-guide { position: absolute; width: 91%; height: 56%; border: 1px solid #aacdc012; border-radius: 50%; transform: rotate(-21deg); }
+.ef-lost-guide--two { width: 78%; height: 90%; transform: rotate(24deg); border-style: dashed; border-color: #aacdc00f; }
+.ef-lost-scene-note { position: absolute; bottom: 0; right: 12%; font-size: 7px; letter-spacing: .17em; color: #607671; }
+.ef-lost-cross { position: absolute; font: 17px ui-monospace, monospace; color: #68837e80; }
+.ef-lost-cross--one { left: 3%; top: 32%; }.ef-lost-cross--two { right: 3%; bottom: 27%; }
+.ef-lost-copy { position: relative; z-index: 2; text-align: center; }
+.ef-lost-copy h1 { margin: 16px 0; font: clamp(38px, 4.4vw, 58px)/1.08 Georgia, serif; letter-spacing: -2px; }
+.ef-lost-copy h1 em { color: #b4d3c7; font-weight: 400; }
+.ef-lost-copy p { font-size: 13px; line-height: 1.85; color: #8f9e9d; margin: 0 0 27px; }
+.ef-lost-home { display: inline-flex; align-items: center; justify-content: center; gap: 26px; min-height: 47px; padding: 0 24px; border-radius: 30px; background: #dbe9df; color: #14221e; font-size: 12px; font-weight: 600; text-decoration: none; transition: background-color 350ms, box-shadow 350ms, transform 350ms; }
+.ef-lost-home:hover { background: #edf5ed; transform: translateY(-2px); box-shadow: 0 4px 30px #bcd9ca24; }
+.ef-lost-footer { position: relative; z-index: 2; padding-top: 22px; padding-bottom: 24px; border-top: 1px solid #c4e0d00c; font-size: 8px; }
+.ef-lost-footer > span > span { color: #c0d5cd; }
+.ef-lost a:focus-visible, .ef-lost button:focus-visible { outline: 2px solid #b4d3c7; outline-offset: 6px; }
+.ef-lost-stars { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.ef-lost-stars i { position: absolute; left: var(--star-x); top: var(--star-y); width: var(--star-size); height: var(--star-size); background: #d6e8f1; border-radius: 50%; opacity: .65; box-shadow: 0 0 7px #bbd9cb55; }
+.ef-lost-stars .ef-lost-star--bright { opacity: .95; animation: ef-lost-twinkle 9s ease-in-out infinite alternate; animation-delay: var(--star-delay); }
+.ef-lost-stars .ef-lost-star--traveler { animation: ef-lost-gather-stars 80s ease-in-out infinite; animation-delay: var(--star-delay); }
+.ef-lost-star--bright::before, .ef-lost-star--bright::after { content: ""; position: absolute; background: linear-gradient(transparent, #cfe7f4aa, transparent); width: 1px; height: 11px; left: 1px; top: -4px; }
+.ef-lost-star--bright::after { transform: rotate(90deg); }
+.ef-lost-planets { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.ef-lost-planet { position: absolute; width: var(--planet-size); aspect-ratio: 1; animation: ef-lost-drift 28s ease-in-out infinite alternate; }
+.ef-lost-planet-art { display: block; width: 100%; height: 100%; overflow: visible; }
+.ef-lost-planet--blue { --planet-size: 155px; left: 6%; top: 30%; }
+.ef-lost-planet--saturn { --planet-size: 190px; right: 5%; top: 22%; animation-delay: -12s; }
+.ef-lost-planet--copper { --planet-size: 90px; left: 24%; bottom: 13%; animation-delay: -8s; }
+.ef-lost-planet--moon { --planet-size: 66px; right: 24%; bottom: 12%; animation-delay: -19s; }
+.ef-lost-constellations { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.ef-lost-constellation { position: absolute; width: clamp(150px, 19vw, 280px); overflow: visible; }
+.ef-lost-constellation text { fill: #72879b; font: 6px ui-monospace, monospace; letter-spacing: 2px; }
+.ef-lost-constellation--ursa { left: 6%; top: 9%; }
+.ef-lost-constellation--cassiopeia { right: 5%; bottom: 13%; }
+.ef-lost-constellation--orion { left: 4%; bottom: 9%; width: clamp(120px, 14vw, 200px); }
+@keyframes ef-lost-drift { from { transform: translate3d(-8px, -12px, 0) rotate(-5deg); } to { transform: translate3d(12px, 12px, 0) rotate(6deg); } }
+@keyframes ef-lost-twinkle { from { opacity: .5; } to { opacity: 1; } }
+@keyframes ef-lost-gather-stars {
+  0%, 100% { left: var(--star-x); top: var(--star-y); }
+  45%, 55% { left: var(--gather-x); top: var(--gather-y); }
+}
+@keyframes ef-lost-turn { to { transform: rotate(360deg); } }
+@media (max-width: 600px) {
+  .ef-lost-planet--blue { --planet-size: 66px; left: 2%; top: 22%; }
+  .ef-lost-planet--saturn { --planet-size: 94px; right: 1%; top: 12%; }
+  .ef-lost-planet--copper { --planet-size: 50px; left: 21%; bottom: 8%; }
+  .ef-lost-planet--moon { --planet-size: 35px; right: 12%; bottom: 8%; }
+  .ef-lost-constellation--ursa { width: 140px; left: 5%; top: 9%; }
+  .ef-lost-constellation--cassiopeia { width: 110px; right: 0; bottom: 16%; }
+  .ef-lost-constellation--orion { width: 85px; left: 1%; bottom: 12%; }
+  .ef-lost-header { padding: 24px; }.ef-lost-header > .ef-lost-label { font-size: 7px; }
+  .ef-lost-main { padding-top: 36px; padding-bottom: 42px; }.ef-lost-caption { font-size: 7px; letter-spacing: .14em; }
+  .ef-lost-scene { margin-top: 0; margin-bottom: 16px; }.ef-lost-digit--left { left: 12%; }.ef-lost-digit--right { right: 16%; }
+  .ef-lost-scene-note { font-size: 6px; right: 15%; bottom: 12px; }.ef-lost-copy p { font-size: 12px; }
+  .ef-lost-footer { padding: 20px; gap: 12px; flex-wrap: wrap; }.ef-lost-footer-note { display: none; }.ef-lost-footer > span { font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ef-lost *, .ef-lost *::before, .ef-lost *::after { animation: none !important; transition: none !important; }
+}
